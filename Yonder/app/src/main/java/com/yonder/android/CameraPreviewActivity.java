@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -49,8 +50,11 @@ public class CameraPreviewActivity extends Activity {
 			if (findFrontFacingCamera() < 0) {
 				//Toast.makeText(this, "No front facing camera found.", Toast.LENGTH_LONG).show();
 				switchCamera.setVisibility(View.GONE);
+				mCamera = Camera.open(findBackFacingCamera());
+			} else {
+				mCamera = Camera.open(findFrontFacingCamera());
 			}
-			mCamera = Camera.open(findBackFacingCamera());
+
 			mPreview.refreshCamera(mCamera);
 		}
 	}
@@ -176,7 +180,7 @@ public class CameraPreviewActivity extends Activity {
 
 
 	// Video Recording
-
+	Activity mActivity = this;
 	boolean recording = false;
 	OnClickListener captureListener = new OnClickListener() {
 		@Override
@@ -187,6 +191,8 @@ public class CameraPreviewActivity extends Activity {
 				releaseMediaRecorder(); // release the MediaRecorder object
 				Toast.makeText(CameraPreviewActivity.this, "Video captured!", Toast.LENGTH_LONG).show();
 				recording = false;
+				Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
+				startActivity(intent);
 			} else {
 				if (!prepareMediaRecorder()) {
 					Toast.makeText(CameraPreviewActivity.this, "Fail in prepareMediaRecorder()!\n - Ended -", Toast.LENGTH_LONG).show();
@@ -234,6 +240,11 @@ public class CameraPreviewActivity extends Activity {
 		mediaRecorder.setOutputFile("/sdcard/myvideo.mp4");
 		mediaRecorder.setMaxDuration(600000); // Set max duration 60 sec.
 		mediaRecorder.setMaxFileSize(50000000); // Set max file size 50M
+		if (cameraFront) {
+			mediaRecorder.setOrientationHint(270);
+		} else {
+			mediaRecorder.setOrientationHint(90);
+		}
 
 		try {
 			mediaRecorder.prepare();
