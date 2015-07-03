@@ -2,16 +2,38 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
+    android:background="#000000"
     android:id="@+id/feedLayout">
 
     <VideoView
         android:id="@+id/capturedVideo"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentTop="true"
+        android:layout_height="fill_parent" />
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--/>-->
+
+    <Button
+        android:id="@+id/button_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        />
+        android:text="Post" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_alignParentTop="true"
+        android:textColor="#FFF"
+        android:background="#8888"
+        android:text=""
+        android:ellipsize="start"
+        android:gravity="center_horizontal"
+        android:hint="Edit Caption" />
+
 
 </RelativeLayout>

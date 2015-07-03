@@ -3,6 +3,7 @@ package com.yonder.android;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,11 +12,16 @@ import android.hardware.Camera.CameraInfo;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.support.v4.view.GestureDetectorCompat;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 public class CameraPreviewActivity extends Activity {
@@ -23,9 +29,10 @@ public class CameraPreviewActivity extends Activity {
 	private CameraPreview mPreview;
 	private MediaRecorder mediaRecorder;
 	private Button capture, switchCamera;
-	private Context myContext;
-	private LinearLayout cameraPreview;
+	private Activity mActivity;
+	private RelativeLayout cameraPreview;
 	private boolean cameraFront = false;
+	private GestureDetectorCompat mDetector;
 
 	// Camera Preview
 
@@ -34,14 +41,15 @@ public class CameraPreviewActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_camera_preview);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		myContext = this;
+		mActivity = this;
+		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 		initialize();
 	}
 
 	public void onResume() {
 		super.onResume();
-		if (!hasCamera(myContext)) {
-			Toast toast = Toast.makeText(myContext, "Sorry, your phone does not have a camera!", Toast.LENGTH_LONG);
+		if (!hasCamera(mActivity)) {
+			Toast toast = Toast.makeText(mActivity, "Sorry, your phone does not have a camera!", Toast.LENGTH_LONG);
 			toast.show();
 			finish();
 		}
@@ -60,17 +68,17 @@ public class CameraPreviewActivity extends Activity {
 	}
 
 	@Override
-	protected void onPause() {
-		super.onPause();
+	protected void onStop() {
+		super.onStop();
 		// when on Pause, release camera in order to be used from other
 		// applications
 		releaseCamera();
 	}
 
 	public void initialize() {
-		cameraPreview = (LinearLayout) findViewById(R.id.camera_preview);
+		cameraPreview = (RelativeLayout) findViewById(R.id.camera_preview);
 
-		mPreview = new CameraPreview(myContext, mCamera);
+		mPreview = new CameraPreview(mActivity, mCamera);
 		cameraPreview.addView(mPreview);
 
 		capture = (Button) findViewById(R.id.button_capture);
@@ -93,7 +101,7 @@ public class CameraPreviewActivity extends Activity {
 					releaseCamera();
 					chooseCamera();
 				} else {
-					Toast toast = Toast.makeText(myContext, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG);
+					Toast toast = Toast.makeText(mActivity, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG);
 					toast.show();
 				}
 			}
@@ -180,7 +188,6 @@ public class CameraPreviewActivity extends Activity {
 
 
 	// Video Recording
-	Activity mActivity = this;
 	boolean recording = false;
 	OnClickListener captureListener = new OnClickListener() {
 		@Override
@@ -257,6 +264,33 @@ public class CameraPreviewActivity extends Activity {
 		}
 		return true;
 
+	}
+
+	// Handle Touch
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event){
+		this.mDetector.onTouchEvent(event);
+		return super.onTouchEvent(event);
+	}
+
+	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+		private static final String DEBUG_TAG = "Gestures";
+
+		@Override
+		public boolean onDown(MotionEvent event) {
+			Log.d(DEBUG_TAG, "onDown: " + event.toString());
+			return true;
+		}
+
+		@Override
+		public boolean onFling(MotionEvent event1, MotionEvent event2,
+							   float velocityX, float velocityY) {
+			Log.d(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+			Intent intent = new Intent(mActivity, LoadFeedActivity.class);
+            startActivity(intent);
+			return true;
+		}
 	}
 
 }

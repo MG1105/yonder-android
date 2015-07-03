@@ -1,0 +1,23 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.yonder.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
+
+    <ImageView
+        android:id="@+id/loadFeedImageView"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:adjustViewBounds="true"
+        android:src="@drawable/dolphin"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tap to load Yonders near you"
+        android:id="@+id/loadFeedTextView"
+        android:layout_below="@+id/loadFeedImageView"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>
