@@ -70,7 +70,7 @@ public class FeedActivity extends Activity {
 		}
 
 		@Override
-		public boolean onSingleTapConfirmed(MotionEvent event) {
+		public boolean onSingleTapUp(MotionEvent event) {
 			if (tap < uris.size()-1) {
 				tap++;
                 currentVideo.stopPlayback();

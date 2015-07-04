@@ -242,11 +242,10 @@ public class CameraPreviewActivity extends Activity {
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
+		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P ));
 
 		mediaRecorder.setOutputFile("/sdcard/myvideo.mp4");
-		mediaRecorder.setMaxDuration(600000); // Set max duration 60 sec.
-		mediaRecorder.setMaxFileSize(50000000); // Set max file size 50M
+		mediaRecorder.setMaxDuration(7000); // Set max duration 60 sec.
 		if (cameraFront) {
 			mediaRecorder.setOrientationHint(270);
 		} else {
