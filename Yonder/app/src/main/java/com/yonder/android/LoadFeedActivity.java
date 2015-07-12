@@ -96,7 +96,7 @@ public class LoadFeedActivity extends ActionBarActivity {
 //        uris.add(Uri.parse("http://storage.googleapis.com/yander/20150306_235451_001.mp4"));
 //		uris.add(Uri.parse("http://storage.googleapis.com/yander/20130810_182659.mp4"));
 //		uris.add(Uri.parse("http://storage.googleapis.com/yander/20120809_015947.mp4"));
-		uris.add(Uri.parse("http://storage.googleapis.com/yander/myvideo.mp4"));
+		uris.add(Uri.parse("http://storage.googleapis.com/yander/1436326261092.mp4"));
 
     }
 

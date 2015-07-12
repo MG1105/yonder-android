@@ -13,6 +13,9 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.netcompss.ffmpeg4android.GeneralUtils;
+import com.netcompss.loader.LoadJNI;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -26,13 +29,18 @@ public class CapturedVideoActivity extends Activity {
     private VideoView vidView;
     private Button uploadButton;
     private Context myContext;
+    String videoId;
+    String uploadPath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         myContext = this;
         setContentView(R.layout.activity_captured_video);
         vidView = (VideoView) findViewById(R.id.capturedVideo);
-        Uri vidUri = Uri.parse("/sdcard/myvideo.mp4");
+        uploadPath = this.getExternalFilesDir("upload").getAbsolutePath();
+        videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
+        Uri vidUri = Uri.parse(uploadPath + "/captured.mp4");
         vidView.setVideoURI(vidUri);
         vidView.start();
         vidView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -40,7 +48,7 @@ public class CapturedVideoActivity extends Activity {
                 vidView.start();
             }
         });
-
+        compressVideo();
         uploadButton = (Button) findViewById(R.id.button_upload);
         uploadButton.setOnClickListener(uploadListener);
     }
@@ -71,7 +79,7 @@ public class CapturedVideoActivity extends Activity {
         try
         {
             //------------------ CLIENT REQUEST
-            FileInputStream fileInputStream = new FileInputStream(new File("/sdcard/myvideo.mp4") );
+            FileInputStream fileInputStream = new FileInputStream(new File(uploadPath+"/"+videoId) );
             // open a URL connection to the Servlet
             URL url = new URL(urlString);
             // Open a HTTP connection to the URL
@@ -89,7 +97,7 @@ public class CapturedVideoActivity extends Activity {
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
             dos = new DataOutputStream( conn.getOutputStream() );
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name='uploadedfile';filename='" + "myvideo.mp4" + "'" + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=uploadedfile;filename=" + videoId + lineEnd);
             dos.writeBytes(lineEnd);
             // create a buffer of maximum size
             bytesAvailable = fileInputStream.available();
@@ -137,6 +145,20 @@ public class CapturedVideoActivity extends Activity {
             Log.e("Debug", "error: " + ioex.getMessage(), ioex);
         }
 
+    }
+
+    private void compressVideo() {
+        LoadJNI vk = new LoadJNI();
+        try {
+            String uploadPath = getApplicationContext().getExternalFilesDir("upload").getAbsolutePath();
+            // ac audio channels ar audio frequency b bitrate
+            String[] complexCommand = GeneralUtils.utilConvertToComplex("ffmpeg -y -i " + uploadPath + "/captured.mp4" +
+                    " -strict experimental -s 1280x720 -r 24 -vcodec libx264 -b 1000k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId);
+            vk.run(complexCommand, uploadPath, getApplicationContext());
+            Log.i("test", "ffmpeg4android finished successfully");
+        } catch (Throwable e) {
+            Log.e("test", "vk run exception.", e);
+        }
     }
 
 
