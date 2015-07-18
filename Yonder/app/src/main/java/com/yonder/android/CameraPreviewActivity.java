@@ -12,6 +12,7 @@ import android.hardware.Camera.CameraInfo;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -22,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class CameraPreviewActivity extends Activity {
@@ -33,6 +35,7 @@ public class CameraPreviewActivity extends Activity {
 	private RelativeLayout cameraPreview;
 	private boolean cameraFront = false;
 	private GestureDetectorCompat mDetector;
+    CountDownTimer timer;
 
 	// Camera Preview
 
@@ -70,8 +73,9 @@ public class CameraPreviewActivity extends Activity {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		// when on Pause, release camera in order to be used from other
-		// applications
+        if (recording) {
+            stopRecording();
+        }
 		releaseCamera();
 	}
 
@@ -193,35 +197,56 @@ public class CameraPreviewActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			if (recording) {
-				// stop recording and release camera
-				mediaRecorder.stop(); // stop the recording
-				releaseMediaRecorder(); // release the MediaRecorder object
-				Toast.makeText(CameraPreviewActivity.this, "Video captured!", Toast.LENGTH_LONG).show();
-				recording = false;
-				Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
-				startActivity(intent);
+                stopRecording();
+                capture.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_black_24dp, 0, 0, 0);
+                capture.setText("Record");
+                if (timer != null) {
+                    timer.cancel();
+                    Button counter = (Button)findViewById(R.id.recording_counter);
+                    counter.setText("10");
+                }
 			} else {
 				if (!prepareMediaRecorder()) {
-					Toast.makeText(CameraPreviewActivity.this, "Fail in prepareMediaRecorder()!\n - Ended -", Toast.LENGTH_LONG).show();
+					Toast.makeText(CameraPreviewActivity.this, "Failed Recording. Exiting App.", Toast.LENGTH_LONG).show();
 					finish();
 				}
-				// work on UiThread for better performance
-				runOnUiThread(new Runnable() {
-					public void run() {
-						// If there are stories, add them to the table
 
-						try {
-							mediaRecorder.start();
-						} catch (final Exception ex) {
-							// Log.i("---","Exception in thread");
-						}
-					}
-				});
+                try {
+                    mediaRecorder.start();
+                    capture.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop_black_24dp, 0, 0, 0);
+                    capture.setText("Stop");
+                    timer = new CountDownTimer(10000, 1000) {
+                        Button counter = (Button)findViewById(R.id.recording_counter);
+                        public void onTick(long millisUntilFinished) {
+                            counter.setText(""+millisUntilFinished / 1000);
+                        }
 
+                        public void onFinish() {
+                            if (recording) {
+                                stopRecording();
+                                capture.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_black_24dp, 0, 0, 0);
+                                capture.setText("Record");
+                            }
+                            counter.setText("10");
+                        }
+                    }.start();
+                } catch (final Exception ex) {
+                    // Log.i("---","Exception in thread");
+                }
 				recording = true;
 			}
 		}
 	};
+
+    protected void stopRecording() {
+        // stop recording and release camera
+        mediaRecorder.stop(); // stop the recording
+        releaseMediaRecorder(); // release the MediaRecorder object
+        Toast.makeText(CameraPreviewActivity.this, "Video captured!", Toast.LENGTH_LONG).show();
+        recording = false;
+        Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
+        startActivity(intent);
+    }
 
 	private void releaseMediaRecorder() {
 		if (mediaRecorder != null) {
@@ -246,7 +271,7 @@ public class CameraPreviewActivity extends Activity {
 
         String uploadPath = this.getExternalFilesDir("upload").getAbsolutePath() + "/captured.mp4";
 		mediaRecorder.setOutputFile(uploadPath);
-		mediaRecorder.setMaxDuration(10000); // Set max duration 60 sec.
+		mediaRecorder.setMaxDuration(12000); // Set max duration
 		if (cameraFront) {
 			mediaRecorder.setOrientationHint(270);
 		} else {

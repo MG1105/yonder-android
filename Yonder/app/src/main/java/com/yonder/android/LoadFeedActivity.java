@@ -2,39 +2,30 @@ package com.yonder.android;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Environment;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.view.View.OnClickListener;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
 
 import java.util.ArrayList;
-import android.app.Activity;
+
 import android.app.DownloadManager;
-import android.app.DownloadManager.Query;
 import android.app.DownloadManager.Request;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class LoadFeedActivity extends ActionBarActivity {
 
@@ -61,23 +52,75 @@ public class LoadFeedActivity extends ActionBarActivity {
 
     }
 
-
     OnClickListener loadListener = new OnClickListener() {
         @Override
-        public void onClick(View v) {
+        public void onClick(View v) { // dismiss multiple clicks, check last request ts, sleep for longer animation
             loadFeedImageView.startAnimation(rotation);
             loadFeedTextView = (TextView) findViewById(R.id.loadFeedTextView);
-            loadFeedTextView.setText("Loading...");
+            loadFeedTextView.setText("Looking for videos around you...");
             downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-            setVideoUris();
-            remaining = uris.size();
-            setRequests();
-            for (Request request : requests) {
-                downloadManager.enqueue(request);
-            }
-            registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+            getFeedTask getFeed = new getFeedTask();
+            getFeed.execute();
+
         }
     };
+
+    class getFeedTask extends AsyncTask<Void, Void, JSONArray> {
+
+        protected JSONArray doInBackground(Void... params) {
+            try {
+                uris = new ArrayList<>();
+                AppEngine gae = new AppEngine();
+                String userId = "45";
+                String longitude = "-121.886329";
+                String latitude = "37.338208";
+                JSONObject response = gae.getFeed(userId, longitude, latitude);
+                try {
+                    if (response.getString("success").equals("1")) {
+                        JSONArray videos = response.getJSONArray("videos");
+
+                        for (int i = 0; i < videos.length(); i++) { // background?
+                            String id = videos.getString(i);
+                            String url = "http://storage.googleapis.com/yander/" + id + ".mp4";
+                            uris.add(Uri.parse(url));
+                        }
+                        return videos;
+                    } else {
+                        return null;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        protected void onPostExecute(JSONArray videos) {
+            if (videos != null) {
+                // TODO: check exception?
+                if (videos.length() > 0) {
+                    loadFeedTextView.setText("Found " + videos.length() + " videos");
+                    remaining = uris.size();
+                    setRequests();
+                    for (Request request : requests) {
+                        downloadManager.enqueue(request);
+                    }
+                    loadFeedTextView.setText("Loading...");
+                    registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                } else {
+                    loadFeedTextView.setText("No new videos found. Please try again later.");
+
+                    loadFeedImageView.clearAnimation();
+                }
+            } else {
+                loadFeedTextView.setText("Could not retrieve new videos.");
+                loadFeedImageView.clearAnimation();
+            }
+
+        }
+    }
 
     BroadcastReceiver loadBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -87,18 +130,11 @@ public class LoadFeedActivity extends ActionBarActivity {
             if (remaining == 0) {
                 Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
                 startActivity(intentFeedStart);
+                loadFeedImageView.clearAnimation();
+                loadFeedTextView.setText("Tap to load Yonders near you");
             }
         }
     };
-
-    private void setVideoUris() {
-        uris = new ArrayList<>();
-//        uris.add(Uri.parse("http://storage.googleapis.com/yander/20150306_235451_001.mp4"));
-//		uris.add(Uri.parse("http://storage.googleapis.com/yander/20130810_182659.mp4"));
-//		uris.add(Uri.parse("http://storage.googleapis.com/yander/20120809_015947.mp4"));
-		uris.add(Uri.parse("http://storage.googleapis.com/yander/1436326261092.mp4"));
-
-    }
 
     private void setRequests() {
         requests = new ArrayList<>();
@@ -109,15 +145,19 @@ public class LoadFeedActivity extends ActionBarActivity {
             request.setDestinationInExternalFilesDir(mActivity, "loaded_videos", uri.getLastPathSegment());
             requests.add(request);
         }
+    }
+
+    private void getLocation() {
 
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //unregisterReceiver(loadBroadcastReceiver);
+    private void getUserId() {
 
     }
+
+
+
+
 
     // Menu Code
 

@@ -4,33 +4,74 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.widget.VideoView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FeedActivity extends Activity {
-
+    private final String TAG = "Log." + this.getClass().getSimpleName();
 	private int tap = 0;
 	private GestureDetectorCompat mDetector;
     VideoView currentVideo;
+    String currentVideoId;
+    String listIds;
     ArrayList<Uri> uris;
+    File listFile[];
+    Button flagButton;
+    Button likeButton;
+    Button dislikeButton;
+    Button commentButton;
+    Button ratingButton;
+    private Activity myContext;
+    Map<String, JSONObject> videoInfo;
 
-	@Override
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_feed);
-		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        myContext = this;
+
+
+        flagButton = (Button) findViewById(R.id.flag_button);
+        likeButton = (Button) findViewById(R.id.like_button);
+        dislikeButton = (Button) findViewById(R.id.dislike_button);
+        commentButton = (Button) findViewById(R.id.comment_button);
+        ratingButton = (Button) findViewById(R.id.rating);
+
+        likeButton.setOnClickListener(likeListener);
+        dislikeButton.setOnClickListener(dislikeListener);
+        flagButton.setOnClickListener(flagListener);
+
+        commentButton.setVisibility(View.GONE);
+        ratingButton.setVisibility(View.GONE);
+
+        mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         currentVideo = (VideoView) findViewById(R.id.currentVideo);
         uris = getContent();
         currentVideo.setVideoURI(uris.get(0));
+        currentVideoId = uris.get(0).getLastPathSegment().substring(0,13);
         currentVideo.start();
         currentVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             public void onCompletion(MediaPlayer mp) {
@@ -43,14 +84,149 @@ public class FeedActivity extends Activity {
 	public ArrayList<Uri> getContent() {
 		ArrayList<Uri> uris = new ArrayList<>();
         File videosFolder  = this.getExternalFilesDir("loaded_videos");
-        File listFile[] = videosFolder.listFiles();
+        listFile = videosFolder.listFiles();
+        listIds = "";
         if (listFile != null) {
             for (int i = 0; i < listFile.length; i++) {
                 uris.add(Uri.parse(listFile[i].getAbsolutePath()));
+                if (i < listFile.length - 1) {
+                    listIds = listIds + uris.get(i).getLastPathSegment().substring(0,13) + "xxx";
+                } else {
+                    listIds = listIds + uris.get(i).getLastPathSegment().substring(0,13);
+                }
+
             }
         }
-		return uris;
+        Log.i(TAG, listIds);
+        getFeedInfoTask infoTask = new getFeedInfoTask();
+        infoTask.execute(listIds);
+        return uris;
 	}
+
+    @Override
+    protected void onStop() { // Maybe let them resume viewing?
+        super.onStop();
+        if (listFile != null) {
+            for (int i = 0; i < listFile.length; i++) {
+                listFile[i].delete();
+            }
+        }
+        finish();
+    }
+
+    protected void showVideoInfo() {
+        try {
+            String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
+            String rating = videoInfo.get(currentVideoId).getString("rating");
+            commentButton.setText(commentsTotal + " Comments");
+            ratingButton.setText(rating);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        commentButton.setVisibility(View.VISIBLE);
+        ratingButton.setVisibility(View.VISIBLE);
+    }
+
+    View.OnClickListener likeListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast toast = Toast.makeText(myContext, "Liked", Toast.LENGTH_LONG);
+            toast.show();
+            RateTask rate = new RateTask();
+            rate.execute(currentVideoId, "1");
+            showVideoInfo();
+        }
+    };
+
+    View.OnClickListener dislikeListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast toast = Toast.makeText(myContext, "Disliked", Toast.LENGTH_LONG);
+            toast.show();
+            RateTask rate = new RateTask();
+            rate.execute(currentVideoId, "-1");
+            showVideoInfo();
+        }
+    };
+
+    View.OnClickListener flagListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast toast = Toast.makeText(myContext, "Reported", Toast.LENGTH_LONG);
+            toast.show();
+            ReportTask report = new ReportTask();
+            report.execute(currentVideoId);
+        }
+    };
+
+    class RateTask extends AsyncTask<String, Void, JSONObject> {
+
+        protected JSONObject doInBackground(String... params) {
+            AppEngine gae = new AppEngine();
+            JSONObject response = gae.rateVideo(params[0], params[1]);
+            return response;
+        }
+
+        protected void onPostExecute(JSONObject response) {
+            try {
+                if (response.getString("success").equals("1")) {
+                    Toast toast = Toast.makeText(myContext, "Rated!", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class ReportTask extends AsyncTask<String, Void, JSONObject> {
+
+        protected JSONObject doInBackground(String... params) {
+            AppEngine gae = new AppEngine();
+            JSONObject response = gae.reportVideo(params[0]);
+            return response;
+        }
+
+        protected void onPostExecute(JSONObject response) {
+            try {
+                if (response.getString("success").equals("1")) {
+                    Toast toast = Toast.makeText(myContext, "Flagged!", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class getFeedInfoTask extends AsyncTask<String, Void, JSONArray> {
+
+        protected JSONArray doInBackground(String... params) {
+            try {
+                uris = new ArrayList<>();
+                AppEngine gae = new AppEngine();
+                JSONObject response = gae.getFeedInfo(params[0]);
+                try {
+                    if (response.getString("success").equals("1")) {
+                        JSONArray videos = response.getJSONArray("videos");
+                        videoInfo = new HashMap<String, JSONObject>();
+                        for (int i = 0; i < videos.length(); i++) { // background?
+                            JSONObject vid = videos.getJSONObject(i);
+                            videoInfo.put(vid.getString("id"), vid);
+                        }
+                        return videos;
+                    } else {
+                        return null;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
 
 	// Handle Touch
 
@@ -75,6 +251,7 @@ public class FeedActivity extends Activity {
 				tap++;
                 currentVideo.stopPlayback();
                 currentVideo.setVideoURI(uris.get(tap));
+                currentVideoId = uris.get(tap).getLastPathSegment().substring(0,13);
                 currentVideo.start();
                 currentVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     public void onCompletion(MediaPlayer mp) {

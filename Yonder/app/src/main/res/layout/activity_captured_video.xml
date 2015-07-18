@@ -2,18 +2,14 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:background="#000000"
+    android:background="@color/black"
     android:id="@+id/feedLayout">
 
     <VideoView
         android:id="@+id/capturedVideo"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
-        <!--android:layout_alignParentTop="true"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--/>-->
+        android:layout_height="fill_parent"
+        android:layout_centerInParent="true"/>
 
     <Button
         android:id="@+id/button_upload"
@@ -34,6 +30,14 @@
         android:ellipsize="start"
         android:gravity="center_horizontal"
         android:hint="Edit Caption" />
+
+    <ProgressBar
+        android:id="@+id/uploading_in_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

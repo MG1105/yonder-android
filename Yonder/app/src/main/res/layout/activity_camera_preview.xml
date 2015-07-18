@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			 android:layout_width="fill_parent"
-			 android:layout_height="fill_parent">
+			 android:layout_height="fill_parent"
+    android:background="@color/black">
 
 	<RelativeLayout
 		android:id="@+id/camera_preview"
@@ -20,7 +21,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_alignParentRight="true"
-			android:text="Switch Camera" />
+			android:text="Switch" />
 
 		<Button
 			android:id="@+id/button_capture"
@@ -28,7 +29,19 @@
 			android:layout_height="wrap_content"
 			android:layout_alignParentBottom="true"
 			android:layout_centerHorizontal="true"
-			android:text="Capture/Stop" />
+            android:drawableLeft="@drawable/ic_videocam_black_24dp"
+			android:text="Record" />
 
-	</RelativeLayout>
+        <Button
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10"
+            android:drawableLeft="@drawable/ic_access_time_black_24dp"
+            android:id="@+id/recording_counter"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"/>
+
+    </RelativeLayout>
 </FrameLayout>

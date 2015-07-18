@@ -101,6 +101,28 @@ public class AppEngine {
         return getResponse();
     }
 
+    protected JSONObject getFeedInfo(String ids) {
+
+        String query = "";
+        try
+        {
+            String encodedIds = URLEncoder.encode(ids, "UTF-8");
+            query = "?ids=" + encodedIds;
+            String urlString = "http://subtle-analyzer-90706.appspot.com/videos/info" + query;
+
+            URL url = new URL(urlString);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setUseCaches(false);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
+        } catch (IOException ioe)
+        {
+            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        }
+        return getResponse();
+    }
+
     protected JSONObject addComment(String userId, String videoId, String comment) {
         DataOutputStream dos;
         String query = "";
