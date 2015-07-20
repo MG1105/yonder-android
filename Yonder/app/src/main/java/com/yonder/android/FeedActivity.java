@@ -44,6 +44,7 @@ public class FeedActivity extends Activity {
     Button ratingButton;
     private Activity myContext;
     Map<String, JSONObject> videoInfo;
+	boolean infoReceived;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class FeedActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         myContext = this;
-
+	    uris = getContent();
 
         flagButton = (Button) findViewById(R.id.flag_button);
         likeButton = (Button) findViewById(R.id.like_button);
@@ -63,26 +64,36 @@ public class FeedActivity extends Activity {
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
         flagButton.setOnClickListener(flagListener);
+	    commentButton.setOnClickListener(commentListener);
 
         commentButton.setVisibility(View.GONE);
         ratingButton.setVisibility(View.GONE);
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         currentVideo = (VideoView) findViewById(R.id.currentVideo);
-        uris = getContent();
-        currentVideo.setVideoURI(uris.get(0));
+	    currentVideo.setVideoURI(uris.get(0));
         currentVideoId = uris.get(0).getLastPathSegment().substring(0,13);
-        currentVideo.start();
-        currentVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            public void onCompletion(MediaPlayer mp) {
-                currentVideo.start();
-            }
-        });
-
     }
 
+	@Override
+	protected void onResume() {
+		super.onResume(); // loop?
+		currentVideo.start();
+	}
+
+	@Override
+	protected void onDestroy() { // Maybe let them resume viewing?
+		super.onDestroy(); // Not called all the time
+		if (listFile != null) {
+			for (int i = 0; i < listFile.length; i++) {
+				listFile[i].delete();
+			}
+		}
+		finish();
+	}
+
 	public ArrayList<Uri> getContent() {
-		ArrayList<Uri> uris = new ArrayList<>();
+		uris = new ArrayList<>();
         File videosFolder  = this.getExternalFilesDir("loaded_videos");
         listFile = videosFolder.listFiles();
         listIds = "";
@@ -97,42 +108,33 @@ public class FeedActivity extends Activity {
 
             }
         }
-        Log.i(TAG, listIds);
+        Log.d(TAG, "uris = " + uris.toString());
         getFeedInfoTask infoTask = new getFeedInfoTask();
         infoTask.execute(listIds);
         return uris;
 	}
 
-    @Override
-    protected void onStop() { // Maybe let them resume viewing?
-        super.onStop();
-        if (listFile != null) {
-            for (int i = 0; i < listFile.length; i++) {
-                listFile[i].delete();
-            }
-        }
-        finish();
-    }
-
     protected void showVideoInfo() {
-        try {
-            String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
-            String rating = videoInfo.get(currentVideoId).getString("rating");
-            commentButton.setText(commentsTotal + " Comments");
-            ratingButton.setText(rating);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (infoReceived) {
+		    try {
+			    String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
+			    String rating = videoInfo.get(currentVideoId).getString("rating");
+			    commentButton.setText(commentsTotal + " Comments");
+			    ratingButton.setText(rating + " Likes");
+		    } catch (JSONException e) {
+			    e.printStackTrace();
+		    }
+		    commentButton.setVisibility(View.VISIBLE);
+		    ratingButton.setVisibility(View.VISIBLE);
+	    } else {
+	        // try again, too slow or failed to get it?
         }
-        commentButton.setVisibility(View.VISIBLE);
-        ratingButton.setVisibility(View.VISIBLE);
     }
 
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast = Toast.makeText(myContext, "Liked", Toast.LENGTH_LONG);
-            toast.show();
-            RateTask rate = new RateTask();
+            RateTask rate = new RateTask(); // spinner and disappear buttons
             rate.execute(currentVideoId, "1");
             showVideoInfo();
         }
@@ -141,8 +143,6 @@ public class FeedActivity extends Activity {
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast = Toast.makeText(myContext, "Disliked", Toast.LENGTH_LONG);
-            toast.show();
             RateTask rate = new RateTask();
             rate.execute(currentVideoId, "-1");
             showVideoInfo();
@@ -152,14 +152,22 @@ public class FeedActivity extends Activity {
     View.OnClickListener flagListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast = Toast.makeText(myContext, "Reported", Toast.LENGTH_LONG);
-            toast.show();
             ReportTask report = new ReportTask();
             report.execute(currentVideoId);
         }
     };
 
-    class RateTask extends AsyncTask<String, Void, JSONObject> {
+	View.OnClickListener commentListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent(myContext, CommentActivity.class);
+			intent.putExtra("videoId", currentVideoId);
+			startActivity(intent);
+		}
+	};
+
+
+	class RateTask extends AsyncTask<String, Void, JSONObject> {
 
         protected JSONObject doInBackground(String... params) {
             AppEngine gae = new AppEngine();
@@ -170,7 +178,7 @@ public class FeedActivity extends Activity {
         protected void onPostExecute(JSONObject response) {
             try {
                 if (response.getString("success").equals("1")) {
-                    Toast toast = Toast.makeText(myContext, "Rated!", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(myContext, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
                     toast.show();
                 }
             } catch (JSONException e) {
@@ -199,11 +207,10 @@ public class FeedActivity extends Activity {
         }
     }
 
-    class getFeedInfoTask extends AsyncTask<String, Void, JSONArray> {
+    class getFeedInfoTask extends AsyncTask<String, Void, Void> {
 
-        protected JSONArray doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
             try {
-                uris = new ArrayList<>();
                 AppEngine gae = new AppEngine();
                 JSONObject response = gae.getFeedInfo(params[0]);
                 try {
@@ -214,7 +221,8 @@ public class FeedActivity extends Activity {
                             JSONObject vid = videos.getJSONObject(i);
                             videoInfo.put(vid.getString("id"), vid);
                         }
-                        return videos;
+	                    infoReceived = true;
+                        return null;
                     } else {
                         return null;
                     }
@@ -247,19 +255,23 @@ public class FeedActivity extends Activity {
 
 		@Override
 		public boolean onSingleTapUp(MotionEvent event) {
+			Log.d(TAG, "uris = " + uris.toString());
 			if (tap < uris.size()-1) {
 				tap++;
                 currentVideo.stopPlayback();
+				commentButton.setVisibility(View.GONE);
+				ratingButton.setVisibility(View.GONE);
                 currentVideo.setVideoURI(uris.get(tap));
                 currentVideoId = uris.get(tap).getLastPathSegment().substring(0,13);
                 currentVideo.start();
-                currentVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    public void onCompletion(MediaPlayer mp) {
-                        currentVideo.start();
-                    }
-                });
 				return true;
 			}
+			return true;
+		}
+
+		@Override
+		public boolean onDoubleTap(MotionEvent event) { // or replay auto on?
+			currentVideo.start();
 			return true;
 		}
 	}

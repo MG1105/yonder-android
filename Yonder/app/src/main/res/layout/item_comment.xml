@@ -1,0 +1,20 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_weight=".80"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/textView_comment" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="0dp"
+        android:layout_weight=".20"
+        android:layout_height="wrap_content"
+        android:text="Flag"
+        android:id="@+id/button_flag" />
+</LinearLayout>

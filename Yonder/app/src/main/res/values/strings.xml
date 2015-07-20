@@ -8,4 +8,5 @@
 	<string name="title_activity_feed">FeedActivity</string>
     <string name="title_activity_captured_video">CapturedVideoActivity</string>
     <string name="title_activity_load_feed">Yonder</string>
+    <string name="title_activity_comment">CommentActivity</string>
 </resources>

@@ -52,6 +52,12 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
         final Uri vidUri = Uri.parse(uploadPath + "/captured.mp4");
         vidView.setVideoURI(vidUri);
+	    vidView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+		    @Override
+		    public void onPrepared(MediaPlayer mp) {
+			    mp.setLooping(true);
+		    }
+	    });
         uploadButton = (Button) findViewById(R.id.button_upload);
         uploadButton.setOnClickListener(uploadListener);
     }
@@ -60,11 +66,6 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     protected void onResume() {
         super.onResume();
         vidView.start();
-        vidView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            public void onCompletion(MediaPlayer mp) {
-                vidView.start();
-            }
-        });
     }
 
     View.OnClickListener uploadListener = new View.OnClickListener() {
@@ -72,6 +73,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         public void onClick(View v) {
             Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
             toast.show();
+	        vidView.pause();
             spinner.setVisibility(View.VISIBLE);
             uploadButton.setVisibility(View.GONE);
             UploadVideoTask upload = new UploadVideoTask();
@@ -95,6 +97,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                     Toast toast = Toast.makeText(myContext, "Video Uploaded!", Toast.LENGTH_LONG);
                     toast.show();
                     spinner.setVisibility(View.GONE);
+                    finish();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
