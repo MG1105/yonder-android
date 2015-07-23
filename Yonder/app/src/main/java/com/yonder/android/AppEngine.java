@@ -80,12 +80,17 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject getFeed(String userId, String longitude, String latitude) {
+    protected JSONObject getFeed(String userId, String longitude, String latitude, boolean myVideosOnly) {
 
         String query = "";
         try
         {
             query = "?user=" + userId + "&long=" + longitude + "&lat=" + latitude;
+            if (myVideosOnly) {
+                query += "&search=mine";
+            } else {
+                query += "&search=near";
+            }
             String urlString = "http://subtle-analyzer-90706.appspot.com/videos" + query;
 
             URL url = new URL(urlString);
@@ -123,13 +128,34 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject addComment(String userId, String videoId, String comment) {
+    protected JSONObject getMyFeedInfo(String user) {
+
+        String query = "";
+        try
+        {
+            query = "?user=" + user;
+            String urlString = "http://subtle-analyzer-90706.appspot.com/myvideos/info" + query;
+
+            URL url = new URL(urlString);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setUseCaches(false);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
+        } catch (IOException ioe)
+        {
+            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        }
+        return getResponse();
+    }
+
+    protected JSONObject addComment(String userId, String videoId, String commentId, String comment) {
         DataOutputStream dos;
         String query = "";
         try
         {
             String encodedComment = URLEncoder.encode(comment, "UTF-8");
-            query = "comment=" + encodedComment + "&user=" + userId;
+            query = "comment=" + encodedComment + "&user=" + userId + "&id=" + commentId ;
             Log.i(TAG, query);
 
             String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
@@ -216,6 +242,34 @@ public class AppEngine {
             Log.i(TAG, query);
 
             String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/rating";
+
+            URL url = new URL(urlString);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+            conn.setUseCaches(false);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;");
+            dos = new DataOutputStream( conn.getOutputStream() );
+            dos.writeBytes(query);
+            dos.flush();
+            dos.close();
+        } catch (IOException ioe) {
+            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        }
+        return getResponse();
+    }
+
+    protected JSONObject rateComment(String commentId, String rating) {
+        DataOutputStream dos;
+        String query = "";
+        try
+        {
+            query = "rating=" + rating;
+            Log.i(TAG, query);
+
+            String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/rating";
 
             URL url = new URL(urlString);
             conn = (HttpURLConnection) url.openConnection();

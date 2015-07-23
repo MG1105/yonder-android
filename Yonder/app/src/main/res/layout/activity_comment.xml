@@ -16,39 +16,41 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView_comments"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_height="match_parent">
 
-        <EditText
-            android:layout_width="0dp"
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight=".80"
-            android:layout_height="wrap_content"
-            android:id="@+id/add_comment_text"
-            android:textColor="#FFF"
-            android:text=""
-            android:hint="Add a comment" />
+            android:id="@+id/listView_comments"/>
 
-        <Button
-            android:id="@+id/add_comment_button"
-            android:layout_width="0dp"
+
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_weight=".20"
-            android:layout_height="wrap_content"
-            android:text="Send" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
+            <EditText
+                android:layout_width="0dp"
+                android:layout_weight=".80"
+                android:layout_height="wrap_content"
+                android:id="@+id/add_comment_text"
+                android:textColor="@color/black"
+                android:text=""
+                android:hint="Add a comment" />
+
+            <Button
+                android:id="@+id/add_comment_button"
+                android:layout_width="0dp"
+                android:layout_weight=".20"
+                android:layout_height="wrap_content"
+                android:text="Send" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

@@ -79,6 +79,9 @@ public class FeedActivity extends Activity {
 	protected void onResume() {
 		super.onResume(); // loop?
 		currentVideo.start();
+		if (CommentActivity.comments != null) {
+			commentButton.setText(CommentActivity.comments.size() + " Comments");
+		}
 	}
 
 	@Override
@@ -114,13 +117,14 @@ public class FeedActivity extends Activity {
         return uris;
 	}
 
-    protected void showVideoInfo() {
+    protected void showVideoInfo(int myRating) {
         if (infoReceived) {
 		    try {
-			    String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
+			    String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total"); // total wrong when old video left
 			    String rating = videoInfo.get(currentVideoId).getString("rating");
 			    commentButton.setText(commentsTotal + " Comments");
-			    ratingButton.setText(rating + " Likes");
+			    int latestRating = Integer.valueOf(rating) + myRating;
+			    ratingButton.setText(latestRating + " Likes");
 		    } catch (JSONException e) {
 			    e.printStackTrace();
 		    }
@@ -136,7 +140,7 @@ public class FeedActivity extends Activity {
         public void onClick(View v) {
             RateTask rate = new RateTask(); // spinner and disappear buttons
             rate.execute(currentVideoId, "1");
-            showVideoInfo();
+            showVideoInfo(1);
         }
     };
 
@@ -145,7 +149,7 @@ public class FeedActivity extends Activity {
         public void onClick(View v) {
             RateTask rate = new RateTask();
             rate.execute(currentVideoId, "-1");
-            showVideoInfo();
+            showVideoInfo(-1);
         }
     };
 

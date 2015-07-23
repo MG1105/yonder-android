@@ -5,58 +5,53 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class Comment {
-	private String content;
+public class Video {
 	private String id;
 	private String rating;
+	private String commentsTotal;
+	private String caption;
 
 	// Constructor to convert JSON object into a Java class instance
-	public Comment(JSONObject object){
+	public Video(JSONObject object){
 		try {
 			this.id = object.getString("id");
-			this.content = object.getString("content");
+			this.caption = object.getString("caption");
+			this.commentsTotal = object.getString("comments_total");
 			this.rating = object.getString("rating");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public Comment(String id, String comment){
-		this.id = id;
-		this.content = comment;
-		this.rating = "0";
-	}
-
 	public String getId() {
 		return id;
-	}
-
-	public String getContent() {
-		return content;
 	}
 
 	public String getRating() {
 		return rating;
 	}
 
-	public String updateRating(int add) {
-		int rating = Integer.valueOf(this.rating) + add;
-		this.rating = "" + rating;
-		return this.rating;
+	public String getCommentsTotal() {
+		return commentsTotal;
+	}
+
+	public String getCaption() {
+		return caption;
 	}
 
 	// Factory method to convert an array of JSON objects into a list of objects
 	// User.fromJson(jsonArray);
-	public static ArrayList<Comment> fromJson(JSONArray jsonObjects) {
-		ArrayList<Comment> users = new ArrayList<Comment>();
+	public static ArrayList<Video> fromJson(JSONArray jsonObjects) {
+		ArrayList<Video> videos = new ArrayList<Video>();
 		for (int i = 0; i < jsonObjects.length(); i++) {
 			try {
-				users.add(new Comment(jsonObjects.getJSONObject(i)));
+				videos.add(new Video(jsonObjects.getJSONObject(i)));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
-		return users;
+		return videos;
 	}
 }
