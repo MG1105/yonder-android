@@ -30,7 +30,7 @@ public class CameraPreviewActivity extends Activity {
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private MediaRecorder mediaRecorder;
-	private Button capture, switchCamera;
+	private Button capture, switchCamera, feedButton;
 	private Activity mActivity;
 	private RelativeLayout cameraPreview;
 	private boolean cameraFront = false;
@@ -90,6 +90,9 @@ public class CameraPreviewActivity extends Activity {
 
 		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
 		switchCamera.setOnClickListener(switchCameraListener);
+
+		feedButton = (Button) findViewById(R.id.button_feed);
+		feedButton.setOnClickListener(feedButtonListener);
 	}
 
 	OnClickListener switchCameraListener = new OnClickListener() {
@@ -109,6 +112,14 @@ public class CameraPreviewActivity extends Activity {
 					toast.show();
 				}
 			}
+		}
+	};
+
+	OnClickListener feedButtonListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent(mActivity, LoadFeedActivity.class);
+			startActivity(intent);
 		}
 	};
 
@@ -198,11 +209,10 @@ public class CameraPreviewActivity extends Activity {
 		public void onClick(View v) {
 			if (recording) {
                 stopRecording();
-                capture.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_black_24dp, 0, 0, 0);
-                capture.setText("Record");
+                capture.setBackgroundResource(R.drawable.ic_record);
                 if (timer != null) {
                     timer.cancel();
-                    Button counter = (Button)findViewById(R.id.recording_counter);
+                    TextView counter = (TextView)findViewById(R.id.recording_counter);
                     counter.setText("10");
                 }
 			} else {
@@ -212,11 +222,10 @@ public class CameraPreviewActivity extends Activity {
 				}
 
                 try {
-                    mediaRecorder.start();
-                    capture.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop_black_24dp, 0, 0, 0);
-                    capture.setText("Stop");
-                    timer = new CountDownTimer(10000, 1000) {
-                        Button counter = (Button)findViewById(R.id.recording_counter);
+	                capture.setBackgroundResource(R.drawable.ic_stop);
+	                mediaRecorder.start();
+	                timer = new CountDownTimer(10000, 1000) {
+                        TextView counter = (TextView)findViewById(R.id.recording_counter);
                         public void onTick(long millisUntilFinished) {
                             counter.setText(""+millisUntilFinished / 1000);
                         }
@@ -224,8 +233,7 @@ public class CameraPreviewActivity extends Activity {
                         public void onFinish() {
                             if (recording) {
                                 stopRecording();
-                                capture.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_black_24dp, 0, 0, 0);
-                                capture.setText("Record");
+	                            capture.setBackgroundResource(R.drawable.ic_record);
                             }
                             counter.setText("10");
                         }

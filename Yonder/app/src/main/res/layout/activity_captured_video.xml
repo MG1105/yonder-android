@@ -13,11 +13,12 @@
 
     <Button
         android:id="@+id/button_upload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        android:text="Post" />
+        android:scaleType="fitXY"
+        android:background="@drawable/ic_send" />
 
     <EditText
         android:layout_width="match_parent"
