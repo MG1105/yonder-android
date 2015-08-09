@@ -122,7 +122,12 @@ public class FeedActivity extends Activity {
 		    try {
 			    String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total"); // total wrong when old video left
 			    String rating = videoInfo.get(currentVideoId).getString("rating");
-			    commentButton.setText(commentsTotal + " Comments");
+			    if (commentsTotal.equals("0")) {
+                    commentButton.setText("Add Comment");
+                } else {
+                    commentButton.setText(commentsTotal + " Comments");
+                }
+
 			    int latestRating = Integer.valueOf(rating) + myRating;
 			    ratingButton.setText(latestRating + " Likes");
 		    } catch (JSONException e) {
@@ -140,6 +145,8 @@ public class FeedActivity extends Activity {
         public void onClick(View v) {
             RateTask rate = new RateTask(); // spinner and disappear buttons
             rate.execute(currentVideoId, "1");
+            likeButton.setVisibility(View.GONE);
+            dislikeButton.setVisibility(View.GONE);
             showVideoInfo(1);
         }
     };
@@ -149,6 +156,8 @@ public class FeedActivity extends Activity {
         public void onClick(View v) {
             RateTask rate = new RateTask();
             rate.execute(currentVideoId, "-1");
+            likeButton.setVisibility(View.GONE);
+            dislikeButton.setVisibility(View.GONE);
             showVideoInfo(-1);
         }
     };
@@ -158,6 +167,7 @@ public class FeedActivity extends Activity {
         public void onClick(View v) {
             ReportTask report = new ReportTask();
             report.execute(currentVideoId);
+            flagButton.setVisibility(View.GONE);
         }
     };
 
@@ -240,6 +250,24 @@ public class FeedActivity extends Activity {
         }
     }
 
+    public void playNextVideo() {
+        if (tap < uris.size()-1) {
+            tap++;
+            currentVideo.stopPlayback();
+            commentButton.setVisibility(View.GONE);
+            ratingButton.setVisibility(View.GONE);
+            likeButton.setVisibility(View.VISIBLE);
+            dislikeButton.setVisibility(View.VISIBLE);
+            flagButton.setVisibility(View.VISIBLE);
+            currentVideo.setVideoURI(uris.get(tap));
+            currentVideoId = uris.get(tap).getLastPathSegment().substring(0,13);
+            currentVideo.start();
+        } else {
+            finish();
+        }
+    }
+
+
 	// Handle Touch
 
 	@Override
@@ -260,17 +288,8 @@ public class FeedActivity extends Activity {
 		@Override
 		public boolean onSingleTapUp(MotionEvent event) {
 			Log.d(TAG, "uris = " + uris.toString());
-			if (tap < uris.size()-1) {
-				tap++;
-                currentVideo.stopPlayback();
-				commentButton.setVisibility(View.GONE);
-				ratingButton.setVisibility(View.GONE);
-                currentVideo.setVideoURI(uris.get(tap));
-                currentVideoId = uris.get(tap).getLastPathSegment().substring(0,13);
-                currentVideo.start();
-				return true;
-			}
-			return true;
+            playNextVideo();
+            return true;
 		}
 
 		@Override

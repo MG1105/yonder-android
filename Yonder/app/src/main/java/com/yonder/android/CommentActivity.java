@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class CommentActivity extends ActionBarActivity {
+public class CommentActivity extends Activity {
 
 	public static ArrayList<Comment> comments;
 	private String videoId;
@@ -66,6 +66,8 @@ public class CommentActivity extends ActionBarActivity {
 
 	class CommentsAdapter extends ArrayAdapter<Comment> {
 		Comment comment;
+		TextView rating;
+		Button likeButton, dislikeButton, flagButton;
 
 		public CommentsAdapter(Context context) {
 			super(context, android.R.layout.simple_list_item_1, comments);
@@ -82,33 +84,40 @@ public class CommentActivity extends ActionBarActivity {
 
 			// Lookup view for data population
 			TextView content = (TextView) convertView.findViewById(R.id.textView_comment);
-			TextView rating = (TextView) convertView.findViewById(R.id.textView_comment_item_rating);
-			Button flagButton = (Button) convertView.findViewById(R.id.button_flag);
-			Button likeButton = (Button) convertView.findViewById(R.id.button_comment_item_like);
-			Button dislikeButton = (Button) convertView.findViewById(R.id.button_comment_item_dislike);
+			rating = (TextView) convertView.findViewById(R.id.textView_comment_item_rating);
+			flagButton = (Button) convertView.findViewById(R.id.button_flag);
+			likeButton = (Button) convertView.findViewById(R.id.button_comment_item_like);
+			dislikeButton = (Button) convertView.findViewById(R.id.button_comment_item_dislike);
 
 			// Populate the data into the template view using the data object
 			content.setText(comment.getContent());
-			rating.setText(comment.getRating());
+			rating.setText(comment.getRating() + " LIKES");
 
 			flagButton.setOnClickListener(new View.OnClickListener() {
 				String id = comment.getId();
-
+				Button myFlag = flagButton;
 				@Override
 				public void onClick(View v) {
 					ReportTask report = new ReportTask();
 					report.execute(id);
+					myFlag.setVisibility(View.GONE);
 				}
 			});
 
 			likeButton.setOnClickListener(new View.OnClickListener() {
 				String id = comment.getId();
 				int pos = position;
+				TextView myRating = rating;
+				Button myLike = likeButton;
+				Button myDislike = dislikeButton;
 				@Override
 				public void onClick(View v) {
 					RateTask rateComment = new RateTask();
 					rateComment.execute(id, "1");
 					getItem(pos).updateRating(1);
+					myRating.setVisibility(View.VISIBLE);
+					myLike.setVisibility(View.GONE);
+					myDislike.setVisibility(View.GONE);
 					adapter.notifyDataSetChanged();
 				}
 			});
@@ -116,11 +125,17 @@ public class CommentActivity extends ActionBarActivity {
 			dislikeButton.setOnClickListener(new View.OnClickListener() {
 				String id = comment.getId();
 				int pos = position;
+				TextView myRating = rating;
+				Button myLike = likeButton;
+				Button myDislike = dislikeButton;
 				@Override
 				public void onClick(View v) {
 					RateTask rateComment = new RateTask();
 					rateComment.execute(id, "-1");
 					getItem(pos).updateRating(-1);
+					myRating.setVisibility(View.VISIBLE);
+					myLike.setVisibility(View.GONE);
+					myDislike.setVisibility(View.GONE);
 					adapter.notifyDataSetChanged();
 				}
 			});
@@ -248,25 +263,4 @@ public class CommentActivity extends ActionBarActivity {
 
 
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_comment, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
-	}
 }

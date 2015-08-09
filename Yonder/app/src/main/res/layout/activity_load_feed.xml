@@ -10,6 +10,22 @@
         android:layout_weight=".50"
         tools:context="com.yonder.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yonder Player"
+            android:id="@+id/textView_player"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:layout_alignParentTop="true"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/textView_player"
+            android:background="@android:color/darker_gray"/>
+
         <ImageView
             android:id="@+id/loadFeedImageView"
             android:layout_width="100dp"
@@ -30,7 +46,8 @@
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="My Yonder Only"
+            android:paddingBottom="10dp"
+            android:text="Play My Yonders Only"
             android:id="@+id/switch_my_videos"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
@@ -45,6 +62,23 @@
         android:layout_height="0dp"
         android:layout_weight=".50">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dashboard"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:id="@+id/textView_dashboard"
+            android:layout_alignParentTop="true"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/textView_dashboard"
+            android:id="@+id/view_dashboard"
+            android:background="@android:color/darker_gray"/>
+
         <ProgressBar
             android:id="@+id/progress_videos"
             style="?android:attr/progressBarStyleLarge"
@@ -56,7 +90,9 @@
         <ListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="10dp"
+            android:layout_below="@+id/view_dashboard"
             android:id="@+id/listView_my_videos"/>
 
     </RelativeLayout>

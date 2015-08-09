@@ -12,42 +12,52 @@
             android:layout_width="0dp"
             android:layout_weight=".80"
             android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:paddingBottom="5dp"
             android:text="Large Text"
             android:id="@+id/textView_comment" />
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="0dp"
-            android:layout_weight=".20"
-            android:layout_height="wrap_content"
-            android:text="Like"
-            android:id="@+id/button_comment_item_like" />
-
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="0dp"
-            android:layout_weight=".20"
-            android:layout_height="wrap_content"
-            android:text="Dislike"
-            android:id="@+id/button_comment_item_dislike" />
-
     </LinearLayout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/ic_like"
+            android:id="@+id/button_comment_item_like" />
+
+        <Space
+            android:id="@+id/space_like"
+            android:layout_toRightOf="@+id/button_comment_item_like"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_toRightOf="@+id/space_like"
+            android:background="@drawable/ic_dislike"
+            android:id="@+id/button_comment_item_dislike" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:textSize="20dp"
+            android:visibility="gone"
             android:id="@+id/textView_comment_item_rating" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Flag"
+            android:layout_alignParentRight="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_flag"
             android:id="@+id/button_flag" />
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>

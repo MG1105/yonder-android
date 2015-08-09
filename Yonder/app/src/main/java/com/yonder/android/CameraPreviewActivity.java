@@ -45,7 +45,7 @@ public class CameraPreviewActivity extends Activity {
 		setContentView(R.layout.activity_camera_preview);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		mActivity = this;
-		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
+//		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 		initialize();
 	}
 
@@ -301,29 +301,29 @@ public class CameraPreviewActivity extends Activity {
 
 	// Handle Touch
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event){
-		this.mDetector.onTouchEvent(event);
-		return super.onTouchEvent(event);
-	}
-
-	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
-		private static final String DEBUG_TAG = "Gestures";
-
-		@Override
-		public boolean onDown(MotionEvent event) {
-			Log.d(DEBUG_TAG, "onDown: " + event.toString());
-			return true;
-		}
-
-		@Override
-		public boolean onFling(MotionEvent event1, MotionEvent event2,
-							   float velocityX, float velocityY) {
-			Log.d(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
-			Intent intent = new Intent(mActivity, LoadFeedActivity.class);
-            startActivity(intent);
-			return true;
-		}
-	}
+//	@Override
+//	public boolean onTouchEvent(MotionEvent event){
+//		this.mDetector.onTouchEvent(event);
+//		return super.onTouchEvent(event);
+//	}
+//
+//	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+//		private static final String DEBUG_TAG = "Gestures";
+//
+//		@Override
+//		public boolean onDown(MotionEvent event) {
+//			Log.d(DEBUG_TAG, "onDown: " + event.toString());
+//			return true;
+//		}
+//
+//		@Override
+//		public boolean onFling(MotionEvent event1, MotionEvent event2,
+//							   float velocityX, float velocityY) {
+//			Log.d(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+//			Intent intent = new Intent(mActivity, LoadFeedActivity.class);
+//            startActivity(intent);
+//			return true;
+//		}
+//	}
 
 }

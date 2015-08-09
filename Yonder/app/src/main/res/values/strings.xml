@@ -1,12 +1,5 @@
 <resources>
     <string name="app_name">Yonder</string>
-
-	<string name="title_activity_capture">Capture</string>
-
-	<string name="hello_world">Hello world!</string>
-	<string name="action_settings">Settings</string>
-	<string name="title_activity_feed">FeedActivity</string>
-    <string name="title_activity_captured_video">CapturedVideoActivity</string>
     <string name="title_activity_load_feed">Yonder</string>
-    <string name="title_activity_comment">CommentActivity</string>
+    <string name="title_activity_comment">Comments</string>
 </resources>

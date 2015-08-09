@@ -12,10 +12,10 @@
 		android:layout_height="fill_parent" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Flag"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="fitXY"
+        android:background="@drawable/ic_flag"
         android:id="@+id/flag_button"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
@@ -23,29 +23,32 @@
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Like"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:scaleType="fitXY"
+        android:background="@drawable/ic_like"
         android:id="@+id/like_button"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
+        android:layout_alignParentLeft="true"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Dislike"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:scaleType="fitXY"
+        android:background="@drawable/ic_dislike"
         android:id="@+id/dislike_button"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/flag_button"
-        android:layout_toStartOf="@+id/flag_button"/>
+        android:layout_alignParentRight="true"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0"
+        android:layout_width="230dp"
+        android:layout_height="60dp"
+        android:text="0 Comments"
+        android:textSize="25dp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/transparent"
         android:id="@+id/comment_button"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
@@ -53,9 +56,12 @@
 
     <Button
         style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:background="@android:color/transparent"
+        android:textSize="25dp"
+        android:textColor="@android:color/white"
+        android:text="0 Likes"
         android:id="@+id/rating"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/comment_button"
