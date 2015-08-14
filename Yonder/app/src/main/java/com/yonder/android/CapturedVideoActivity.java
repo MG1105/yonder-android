@@ -1,26 +1,22 @@
 package com.yonder.android;
 
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.Context;
-import android.content.IntentFilter;
-import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.VideoView;
+
 import com.netcompss.ffmpeg4android.GeneralUtils;
 import com.netcompss.loader.LoadJNI;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,10 +31,10 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     private ProgressBar spinner;
     String videoId;
     String uploadPath;
-    String caption = "default caption";
-    String userId = "12345677";
-    String longitude = "-121.886329";
-    String latitude = "37.338208";
+    String caption;
+    String userId;
+    String longitude;
+    String latitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,19 +61,32 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     @Override
     protected void onResume() {
         super.onResume();
+        Alert.showVideoRule(this);
         vidView.start();
     }
 
     View.OnClickListener uploadListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
-            toast.show();
-	        vidView.pause();
-            spinner.setVisibility(View.VISIBLE);
-            uploadButton.setVisibility(View.GONE);
-            UploadVideoTask upload = new UploadVideoTask();
-            upload.execute();
+            EditText captionText = (EditText) findViewById(R.id.editText_caption);
+            int extra = captionText.getText().length()- 45;
+            if (captionText.getText().length() == 0) {
+                Toast toast = Toast.makeText(myContext, "Please add a caption first!", Toast.LENGTH_LONG);
+                toast.show();
+            } else if (extra > 0) {
+                Toast toast = Toast.makeText(myContext, "Your caption has " + extra + " too many characters!", Toast.LENGTH_LONG);
+                toast.show();
+            } else {
+                Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
+                toast.show();
+                vidView.pause();
+                spinner.setVisibility(View.VISIBLE);
+                uploadButton.setVisibility(View.GONE);
+                captionText.setKeyListener(null);
+                captionText.setEnabled(false);
+                UploadVideoTask upload = new UploadVideoTask();
+                upload.execute();
+            }
         }
     };
 
@@ -86,6 +95,14 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
 
         protected JSONObject doInBackground(Void... params) {
             compressVideo();
+            ArrayList<String> location = User.getLocation(myContext);
+            if (location != null) {
+                longitude = location.get(0);
+                latitude = location.get(1);
+            }
+            userId = User.getId(myContext);
+            EditText captionText = (EditText) findViewById(R.id.editText_caption);
+            caption = captionText.getText().toString();
             AppEngine gae = new AppEngine();
             JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, longitude, latitude);
             return response;
@@ -93,7 +110,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
 
         protected void onPostExecute(JSONObject response) {
             try {
-                if (response.getString("success").equals("1")) {
+                if (response.getString("success").equals("1")) { // npe
                     Toast toast = Toast.makeText(myContext, "Video Uploaded!", Toast.LENGTH_LONG);
                     toast.show();
                     spinner.setVisibility(View.GONE);
@@ -125,14 +142,5 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             Log.e(TAG, "vk run exception.", e);
         }
     }
-
-    private void getLocation() {
-
-    }
-
-    private void getUserId() {
-
-    }
-
 
 }

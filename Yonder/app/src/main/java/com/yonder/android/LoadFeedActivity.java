@@ -1,42 +1,39 @@
 package com.yonder.android;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.app.DownloadManager.Request;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.view.View.OnClickListener;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import android.app.DownloadManager;
-import android.app.DownloadManager.Request;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.IntentFilter;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class LoadFeedActivity extends Activity {
 
@@ -51,8 +48,12 @@ public class LoadFeedActivity extends Activity {
     ArrayList<Uri> uris = new ArrayList<>();
     int remaining;
     boolean myVideosOnly;
+    String userId, longitude, latitude;
+    Timer timer;
+    String listIds;
 
     private DownloadManager downloadManager;
+    static LinkedHashMap<String, JSONObject> videoInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +65,14 @@ public class LoadFeedActivity extends Activity {
         rotation = AnimationUtils.loadAnimation(this, R.anim.rotate);
         loadFeedImageView = (ImageView) findViewById(R.id.loadFeedImageView);
         loadFeedImageView.setOnClickListener(loadListener);
+        userId = User.getId(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         GetMyFeedInfoTask getMyFeedInfo = new GetMyFeedInfoTask();
-        getMyFeedInfo.execute("12345677");
+        getMyFeedInfo.execute(userId);
     }
 
     OnClickListener loadListener = new OnClickListener() {
@@ -84,6 +86,21 @@ public class LoadFeedActivity extends Activity {
                 loadFeedTextView.setText("Looking for your videos...");
             } else {
                 loadFeedTextView.setText("Looking for videos around you...");
+                SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
+                        "com.yonder.android", Context.MODE_PRIVATE);
+                long lastRequest = sharedPreferences.getLong("last_request", 0);
+                long now = System.currentTimeMillis();
+                if (lastRequest != 0 && !User.admin) {
+                    if ((now - lastRequest) / 60000 < 10) {
+                        timer = new Timer();
+                        timer.schedule(new StopAnimationTask(), 3000);
+                        return;
+                    } else {
+                        sharedPreferences.edit().putLong("last_request", now).apply();
+                    }
+                } else {
+                    sharedPreferences.edit().putLong("last_request", now).apply();
+                }
             }
             downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
             GetFeedTask getFeed = new GetFeedTask();
@@ -96,18 +113,28 @@ public class LoadFeedActivity extends Activity {
 
         protected JSONArray doInBackground(Void... params) {
             try {
+                ArrayList<String> location = User.getLocation(mActivity);
+                if (location != null) {
+                    longitude = location.get(0);
+                    latitude = location.get(1);
+                }
                 uris = new ArrayList<>();
                 AppEngine gae = new AppEngine();
-                String userId = "12345677";
-                String longitude = "-121.886329";
-                String latitude = "37.338208";
                 JSONObject response = gae.getFeed(userId, longitude, latitude, myVideosOnly);
                 try {
                     if (response.getString("success").equals("1")) {
                         JSONArray videos = response.getJSONArray("videos");
-
+                        listIds = "";
                         for (int i = 0; i < videos.length(); i++) { // background?
                             String id = videos.getString(i);
+                            if (i < videos.length() - 1) {
+                                listIds += id + "xxx";
+                            } else {
+                                listIds += id;
+                            }
+                            if (isLoaded(id)) {
+                                continue;
+                            }
                             String url = "http://storage.googleapis.com/yander/" + id + ".mp4";
                             uris.add(Uri.parse(url));
                         }
@@ -135,20 +162,24 @@ public class LoadFeedActivity extends Activity {
                         downloadManager.enqueue(request);
                     }
                     loadFeedTextView.setText("Loading...");
-                    registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                    if (remaining == 0) {
+                        getFeedInfoTask infoTask = new getFeedInfoTask();
+                        infoTask.execute(listIds);
+                    } else {
+                        registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                    }
                 } else {
                     if (myVideosOnly) {
-                        loadFeedTextView.setText("We did not find any video you uploaded or commented on " +
+                        loadFeedTextView.setText("We did not find any Yonder you uploaded or commented on " +
                                 "in the past 24 hours");
+                        loadFeedImageView.clearAnimation();
                     } else {
-                        loadFeedTextView.setText("No new videos found. Please try again later.");
+                        timer = new Timer();
+                        timer.schedule(new StopAnimationTask(), 3000);
                     }
-
-
-                    loadFeedImageView.clearAnimation();
                 }
             } else {
-                loadFeedTextView.setText("Could not retrieve videos. Please try again later.");
+                loadFeedTextView.setText("Could not retrieve new Yonders. Please try again later.");
                 loadFeedImageView.clearAnimation();
             }
 
@@ -160,14 +191,27 @@ public class LoadFeedActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             remaining--;
             loadFeedTextView.setText("Remaining = " + remaining);
+            Video.obfuscate(mActivity, true);
             if (remaining == 0) {
-                Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
-                startActivity(intentFeedStart);
-                loadFeedImageView.clearAnimation();
-                loadFeedTextView.setText("Tap to load Yonders near you");
+                getFeedInfoTask infoTask = new getFeedInfoTask();
+                infoTask.execute(listIds);
             }
         }
     };
+
+    class StopAnimationTask extends TimerTask {
+        public void run() {
+            // When you need to modify a UI element, do so on the UI thread.
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    loadFeedTextView.setText("No new Yonders found. Please try again later.");
+                    loadFeedImageView.clearAnimation();
+                }
+            });
+            timer.cancel(); //Terminate the timer thread
+        }
+    }
 
     class GetMyFeedInfoTask extends AsyncTask<String, Void, Void> {
 
@@ -194,18 +238,19 @@ public class LoadFeedActivity extends Activity {
 
         protected void onPostExecute(Void params) {
             if (videos != null) {
-                // TODO: check exception?
-                Log.d("", videos.toString());
-                // Create the adapter to convert the array to views
-                adapter = new VideosAdapter(mActivity);
-                // Attach the adapter to a ListView
-                ListView listView = (ListView) findViewById(R.id.listView_my_videos);
-                listView.setAdapter(adapter);
                 spinner = (ProgressBar)findViewById(R.id.progress_videos);
                 spinner.setVisibility(View.GONE);
-                if (videos.size() < 0) {
-
-
+                if (videos.size() > 0) {
+                    // TODO: check exception?
+                    Log.d("", videos.toString());
+                    // Create the adapter to convert the array to views
+                    adapter = new VideosAdapter(mActivity);
+                    // Attach the adapter to a ListView
+                    ListView listView = (ListView) findViewById(R.id.listView_my_videos);
+                    listView.setAdapter(adapter);
+                } else {
+                    TextView noVideos = (TextView)findViewById(R.id.textView_no_videos);
+                    noVideos.setVisibility(View.VISIBLE);
                 }
             } else {
 
@@ -231,13 +276,23 @@ public class LoadFeedActivity extends Activity {
             }
 
             // Lookup view for data population
-            TextView date = (TextView) convertView.findViewById(R.id.textView_date);
+//            TextView date = (TextView) convertView.findViewById(R.id.textView_date);
             TextView caption = (TextView) convertView.findViewById(R.id.textView_caption);
             TextView rating = (TextView) convertView.findViewById(R.id.textView_rating);
             TextView comments_total = (TextView) convertView.findViewById(R.id.textView_comments_total);
 
+//            long id = Long.parseLong(video.getId());
+//            if (id < 10000) {
+//                // admin video
+//            }
+//            Log.d("videoid", id/1000 + "");
+//            Date ts = new Date(id);
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z"); // the format of your date
+//            sdf.setTimeZone(TimeZone.getTimeZone("PDT")); // give a timezone reference for formating (see comment at the bottom
+//            String formattedDate = sdf.format(ts);
+
             // Populate the data into the template view using the data object
-            date.setText("Date: " + video.getId());
+//            date.setText("Date: " + formattedDate);
             caption.setText("Caption: " + video.getCaption());
             rating.setText(video.getRating() + " Likes");
             comments_total.setText(video.getCommentsTotal() + " Comments");
@@ -249,6 +304,41 @@ public class LoadFeedActivity extends Activity {
 
     }
 
+    class getFeedInfoTask extends AsyncTask<String, Void, Void> {
+
+        protected Void doInBackground(String... params) {
+            try {
+                AppEngine gae = new AppEngine();
+                JSONObject response = gae.getFeedInfo(params[0]);
+                try {
+                    if (response.getString("success").equals("1")) {
+                        JSONArray videos = response.getJSONArray("videos");
+                        videoInfo = new LinkedHashMap<String, JSONObject>();
+                        for (int i = 0; i < videos.length(); i++) { // background?
+                            JSONObject vid = videos.getJSONObject(i);
+                            videoInfo.put(vid.getString("id"), vid);
+                        }
+                        return null;
+                    } else {
+                        return null;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        protected void onPostExecute(Void response) {
+            Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
+            startActivity(intentFeedStart);
+            loadFeedImageView.clearAnimation();
+            loadFeedTextView.setText("Tap to load Yonders near you");
+        }
+    }
+
     private void setRequests() {
         requests = new ArrayList<>();
         for (Uri uri : uris) {
@@ -258,6 +348,11 @@ public class LoadFeedActivity extends Activity {
             request.setDestinationInExternalFilesDir(mActivity, "loaded_videos", uri.getLastPathSegment());
             requests.add(request);
         }
+    }
+
+    private boolean isLoaded (String id) {
+        boolean loaded = new File(getApplicationContext().getExternalFilesDir("loaded_videos").getAbsolutePath()+"/"+id).isFile();
+        return loaded;
     }
 
     private void getLocation() {

@@ -11,6 +11,15 @@
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="25dp"
+        android:textColor="@android:color/white"
+        android:id="@+id/textView_caption"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/flag_button"/>
+
     <Button
         android:layout_width="40dp"
         android:layout_height="40dp"

@@ -1,12 +1,13 @@
 package com.yonder.android;
 
-import java.io.IOException;
-
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.io.IOException;
+import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 	private SurfaceHolder mHolder;
@@ -26,9 +27,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 				mCamera.setPreviewDisplay(holder);
 				mCamera.setDisplayOrientation(90);
 				mCamera.startPreview();
+				setAutoFocus();
 			}
 		} catch (IOException e) {
 			Log.d(VIEW_LOG_TAG, "Error setting camera preview: " + e.getMessage());
+		}
+	}
+
+	public void setAutoFocus() {
+		Camera.Parameters params = mCamera.getParameters();
+		List<String> modes = params.getSupportedFocusModes();
+		for (String m : modes) {
+			if (m.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+				params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+				mCamera.setParameters(params);
+				break;
+			}
 		}
 	}
 
@@ -51,6 +65,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			mCamera.setPreviewDisplay(mHolder);
 		 	mCamera.setDisplayOrientation(90);
 			mCamera.startPreview();
+			setAutoFocus();
 		} catch (Exception e) {
 			Log.d(VIEW_LOG_TAG, "Error starting camera preview: " + e.getMessage());
 		}

@@ -2,7 +2,6 @@ package com.yonder.android;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,38 +12,34 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Set;
 
 public class FeedActivity extends Activity {
+    // Crash? Cleanup video folders
     private final String TAG = "Log." + this.getClass().getSimpleName();
 	private int tap = 0;
 	private GestureDetectorCompat mDetector;
     VideoView currentVideo;
     String currentVideoId;
-    String listIds;
     ArrayList<Uri> uris;
-    File listFile[];
     Button flagButton;
     Button likeButton;
     Button dislikeButton;
     Button commentButton;
     Button ratingButton;
+    TextView caption;
     private Activity myContext;
-    Map<String, JSONObject> videoInfo;
-	boolean infoReceived;
+    LinkedHashMap<String, JSONObject> videoInfo;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +48,7 @@ public class FeedActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         myContext = this;
+        videoInfo = LoadFeedActivity.videoInfo;
 	    uris = getContent();
 
         flagButton = (Button) findViewById(R.id.flag_button);
@@ -60,84 +56,76 @@ public class FeedActivity extends Activity {
         dislikeButton = (Button) findViewById(R.id.dislike_button);
         commentButton = (Button) findViewById(R.id.comment_button);
         ratingButton = (Button) findViewById(R.id.rating);
+        caption = (TextView) findViewById(R.id.textView_caption);
 
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
         flagButton.setOnClickListener(flagListener);
 	    commentButton.setOnClickListener(commentListener);
 
-        commentButton.setVisibility(View.GONE);
-        ratingButton.setVisibility(View.GONE);
-
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         currentVideo = (VideoView) findViewById(R.id.currentVideo);
 	    currentVideo.setVideoURI(uris.get(0));
-        currentVideoId = uris.get(0).getLastPathSegment().substring(0,13);
+        currentVideoId = uris.get(0).getLastPathSegment().replace(".mp4", "");
+
+        if (User.admin) {
+            likeButton.setVisibility(View.GONE);
+            dislikeButton.setVisibility(View.GONE);
+            showVideoInfo(0);
+        } else {
+            commentButton.setVisibility(View.GONE);
+            ratingButton.setVisibility(View.GONE);
+        }
     }
 
 	@Override
 	protected void onResume() {
-		super.onResume(); // loop?
+        Video.obfuscate(myContext, false);
+        super.onResume(); // loop?
 		currentVideo.start();
+        showCaption();
 		if (CommentActivity.comments != null) {
 			commentButton.setText(CommentActivity.comments.size() + " Comments");
 		}
 	}
 
 	@Override
-	protected void onDestroy() { // Maybe let them resume viewing?
-		super.onDestroy(); // Not called all the time
-		if (listFile != null) {
-			for (int i = 0; i < listFile.length; i++) {
-				listFile[i].delete();
-			}
-		}
-		finish();
+	protected void onPause() {
+        Video.obfuscate(myContext, true);
+        super.onPause();
 	}
 
 	public ArrayList<Uri> getContent() {
 		uris = new ArrayList<>();
-        File videosFolder  = this.getExternalFilesDir("loaded_videos");
-        listFile = videosFolder.listFiles();
-        listIds = "";
-        if (listFile != null) {
-            for (int i = 0; i < listFile.length; i++) {
-                uris.add(Uri.parse(listFile[i].getAbsolutePath()));
-                if (i < listFile.length - 1) {
-                    listIds = listIds + uris.get(i).getLastPathSegment().substring(0,13) + "xxx";
-                } else {
-                    listIds = listIds + uris.get(i).getLastPathSegment().substring(0,13);
-                }
-
-            }
+        String videosPath = this.getExternalFilesDir("loaded_videos").getAbsolutePath();
+        Set keys = videoInfo.keySet();
+        Iterator itr = keys.iterator();
+        for (int i = 0; i < keys.size(); i++) {
+            uris.add(Uri.parse(videosPath + "/"+itr.next()+".mp4"));
         }
         Log.d(TAG, "uris = " + uris.toString());
-        getFeedInfoTask infoTask = new getFeedInfoTask();
-        infoTask.execute(listIds);
+
         return uris;
 	}
 
     protected void showVideoInfo(int myRating) {
-        if (infoReceived) {
-		    try {
-			    String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total"); // total wrong when old video left
-			    String rating = videoInfo.get(currentVideoId).getString("rating");
-			    if (commentsTotal.equals("0")) {
-                    commentButton.setText("Add Comment");
-                } else {
-                    commentButton.setText(commentsTotal + " Comments");
-                }
+        try {
+            String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total"); // total wrong when old video left
+            String rating = videoInfo.get(currentVideoId).getString("rating");
+            if (commentsTotal.equals("0")) {
+                commentButton.setText("Add Comment");
+            } else {
+                commentButton.setText(commentsTotal + " Comments");
+            }
 
-			    int latestRating = Integer.valueOf(rating) + myRating;
-			    ratingButton.setText(latestRating + " Likes");
-		    } catch (JSONException e) {
-			    e.printStackTrace();
-		    }
-		    commentButton.setVisibility(View.VISIBLE);
-		    ratingButton.setVisibility(View.VISIBLE);
-	    } else {
-	        // try again, too slow or failed to get it?
+            int latestRating = Integer.valueOf(rating) + myRating;
+            ratingButton.setText(latestRating + " Likes");
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        commentButton.setVisibility(View.VISIBLE);
+        ratingButton.setVisibility(View.VISIBLE);
+	    
     }
 
     View.OnClickListener likeListener = new View.OnClickListener() {
@@ -166,7 +154,7 @@ public class FeedActivity extends Activity {
         @Override
         public void onClick(View v) {
             ReportTask report = new ReportTask();
-            report.execute(currentVideoId);
+            report.execute(currentVideoId, User.getId(myContext));
             flagButton.setVisibility(View.GONE);
         }
     };
@@ -191,7 +179,7 @@ public class FeedActivity extends Activity {
 
         protected void onPostExecute(JSONObject response) {
             try {
-                if (response.getString("success").equals("1")) {
+                if (response.getString("success").equals("1")) { // NPE
                     Toast toast = Toast.makeText(myContext, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
                     toast.show();
                 }
@@ -205,7 +193,7 @@ public class FeedActivity extends Activity {
 
         protected JSONObject doInBackground(String... params) {
             AppEngine gae = new AppEngine();
-            JSONObject response = gae.reportVideo(params[0]);
+            JSONObject response = gae.reportVideo(params[0],params[1]);
             return response;
         }
 
@@ -221,53 +209,39 @@ public class FeedActivity extends Activity {
         }
     }
 
-    class getFeedInfoTask extends AsyncTask<String, Void, Void> {
-
-        protected Void doInBackground(String... params) {
-            try {
-                AppEngine gae = new AppEngine();
-                JSONObject response = gae.getFeedInfo(params[0]);
-                try {
-                    if (response.getString("success").equals("1")) {
-                        JSONArray videos = response.getJSONArray("videos");
-                        videoInfo = new HashMap<String, JSONObject>();
-                        for (int i = 0; i < videos.length(); i++) { // background?
-                            JSONObject vid = videos.getJSONObject(i);
-                            videoInfo.put(vid.getString("id"), vid);
-                        }
-	                    infoReceived = true;
-                        return null;
-                    } else {
-                        return null;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            } catch (Exception e) {
-                return null;
-            }
-        }
-    }
-
     public void playNextVideo() {
         if (tap < uris.size()-1) {
             tap++;
             currentVideo.stopPlayback();
-            commentButton.setVisibility(View.GONE);
-            ratingButton.setVisibility(View.GONE);
-            likeButton.setVisibility(View.VISIBLE);
-            dislikeButton.setVisibility(View.VISIBLE);
             flagButton.setVisibility(View.VISIBLE);
             currentVideo.setVideoURI(uris.get(tap));
-            currentVideoId = uris.get(tap).getLastPathSegment().substring(0,13);
+            currentVideoId = uris.get(tap).getLastPathSegment().replace(".mp4", "");
             currentVideo.start();
+            showCaption();
+            if (User.admin) {
+                likeButton.setVisibility(View.GONE);
+                dislikeButton.setVisibility(View.GONE);
+                showVideoInfo(0);
+            } else {
+                commentButton.setVisibility(View.GONE);
+                ratingButton.setVisibility(View.GONE);
+                likeButton.setVisibility(View.VISIBLE);
+                dislikeButton.setVisibility(View.VISIBLE);
+            }
         } else {
             finish();
         }
     }
 
 
+    public void showCaption () {
+        try {
+            String captionContent = videoInfo.get(currentVideoId).getString("caption");
+            caption.setText(captionContent);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 	// Handle Touch
 
 	@Override

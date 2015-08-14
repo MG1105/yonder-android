@@ -149,13 +149,13 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject addComment(String userId, String videoId, String commentId, String comment) {
+    protected JSONObject addComment(String nickname, String userId, String videoId, String commentId, String comment) {
         DataOutputStream dos;
         String query = "";
         try
         {
             String encodedComment = URLEncoder.encode(comment, "UTF-8");
-            query = "comment=" + encodedComment + "&user=" + userId + "&id=" + commentId ;
+            query = "comment=" + encodedComment + "&user=" + userId + "&id=" + commentId + "&nickname=" + nickname;
             Log.i(TAG, query);
 
             String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
@@ -194,10 +194,11 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject reportVideo(String videoId) {
+    protected JSONObject reportVideo(String videoId, String userId) {
         try
         {
-            String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/flag";
+            String query = "?user=" + userId;
+            String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/flag" + query;
 
             URL url = new URL(urlString);
             conn = (HttpURLConnection) url.openConnection();
@@ -214,10 +215,11 @@ public class AppEngine {
     }
 
 
-    protected JSONObject reportComment(String commentId) {
+    protected JSONObject reportComment(String commentId, String userId) {
         try
         {
-            String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/flag";
+            String query = "?user=" + userId;
+            String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/flag" + query;
 
             URL url = new URL(urlString);
             conn = (HttpURLConnection) url.openConnection();
@@ -290,9 +292,11 @@ public class AppEngine {
     }
 
     protected JSONObject verifyUser(String userId) {
+        String query = "";
         try
         {
-            String urlString = "http://subtle-analyzer-90706.appspot.com/users/" + userId + "/verify";
+            query = "?version=" + BuildConfig.VERSION_CODE;
+            String urlString = "http://subtle-analyzer-90706.appspot.com/users/" + userId + "/verify" + query;
 
             URL url = new URL(urlString);
             conn = (HttpURLConnection) url.openConnection();
@@ -327,7 +331,7 @@ public class AppEngine {
 
         try {
             out = new JSONObject(response);
-        } catch (JSONException e) {
+        } catch (JSONException e) { // no internet
             e.printStackTrace();
         }
         return out;

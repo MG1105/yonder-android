@@ -29,7 +29,7 @@
         <ImageView
             android:id="@+id/loadFeedImageView"
             android:layout_width="100dp"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:layout_centerInParent="true"
             android:adjustViewBounds="true"
             android:src="@drawable/owl"
@@ -79,6 +79,16 @@
             android:id="@+id/view_dashboard"
             android:background="@android:color/darker_gray"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:text="You have not uploaded a Yonder in the past 24 hours."
+            android:id="@+id/textView_no_videos"
+            android:visibility="gone"
+            android:layout_below="@+id/view_dashboard"
+            android:layout_centerHorizontal="true"/>
+
         <ProgressBar
             android:id="@+id/progress_videos"
             style="?android:attr/progressBarStyleLarge"
@@ -93,6 +103,7 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingTop="10dp"
             android:layout_below="@+id/view_dashboard"
+            android:listSelector="@android:color/transparent"
             android:id="@+id/listView_my_videos"/>
 
     </RelativeLayout>

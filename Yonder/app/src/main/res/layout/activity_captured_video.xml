@@ -20,17 +20,22 @@
         android:scaleType="fitXY"
         android:background="@drawable/ic_send" />
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentTop="true"
+        android:id="@+id/space_caption"/>
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_alignParentTop="true"
-        android:textColor="#FFF"
-        android:background="#8888"
-        android:text=""
-        android:ellipsize="start"
+        android:id="@+id/editText_caption"
+        android:textSize="25dp"
+        android:layout_below="@+id/space_caption"
+        android:textColor="@android:color/white"
         android:gravity="center_horizontal"
-        android:hint="Edit Caption" />
+        android:hint="Edit Caption"
+        android:background="@android:color/transparent"/>
 
     <ProgressBar
         android:id="@+id/uploading_in_progress"

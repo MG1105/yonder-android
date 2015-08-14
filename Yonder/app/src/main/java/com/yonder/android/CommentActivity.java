@@ -1,17 +1,12 @@
 package com.yonder.android;
 
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.Context;
-import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -27,8 +22,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 
 public class CommentActivity extends Activity {
@@ -39,7 +32,7 @@ public class CommentActivity extends Activity {
 	private ProgressBar spinner;
 	EditText commentText;
 	CommentsAdapter adapter;
-	String commentId;
+	String commentId, nickname;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +44,7 @@ public class CommentActivity extends Activity {
 		getComments.execute();
 		Button sendButton = (Button) findViewById(R.id.add_comment_button);
 		sendButton.setOnClickListener(sendListener);
+		Alert.showCommentRule(this);
 	}
 
 	View.OnClickListener sendListener = new View.OnClickListener() {
@@ -58,8 +52,20 @@ public class CommentActivity extends Activity {
 		public void onClick(View v) {
 			AddCommentTask addComment = new AddCommentTask();
 			commentText = (EditText) findViewById(R.id.add_comment_text); // test with '
-			commentId = Long.toString(System.currentTimeMillis());
-			addComment.execute("12345677", videoId, commentId, commentText.getText().toString());
+
+			int extra = commentText.getText().length()- 250;
+			if (commentText.getText().length() == 0) {
+				Toast toast = Toast.makeText(myActivity, "Please write a comment first!", Toast.LENGTH_LONG);
+				toast.show();
+			} else if (extra > 0) {
+				Toast toast = Toast.makeText(myActivity, "Your comment has " + extra + " too many characters!", Toast.LENGTH_LONG);
+				toast.show();
+			} else {
+				commentId = Long.toString(System.currentTimeMillis());
+				nickname = User.getNickname(myActivity);
+				String userId = User.getId(myActivity);
+				addComment.execute(nickname, userId, videoId, commentId, commentText.getText().toString());
+			}
 		}
 	};
 
@@ -90,7 +96,8 @@ public class CommentActivity extends Activity {
 			dislikeButton = (Button) convertView.findViewById(R.id.button_comment_item_dislike);
 
 			// Populate the data into the template view using the data object
-			content.setText(comment.getContent());
+			String sourceString = "<b>" + "@" + comment.getNickname() + "</b> " + "<br>" + comment.getContent();
+			content.setText(Html.fromHtml(sourceString));
 			rating.setText(comment.getRating() + " LIKES");
 
 			flagButton.setOnClickListener(new View.OnClickListener() {
@@ -99,7 +106,7 @@ public class CommentActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 					ReportTask report = new ReportTask();
-					report.execute(id);
+					report.execute(id, User.getId(myActivity));
 					myFlag.setVisibility(View.GONE);
 				}
 			});
@@ -197,14 +204,14 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			JSONObject response = gae.addComment(params[0], params[1], params[2], params[3]);
+			JSONObject response = gae.addComment(params[0], params[1], params[2], params[3], params[4]);
 			return response;
 		}
 
 		protected void onPostExecute(JSONObject response) {
 			try {
-				if (response.getString("success").equals("1")) {
-					comments.add(new Comment(commentId, commentText.getText().toString()));
+				if (response.getString("success").equals("1")) { // NPE
+					comments.add(new Comment(commentId, commentText.getText().toString(),nickname));
 					adapter.notifyDataSetChanged();
 					if (commentText != null) {
 						commentText.setText("");
@@ -222,7 +229,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			JSONObject response = gae.reportComment(params[0]);
+			JSONObject response = gae.reportComment(params[0], params[1]);
 			return response;
 		}
 

@@ -10,6 +10,7 @@ public class Comment {
 	private String content;
 	private String id;
 	private String rating;
+	private String nickname;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Comment(JSONObject object){
@@ -17,15 +18,17 @@ public class Comment {
 			this.id = object.getString("id");
 			this.content = object.getString("content");
 			this.rating = object.getString("rating");
+			this.nickname = object.getString("nickname");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public Comment(String id, String comment){
+	public Comment(String id, String comment, String nickname){
 		this.id = id;
 		this.content = comment;
 		this.rating = "0";
+		this.nickname = nickname;
 	}
 
 	public String getId() {
@@ -38,6 +41,10 @@ public class Comment {
 
 	public String getRating() {
 		return rating;
+	}
+
+	public String getNickname() {
+		return nickname;
 	}
 
 	public String updateRating(int add) {
