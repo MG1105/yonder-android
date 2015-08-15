@@ -72,6 +72,11 @@ public class FeedActivity extends Activity {
             likeButton.setVisibility(View.GONE);
             dislikeButton.setVisibility(View.GONE);
             showVideoInfo(0);
+        } else if (LoadFeedActivity.myVideosOnly) {
+            likeButton.setVisibility(View.GONE);
+            dislikeButton.setVisibility(View.GONE);
+            flagButton.setVisibility(View.GONE);
+            showVideoInfo(0);
         } else {
             commentButton.setVisibility(View.GONE);
             ratingButton.setVisibility(View.GONE);
@@ -80,7 +85,7 @@ public class FeedActivity extends Activity {
 
 	@Override
 	protected void onResume() {
-        Video.obfuscate(myContext, false);
+        Video.obfuscate(false);
         super.onResume(); // loop?
 		currentVideo.start();
         showCaption();
@@ -91,13 +96,13 @@ public class FeedActivity extends Activity {
 
 	@Override
 	protected void onPause() {
-        Video.obfuscate(myContext, true);
+        Video.obfuscate(true);
         super.onPause();
 	}
 
 	public ArrayList<Uri> getContent() {
 		uris = new ArrayList<>();
-        String videosPath = this.getExternalFilesDir("loaded_videos").getAbsolutePath();
+        String videosPath = Video.loadedDir.getAbsolutePath();
         Set keys = videoInfo.keySet();
         Iterator itr = keys.iterator();
         for (int i = 0; i < keys.size(); i++) {
@@ -221,6 +226,11 @@ public class FeedActivity extends Activity {
             if (User.admin) {
                 likeButton.setVisibility(View.GONE);
                 dislikeButton.setVisibility(View.GONE);
+                showVideoInfo(0);
+            } else if (LoadFeedActivity.myVideosOnly) {
+                likeButton.setVisibility(View.GONE);
+                dislikeButton.setVisibility(View.GONE);
+                flagButton.setVisibility(View.GONE);
                 showVideoInfo(0);
             } else {
                 commentButton.setVisibility(View.GONE);

@@ -2,6 +2,7 @@ package com.yonder.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
@@ -33,6 +34,7 @@ public class CommentActivity extends Activity {
 	EditText commentText;
 	CommentsAdapter adapter;
 	String commentId, nickname;
+	static SQLiteDatabase yonderDb;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +47,16 @@ public class CommentActivity extends Activity {
 		Button sendButton = (Button) findViewById(R.id.add_comment_button);
 		sendButton.setOnClickListener(sendListener);
 		Alert.showCommentRule(this);
+		YonderDbHelper mDbHelper = new YonderDbHelper(this);
+		yonderDb = mDbHelper.getReadableDatabase();
 	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		yonderDb.close();
+	}
+
 
 	View.OnClickListener sendListener = new View.OnClickListener() {
 		@Override
@@ -99,6 +110,15 @@ public class CommentActivity extends Activity {
 			String sourceString = "<b>" + "@" + comment.getNickname() + "</b> " + "<br>" + comment.getContent();
 			content.setText(Html.fromHtml(sourceString));
 			rating.setText(comment.getRating() + " LIKES");
+
+			if (comment.isFlagged()) {
+				flagButton.setVisibility(View.GONE);
+			}
+			if (comment.isRated()) {
+				rating.setVisibility(View.VISIBLE);
+				likeButton.setVisibility(View.GONE);
+				dislikeButton.setVisibility(View.GONE);
+			}
 
 			flagButton.setOnClickListener(new View.OnClickListener() {
 				String id = comment.getId();
@@ -163,7 +183,7 @@ public class CommentActivity extends Activity {
 				try {
 					if (response.getString("success").equals("1")) {
 						JSONArray commentsArray = response.getJSONArray("comments");
-						comments = Comment.fromJson(commentsArray);
+						comments = Comment.fromJson(commentsArray, videoId);
 						return null;
 					} else {
 						return null;
@@ -188,9 +208,9 @@ public class CommentActivity extends Activity {
 				listView.setAdapter(adapter);
 				spinner = (ProgressBar)findViewById(R.id.progress_comments);
 				spinner.setVisibility(View.GONE);
-				if (comments.size() < 0) {
-
-
+				if (comments.size() == 0) {
+					TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
+					noComments.setVisibility(View.VISIBLE);
 				}
 			} else {
 
@@ -211,6 +231,10 @@ public class CommentActivity extends Activity {
 		protected void onPostExecute(JSONObject response) {
 			try {
 				if (response.getString("success").equals("1")) { // NPE
+					if (comments.size() == 0) {
+						TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
+						noComments.setVisibility(View.GONE);
+					}
 					comments.add(new Comment(commentId, commentText.getText().toString(),nickname));
 					adapter.notifyDataSetChanged();
 					if (commentText != null) {
@@ -230,6 +254,8 @@ public class CommentActivity extends Activity {
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
 			JSONObject response = gae.reportComment(params[0], params[1]);
+			Database db = new Database();
+			db.flagComment(yonderDb, params[0], videoId);
 			return response;
 		}
 
@@ -250,6 +276,9 @@ public class CommentActivity extends Activity {
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
 			JSONObject response = gae.rateComment(params[0], params[1]);
+			Database db = new Database();
+			db.rateComment(yonderDb, params[0], videoId);
+			db.cleanup(yonderDb); // too often?
 			return response;
 		}
 

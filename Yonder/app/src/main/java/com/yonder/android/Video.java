@@ -1,6 +1,7 @@
 package com.yonder.android;
 
 import android.app.Activity;
+import android.content.Context;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,8 +18,8 @@ public class Video {
 	private String rating;
 	private String commentsTotal;
 	private String caption;
-	static String uploadPath;
-	static String loadedPath;
+	static File uploadDir;
+	static File loadedDir;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Video(JSONObject object){
@@ -62,9 +63,8 @@ public class Video {
 		return videos;
 	}
 
-	static void obfuscate(Activity activity, boolean encrypt) {
-		File videosFolder  = activity.getExternalFilesDir("loaded_videos");
-		File [] listFile = videosFolder.listFiles();
+	static void obfuscate(boolean encrypt) {
+		File [] listFile = loadedDir.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
 				if ( encrypt && file.getAbsolutePath().contains(".mp4")) {
@@ -109,16 +109,21 @@ public class Video {
 		}
 	}
 
-	static void cleanup (File folder) {
+	static void cleanup (File folder) { // add .mp4 post crash cleanup
 		File [] listFile = folder.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
-				if ((now - last)/360000 > 24) {
+				if ((now - last)/3600000 > 24) {
 					file.delete();
 				}
 			}
 		}
+	}
+
+	static void setPaths(Activity activity) {
+		loadedDir = activity.getExternalFilesDir("lvd");
+		uploadDir = activity.getExternalFilesDir("uvd");
 	}
 }

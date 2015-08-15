@@ -11,14 +11,21 @@
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent" />
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:id="@+id/space_caption_feed"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="25dp"
+        android:textStyle="bold"
         android:textColor="@android:color/white"
         android:id="@+id/textView_caption"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/flag_button"/>
+        android:layout_below="@+id/space_caption_feed"/>
 
     <Button
         android:layout_width="40dp"

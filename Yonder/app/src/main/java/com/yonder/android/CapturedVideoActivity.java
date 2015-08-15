@@ -44,7 +44,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         vidView = (VideoView) findViewById(R.id.capturedVideo);
         spinner = (ProgressBar)findViewById(R.id.uploading_in_progress);
         spinner.setVisibility(View.GONE);
-        uploadPath = this.getExternalFilesDir("upload").getAbsolutePath();
+        uploadPath = Video.uploadDir.getAbsolutePath();
         videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
         final Uri vidUri = Uri.parse(uploadPath + "/captured.mp4");
         vidView.setVideoURI(vidUri);
@@ -119,7 +119,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            File[] listFile = getApplicationContext().getExternalFilesDir("upload").listFiles();
+            File[] listFile = Video.uploadDir.listFiles();
             if (listFile != null) {
                 for (int i = 0; i < listFile.length; i++) {
                     listFile[i].delete();  // deletes new video we just captured as this just finished
@@ -131,11 +131,10 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     private void compressVideo() { // A/libc? Fatal signal 11 (SIGSEGV) at 0x836b8a94 (code=2), thread 10051 (AsyncTask #4): unless you change from h264 to mpeg4
         LoadJNI vk = new LoadJNI(); // reduce library size
         try {
-            String uploadPath = getApplicationContext().getExternalFilesDir("upload").getAbsolutePath();
             Log.i(TAG, "Compressing video");
             // ac audio channels ar audio frequency b bitrate
             String[] complexCommand = GeneralUtils.utilConvertToComplex("ffmpeg -y -i " + uploadPath + "/captured.mp4" +
-                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1000k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId);
+                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId);
             vk.run(complexCommand, uploadPath, getApplicationContext());
             Log.i(TAG, "Video compressed"); // Cannot view on GAE
         } catch (Throwable e) {

@@ -47,12 +47,13 @@ public class CameraPreviewActivity extends Activity {
 		mActivity = this;
 //		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 		initialize();
+		Video.setPaths(mActivity);
 		VerifyUserTask verifyUserTask = new VerifyUserTask();
 		verifyUserTask.execute();
 		User.verify(mActivity);
 		User.setLocation(mActivity);
-		Video.cleanup(this.getExternalFilesDir("loaded_videos"));
-		Video.cleanup(this.getExternalFilesDir("upload"));
+		Video.cleanup(Video.loadedDir);
+		Video.cleanup(Video.uploadDir);
 	}
 
 	public void onResume() {
@@ -283,7 +284,7 @@ public class CameraPreviewActivity extends Activity {
 
 		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
 
-        String uploadPath = this.getExternalFilesDir("upload").getAbsolutePath() + "/captured.mp4";
+        String uploadPath = Video.uploadDir.getAbsolutePath() + "/captured.mp4";
 		mediaRecorder.setOutputFile(uploadPath);
 		mediaRecorder.setMaxDuration(12000); // Set max duration
 		if (cameraFront) {

@@ -47,7 +47,7 @@ public class LoadFeedActivity extends Activity {
     ArrayList<Request> requests;
     ArrayList<Uri> uris = new ArrayList<>();
     int remaining;
-    boolean myVideosOnly;
+    static boolean myVideosOnly;
     String userId, longitude, latitude;
     Timer timer;
     String listIds;
@@ -191,7 +191,7 @@ public class LoadFeedActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             remaining--;
             loadFeedTextView.setText("Remaining = " + remaining);
-            Video.obfuscate(mActivity, true);
+            Video.obfuscate(true);
             if (remaining == 0) {
                 getFeedInfoTask infoTask = new getFeedInfoTask();
                 infoTask.execute(listIds);
@@ -345,22 +345,14 @@ public class LoadFeedActivity extends Activity {
             Request request = new Request(uri);
             request.setVisibleInDownloadsUi(false);
             request.setNotificationVisibility(Request.VISIBILITY_HIDDEN);
-            request.setDestinationInExternalFilesDir(mActivity, "loaded_videos", uri.getLastPathSegment());
+            request.setDestinationUri(Uri.fromFile(new File(Video.loadedDir.getAbsolutePath() + "/" + uri.getLastPathSegment())));
             requests.add(request);
         }
     }
 
     private boolean isLoaded (String id) {
-        boolean loaded = new File(getApplicationContext().getExternalFilesDir("loaded_videos").getAbsolutePath()+"/"+id).isFile();
+        boolean loaded = new File(Video.loadedDir.getAbsolutePath()+"/"+id).isFile();
         return loaded;
-    }
-
-    private void getLocation() {
-
-    }
-
-    private void getUserId() {
-
     }
 
 
