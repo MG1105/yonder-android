@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-class YonderDbHelper extends SQLiteOpenHelper {
+public class YonderDbHelper extends SQLiteOpenHelper {
 	// If you change the database schema, you must increment the database version.
 	public static final int DATABASE_VERSION = 1;
 	public static final String DATABASE_NAME = "Yonder.db";

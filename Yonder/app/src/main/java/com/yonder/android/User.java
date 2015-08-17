@@ -37,7 +37,7 @@ public class User {
 		String lon = sharedPreferences.getString("location_lon", null);
 		String lat = sharedPreferences.getString("location_lat", null);
 		if (lon != null && lat != null) {
-			ArrayList location = new ArrayList();
+			ArrayList<String> location = new ArrayList<>();
 			location.add(lon);
 			location.add(lat);
 			return location;
@@ -67,7 +67,7 @@ public class User {
 		int upgrade = sharedPreferences.getInt("upgrade", 0);
 		int ban = sharedPreferences.getInt("ban", 0);
 		if (upgrade != 0) {
-			Alert.forceUpgrade(activity);
+			Alert.forceUpgrade(activity, upgrade);
 		} else if (ban != 0) {
 			Alert.ban(activity, ban);
 		}

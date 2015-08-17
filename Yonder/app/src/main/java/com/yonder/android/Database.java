@@ -7,7 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 public class Database {
+	private final String TAG = "Log." + this.getClass().getSimpleName();
 
 	protected void flagComment(SQLiteDatabase db, String commentId, String videoId) {
 		ContentValues values = new ContentValues();
@@ -19,6 +22,7 @@ public class Database {
 		if (updated==0) {
 			db.insert("comments", null, values);
 		}
+		Crashlytics.log(Log.INFO, TAG, "Recording comment flag " + values.valueSet().toString());
 	}
 
 	protected boolean isFlagged(SQLiteDatabase db, String commentId, String videoId) {
@@ -50,6 +54,7 @@ public class Database {
 		if (updated==0) {
 			db.insert("comments", null, values);
 		}
+		Crashlytics.log(Log.INFO, TAG, "Recording comment rating " + values.valueSet().toString());
 	}
 
 	protected boolean isRated(SQLiteDatabase db, String commentId, String videoId) {
@@ -74,11 +79,11 @@ public class Database {
 	protected void cleanup(SQLiteDatabase db) {
 		// Define 'where' part of query.
 		long now = System.currentTimeMillis();
-		String selection = "(? - ts)/3600000 > 24";
+		String selection = "("+ now+ "- ts)/3600000 > 24";
 		// Specify arguments in placeholder order.
-		String[] selectionArgs = {now+""};
+//		String[] selectionArgs = {now+""};
 		// Issue SQL statement.
-		db.delete("comments", selection, selectionArgs);
+		db.delete("comments", selection, null);
 	}
 
 

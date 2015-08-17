@@ -16,12 +16,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.cert.CRLSelector;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class FeedActivity extends Activity {
@@ -38,6 +42,7 @@ public class FeedActivity extends Activity {
     Button commentButton;
     Button ratingButton;
     TextView caption;
+    String rating;
     private Activity myContext;
     LinkedHashMap<String, JSONObject> videoInfo;
 
@@ -103,44 +108,40 @@ public class FeedActivity extends Activity {
 	public ArrayList<Uri> getContent() {
 		uris = new ArrayList<>();
         String videosPath = Video.loadedDir.getAbsolutePath();
-        Set keys = videoInfo.keySet();
-        Iterator itr = keys.iterator();
-        for (int i = 0; i < keys.size(); i++) {
-            uris.add(Uri.parse(videosPath + "/"+itr.next()+".mp4"));
-        }
-        Log.d(TAG, "uris = " + uris.toString());
 
+        for (Map.Entry<String, JSONObject> entry : videoInfo.entrySet()) {
+            uris.add(Uri.parse(videosPath + "/" +entry.getKey()+".mp4"));
+        }
+        Crashlytics.log(Log.INFO, TAG, "Feed videos " + uris.toString());
         return uris;
 	}
 
     protected void showVideoInfo(int myRating) {
         try {
-            String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total"); // total wrong when old video left
+            String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
             String rating = videoInfo.get(currentVideoId).getString("rating");
             if (commentsTotal.equals("0")) {
                 commentButton.setText("Add Comment");
             } else {
                 commentButton.setText(commentsTotal + " Comments");
             }
-
             int latestRating = Integer.valueOf(rating) + myRating;
             ratingButton.setText(latestRating + " Likes");
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         commentButton.setVisibility(View.VISIBLE);
         ratingButton.setVisibility(View.VISIBLE);
-	    
     }
 
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             RateTask rate = new RateTask(); // spinner and disappear buttons
-            rate.execute(currentVideoId, "1");
-            likeButton.setVisibility(View.GONE);
-            dislikeButton.setVisibility(View.GONE);
-            showVideoInfo(1);
+            Crashlytics.log(Log.INFO, TAG, "Liking video " + currentVideoId);
+            rating = "1";
+            rate.execute(currentVideoId, rating);
         }
     };
 
@@ -148,10 +149,9 @@ public class FeedActivity extends Activity {
         @Override
         public void onClick(View v) {
             RateTask rate = new RateTask();
-            rate.execute(currentVideoId, "-1");
-            likeButton.setVisibility(View.GONE);
-            dislikeButton.setVisibility(View.GONE);
-            showVideoInfo(-1);
+            Crashlytics.log(Log.INFO, TAG, "Disliking video " + currentVideoId);
+            rating = "-1";
+            rate.execute(currentVideoId, rating);
         }
     };
 
@@ -159,8 +159,8 @@ public class FeedActivity extends Activity {
         @Override
         public void onClick(View v) {
             ReportTask report = new ReportTask();
+            Crashlytics.log(Log.INFO, TAG, "Flagging video " + currentVideoId);
             report.execute(currentVideoId, User.getId(myContext));
-            flagButton.setVisibility(View.GONE);
         }
     };
 
@@ -184,12 +184,27 @@ public class FeedActivity extends Activity {
 
         protected void onPostExecute(JSONObject response) {
             try {
-                if (response.getString("success").equals("1")) { // NPE
-                    Toast toast = Toast.makeText(myContext, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
-                    toast.show();
+                if (response != null) {
+                    if (response.getString("success").equals("1")) {
+                        likeButton.setVisibility(View.GONE);
+                        dislikeButton.setVisibility(View.GONE);
+                        if (rating.equals("1")) {
+                            Toast.makeText(myContext, "Liked!", Toast.LENGTH_LONG).show();
+                            showVideoInfo(1);
+                        } else {
+                            Toast.makeText(myContext, "Disliked!", Toast.LENGTH_LONG).show();
+                            showVideoInfo(-1);
+                        }
+                    } else {
+                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Toast.makeText(myContext, "Failed to rate the video!", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);;
             }
         }
     }
@@ -204,12 +219,20 @@ public class FeedActivity extends Activity {
 
         protected void onPostExecute(JSONObject response) {
             try {
-                if (response.getString("success").equals("1")) {
-                    Toast toast = Toast.makeText(myContext, "Flagged!", Toast.LENGTH_LONG);
-                    toast.show();
+                if (response != null) {
+                    if (response.getString("success").equals("1")) {
+                        Toast.makeText(myContext, "Flagged!", Toast.LENGTH_LONG).show();
+                        flagButton.setVisibility(View.GONE);
+                    } else {
+                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Toast.makeText(myContext, "Failed to flag the video!", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);;
             }
         }
     }
@@ -221,6 +244,7 @@ public class FeedActivity extends Activity {
             flagButton.setVisibility(View.VISIBLE);
             currentVideo.setVideoURI(uris.get(tap));
             currentVideoId = uris.get(tap).getLastPathSegment().replace(".mp4", "");
+            Crashlytics.log(Log.INFO, TAG, "Playing " + currentVideoId);
             currentVideo.start();
             showCaption();
             if (User.admin) {
@@ -249,7 +273,7 @@ public class FeedActivity extends Activity {
             String captionContent = videoInfo.get(currentVideoId).getString("caption");
             caption.setText(captionContent);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
     }
 	// Handle Touch
@@ -261,25 +285,15 @@ public class FeedActivity extends Activity {
 	}
 
 	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
-		private static final String DEBUG_TAG = "Gestures";
-
 		@Override
 		public boolean onDown(MotionEvent event) {
-			Log.d(DEBUG_TAG, "onDown: " + event.toString());
 			return true;
 		}
 
 		@Override
-		public boolean onSingleTapUp(MotionEvent event) {
-			Log.d(TAG, "uris = " + uris.toString());
+		public boolean onSingleTapUp(MotionEvent event) { // looping?
             playNextVideo();
             return true;
-		}
-
-		@Override
-		public boolean onDoubleTap(MotionEvent event) { // or replay auto on?
-			currentVideo.start();
-			return true;
 		}
 	}
 }

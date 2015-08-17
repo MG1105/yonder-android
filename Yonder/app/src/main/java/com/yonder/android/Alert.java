@@ -98,7 +98,7 @@ public class Alert {
 		}
 	}
 
-	public static void forceUpgrade (final Activity activity) {
+	public static void forceUpgrade (final Activity activity, final int level) { // non closing option
 
 		AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 		alertDialog.setTitle("Upgrade Available");
@@ -107,7 +107,11 @@ public class Alert {
 		alertDialog.setCancelable(false);
 		alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				activity.finish();
+				if (level == 2) {
+					activity.finish();
+				} else {
+					dialog.cancel();
+				}
 			}
 		});
 		alertDialog.setIcon(R.drawable.ic_flag1);

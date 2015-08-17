@@ -62,6 +62,9 @@
             android:label="@string/title_activity_comment"
             android:parentActivityName=".FeedActivity">
         </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="f5cf8dec27228590622c2bd1356376223271d04d" />
     </application>
 
 </manifest>

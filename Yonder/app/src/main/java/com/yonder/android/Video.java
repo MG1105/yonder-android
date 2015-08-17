@@ -2,6 +2,10 @@ package com.yonder.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.nfc.Tag;
+import android.util.Log;
+
+import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +24,7 @@ public class Video {
 	private String caption;
 	static File uploadDir;
 	static File loadedDir;
+	static boolean obfuscating;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Video(JSONObject object){
@@ -30,6 +35,7 @@ public class Video {
 			this.rating = object.getString("rating");
 		} catch (JSONException e) {
 			e.printStackTrace();
+			Crashlytics.logException(e);
 		}
 	}
 
@@ -58,12 +64,17 @@ public class Video {
 				videos.add(new Video(jsonObjects.getJSONObject(i)));
 			} catch (JSONException e) {
 				e.printStackTrace();
+				Crashlytics.logException(e);
 			}
 		}
 		return videos;
 	}
 
 	static void obfuscate(boolean encrypt) {
+		if (obfuscating) {
+			return;
+		}
+		obfuscating = true;
 		File [] listFile = loadedDir.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
@@ -78,44 +89,45 @@ public class Video {
 				}
 			}
 		}
+		obfuscating = false;
 	}
 
 	static void swapByte(File file) {
 		RandomAccessFile raf = null;
 		try {
 			raf = new RandomAccessFile(file, "rw");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		try {
 			raf.seek(5);
 			int b1 = raf.read();
-
 			raf.seek(11);
 			int b2 = raf.read();
-
 			raf.seek(11);
 			raf.write(b1);
 			raf.seek(5);
 			raf.write(b2);
-		} catch (IOException e) {
+			Crashlytics.log(Log.INFO, "Log.Video", "Swap Bytes " + file.getPath() + " b1 " + b1 + " b2 " + b2);
+		} catch (Exception e) {
 			e.printStackTrace();
+			Crashlytics.logException(e);
 		} finally {
 			try {
-				raf.close(); // Flush/save changes and close resource.
+				if (raf != null) {
+					raf.close(); // Flush/save changes and close resource.
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
+				Crashlytics.logException(e);
 			}
 		}
 	}
 
-	static void cleanup (File folder) { // add .mp4 post crash cleanup
+	static void cleanup (File folder) {
 		File [] listFile = folder.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
-				if ((now - last)/3600000 > 24) {
+				if ((now - last)/3600000 > 24 || file.getAbsolutePath().contains(".mp4")) {
+					Crashlytics.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
 					file.delete();
 				}
 			}

@@ -18,6 +18,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +28,7 @@ import java.util.ArrayList;
 
 
 public class CommentActivity extends Activity {
-
+	private final String TAG = "Log." + this.getClass().getSimpleName();
 	public static ArrayList<Comment> comments;
 	private String videoId;
 	Activity myActivity;
@@ -75,6 +77,9 @@ public class CommentActivity extends Activity {
 				commentId = Long.toString(System.currentTimeMillis());
 				nickname = User.getNickname(myActivity);
 				String userId = User.getId(myActivity);
+				Crashlytics.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
+								"commentText %s",
+						nickname, userId, videoId, commentId, commentText.getText().toString()));
 				addComment.execute(nickname, userId, videoId, commentId, commentText.getText().toString());
 			}
 		}
@@ -92,9 +97,7 @@ public class CommentActivity extends Activity {
 
 		@Override
 		public View getView(final int position, View convertView, ViewGroup parent) {
-
 			comment = getItem(position);
-
 			if (convertView == null) {
 				convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_comment, parent, false);
 			}
@@ -109,7 +112,7 @@ public class CommentActivity extends Activity {
 			// Populate the data into the template view using the data object
 			String sourceString = "<b>" + "@" + comment.getNickname() + "</b> " + "<br>" + comment.getContent();
 			content.setText(Html.fromHtml(sourceString));
-			rating.setText(comment.getRating() + " LIKES");
+			rating.setText(comment.getRating() + " Likes"); // no s if 1
 
 			if (comment.isFlagged()) {
 				flagButton.setVisibility(View.GONE);
@@ -174,48 +177,53 @@ public class CommentActivity extends Activity {
 
 	}
 
-	class GetCommentsTask extends AsyncTask<Void, Void, Void> {
+	class GetCommentsTask extends AsyncTask<Void, Void, JSONObject> {
 
-		protected Void doInBackground(Void... params) {
+		protected JSONObject doInBackground(Void... params) {
 			try {
 				AppEngine gae = new AppEngine();
+				Crashlytics.log(Log.INFO, TAG, "Getting comments for " + videoId);
 				JSONObject response = gae.getComments(videoId);
-				try {
-					if (response.getString("success").equals("1")) {
-						JSONArray commentsArray = response.getJSONArray("comments");
-						comments = Comment.fromJson(commentsArray, videoId);
-						return null;
-					} else {
-						return null;
-					}
-				} catch (JSONException e) {
-					e.printStackTrace();
-					return null;
-				}
+				return response;
 			} catch (Exception e) {
+				e.printStackTrace();
+				Crashlytics.logException(e);;
 				return null;
 			}
 		}
 
-		protected void onPostExecute(Void params) {
-			if (comments != null) {
-				// TODO: check exception?
-				Log.d("", comments.toString());
-				// Create the adapter to convert the array to views
-				adapter = new CommentsAdapter(myActivity);
-				// Attach the adapter to a ListView
-				ListView listView = (ListView) findViewById(R.id.listView_comments);
-				listView.setAdapter(adapter);
-				spinner = (ProgressBar)findViewById(R.id.progress_comments);
-				spinner.setVisibility(View.GONE);
-				if (comments.size() == 0) {
-					TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
-					noComments.setVisibility(View.VISIBLE);
+		protected void onPostExecute(JSONObject response) {
+			try {
+				if (response != null) {
+					if (response.getString("success").equals("1")) {
+						JSONArray commentsArray = response.getJSONArray("comments");
+						comments = Comment.fromJson(commentsArray, videoId);
+						if (comments != null) {
+							// Create the adapter to convert the array to views
+							adapter = new CommentsAdapter(myActivity);
+							// Attach the adapter to a ListView
+							ListView listView = (ListView) findViewById(R.id.listView_comments);
+							listView.setAdapter(adapter);
+							spinner = (ProgressBar)findViewById(R.id.progress_comments);
+							spinner.setVisibility(View.GONE);
+							if (comments.size() == 0) {
+								TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
+								noComments.setVisibility(View.VISIBLE);
+							}
+						}
+					} else {
+						Crashlytics.logException(new Exception("Server Side Failure"));
+						Toast.makeText(myActivity, "Failed to retrieve comments!", Toast.LENGTH_LONG).show();
+						finish();
+					}
+				} else {
+					Toast.makeText(myActivity, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
+					finish();
 				}
-			} else {
-
+			} catch (Exception e) {
+				e.printStackTrace();
+				Crashlytics.logException(e);;
 			}
-
 		}
 	}
 
@@ -230,21 +238,28 @@ public class CommentActivity extends Activity {
 
 		protected void onPostExecute(JSONObject response) {
 			try {
-				if (response.getString("success").equals("1")) { // NPE
-					if (comments.size() == 0) {
-						TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
-						noComments.setVisibility(View.GONE);
+				if (response != null) {
+					if (response.getString("success").equals("1")) {
+						if (comments.size() == 0) {
+							TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
+							noComments.setVisibility(View.GONE);
+						}
+						comments.add(new Comment(commentId, commentText.getText().toString(),nickname));
+						adapter.notifyDataSetChanged();
+						if (commentText != null) {
+							commentText.setText("");
+						}
+						Toast.makeText(myActivity, "Sent!", Toast.LENGTH_LONG).show();
+					} else {
+						Crashlytics.logException(new Exception("Server Side Failure"));
+						Toast.makeText(myActivity, "Failed to send comment!", Toast.LENGTH_LONG).show();
 					}
-					comments.add(new Comment(commentId, commentText.getText().toString(),nickname));
-					adapter.notifyDataSetChanged();
-					if (commentText != null) {
-						commentText.setText("");
-					}
-					Toast toast = Toast.makeText(myActivity, "Sent!", Toast.LENGTH_LONG);
-					toast.show();
+				} else {
+					Toast.makeText(myActivity, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
 				}
-			} catch (JSONException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
+				Crashlytics.logException(e);;
 			}
 		}
 	}
@@ -253,6 +268,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
+			Crashlytics.log(Log.INFO, TAG, "Reporting comment " + params[0]);
 			JSONObject response = gae.reportComment(params[0], params[1]);
 			Database db = new Database();
 			db.flagComment(yonderDb, params[0], videoId);
@@ -261,12 +277,19 @@ public class CommentActivity extends Activity {
 
 		protected void onPostExecute(JSONObject response) {
 			try {
-				if (response.getString("success").equals("1")) {
-					Toast toast = Toast.makeText(myActivity, "Flagged!", Toast.LENGTH_LONG);
-					toast.show();
+				if (response != null) {
+					if (response.getString("success").equals("1")) {
+						Toast toast = Toast.makeText(myActivity, "Flagged!", Toast.LENGTH_LONG);
+						toast.show();
+					} else {
+						Crashlytics.logException(new Exception("Server Side Failure"));
+					}
+				} else {
+
 				}
-			} catch (JSONException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
+				Crashlytics.logException(e);;
 			}
 		}
 	}
@@ -275,6 +298,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
+			Crashlytics.log(Log.INFO, TAG, "Rating comment " + params[0]+ " " + params[1]);
 			JSONObject response = gae.rateComment(params[0], params[1]);
 			Database db = new Database();
 			db.rateComment(yonderDb, params[0], videoId);
@@ -284,12 +308,19 @@ public class CommentActivity extends Activity {
 
 		protected void onPostExecute(JSONObject response) {
 			try {
-				if (response.getString("success").equals("1")) {
-					Toast toast = Toast.makeText(myActivity, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
-					toast.show();
+				if (response != null) {
+					if (response.getString("success").equals("1")) {
+						Toast toast = Toast.makeText(myActivity, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
+						toast.show();
+					} else {
+						Crashlytics.logException(new Exception("Server Side Failure"));
+					}
+				} else {
+
 				}
-			} catch (JSONException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
+				Crashlytics.logException(e);;
 			}
 		}
 	}

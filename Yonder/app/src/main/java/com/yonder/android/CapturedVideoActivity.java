@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.crashlytics.android.Crashlytics;
 import com.netcompss.ffmpeg4android.GeneralUtils;
 import com.netcompss.loader.LoadJNI;
 
@@ -99,25 +100,39 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             if (location != null) {
                 longitude = location.get(0);
                 latitude = location.get(1);
+            } else {
+                longitude = "0";
+                latitude = "0";
             }
             userId = User.getId(myContext);
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
             caption = captionText.getText().toString();
             AppEngine gae = new AppEngine();
+            Crashlytics.log(Log.INFO,TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
+                    uploadPath, videoId, caption, userId, longitude, latitude));
             JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, longitude, latitude);
             return response;
         }
 
         protected void onPostExecute(JSONObject response) {
             try {
-                if (response.getString("success").equals("1")) { // npe
-                    Toast toast = Toast.makeText(myContext, "Video Uploaded!", Toast.LENGTH_LONG);
-                    toast.show();
-                    spinner.setVisibility(View.GONE);
-                    finish();
+                if (response != null) {
+                    if (response.getString("success").equals("1")) {
+                        Toast.makeText(myContext, "Yonder Uploaded!", Toast.LENGTH_LONG).show();
+                        spinner.setVisibility(View.GONE);
+                        finish();
+                    } else {
+                        Toast.makeText(myContext, "Failed to upload!", Toast.LENGTH_LONG).show();
+                        spinner.setVisibility(View.GONE);
+                        finish();
+                        Crashlytics.logException(new Exception("Server Side failure"));
+                    }
+                } else {
+                    Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);;
             }
             File[] listFile = Video.uploadDir.listFiles();
             if (listFile != null) {
@@ -128,17 +143,18 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         }
     }
 
-    private void compressVideo() { // A/libc? Fatal signal 11 (SIGSEGV) at 0x836b8a94 (code=2), thread 10051 (AsyncTask #4): unless you change from h264 to mpeg4
+    private void compressVideo() {
         LoadJNI vk = new LoadJNI(); // reduce library size
         try {
-            Log.i(TAG, "Compressing video");
             // ac audio channels ar audio frequency b bitrate
-            String[] complexCommand = GeneralUtils.utilConvertToComplex("ffmpeg -y -i " + uploadPath + "/captured.mp4" +
-                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId);
+            String command = "ffmpeg -y -i " + uploadPath + "/captured.mp4" +
+                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId;
+            Crashlytics.log(Log.INFO, TAG, command);
+            String[] complexCommand = GeneralUtils.utilConvertToComplex(command);
             vk.run(complexCommand, uploadPath, getApplicationContext());
-            Log.i(TAG, "Video compressed"); // Cannot view on GAE
         } catch (Throwable e) {
-            Log.e(TAG, "vk run exception.", e);
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
     }
 

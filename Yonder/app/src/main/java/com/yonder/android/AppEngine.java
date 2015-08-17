@@ -1,6 +1,9 @@
 package com.yonder.android;
 
+import android.nfc.Tag;
 import android.util.Log;
+
+import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -68,14 +71,17 @@ public class AppEngine {
             // send multipart form data necesssary after file data...
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+            Crashlytics.log(Log.INFO, TAG, "File written");
+
             // close streams
-            Log.i(TAG, "File is written");
             fileInputStream.close();
             dos.flush();
             dos.close();
-        } catch (IOException ioe)
-        {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
+
         }
         return getResponse();
     }
@@ -99,9 +105,9 @@ public class AppEngine {
             conn.setUseCaches(false);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
-        } catch (IOException ioe)
-        {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -121,9 +127,9 @@ public class AppEngine {
             conn.setUseCaches(false);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
-        } catch (IOException ioe)
-        {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -142,9 +148,9 @@ public class AppEngine {
             conn.setUseCaches(false);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
-        } catch (IOException ioe)
-        {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -172,8 +178,9 @@ public class AppEngine {
             dos.writeBytes(query);
             dos.flush();
             dos.close();
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -188,8 +195,9 @@ public class AppEngine {
             conn.setDoInput(true);
             conn.setUseCaches(false);
             conn.setRequestMethod("GET");
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -208,8 +216,9 @@ public class AppEngine {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;");
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -229,8 +238,9 @@ public class AppEngine {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;");
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -257,8 +267,9 @@ public class AppEngine {
             dos.writeBytes(query);
             dos.flush();
             dos.close();
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -285,8 +296,9 @@ public class AppEngine {
             dos.writeBytes(query);
             dos.flush();
             dos.close();
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -303,8 +315,9 @@ public class AppEngine {
             conn.setDoInput(true);
             conn.setUseCaches(false);
             conn.setRequestMethod("GET");
-        } catch (IOException ioe) {
-            Log.e(TAG, "error: " + ioe.getMessage(), ioe);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return getResponse();
     }
@@ -323,16 +336,20 @@ public class AppEngine {
             {
                 response += line;
             }
-            Log.i(TAG,"Server Response: \n" + response);
+            Crashlytics.log(Log.INFO, TAG, "Server Response:\n" + response);
             reader.close();
-        } catch (IOException ioex){
-            Log.e(TAG, "error: " + ioex.getMessage(), ioex);
+        } catch (Exception e){
+            e.printStackTrace();
+            Crashlytics.logException(e);;
         }
 
         try {
-            out = new JSONObject(response);
-        } catch (JSONException e) { // no internet
+            if (response != null) { // ignore no internet issue
+                out = new JSONObject(response);
+            }
+        } catch (JSONException e) {
             e.printStackTrace();
+            Crashlytics.logException(e);;
         }
         return out;
     }
