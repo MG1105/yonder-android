@@ -15,30 +15,31 @@
             android:layout_height="wrap_content"
             android:text="Yonder Player"
             android:id="@+id/textView_player"
-            android:textColor="@color/black"
+            android:textColor="#00E5FF"
             android:textSize="20dp"
             android:textStyle="bold"
             android:layout_alignParentTop="true"/>
 
         <View
             android:layout_width="fill_parent"
-            android:layout_height="1dp"
+            android:layout_height="0dp"
             android:layout_below="@+id/textView_player"
-            android:background="@android:color/darker_gray"/>
+            android:background="#84FFFF"/>
 
         <ImageView
             android:id="@+id/loadFeedImageView"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_centerInParent="true"
             android:adjustViewBounds="true"
-            android:src="@drawable/owl"
+            android:src="@drawable/ic_pirate"
             />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tap to load Yonders near you"
+            android:textColor="#00B8D4"
             android:id="@+id/loadFeedTextView"
             android:layout_below="@+id/loadFeedImageView"
             android:layout_centerHorizontal="true"/>
@@ -47,7 +48,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="10dp"
-            android:text="Play My Yonders Only"
+            android:text="Play My Feed Only"
+            android:textColor="@android:color/darker_gray"
             android:id="@+id/switch_my_videos"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
@@ -65,8 +67,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dashboard"
-            android:textColor="@color/black"
+            android:text="Yonder Stats"
+            android:textColor="#00E5FF"
             android:textSize="20dp"
             android:textStyle="bold"
             android:id="@+id/textView_dashboard"
@@ -74,16 +76,17 @@
 
         <View
             android:layout_width="fill_parent"
-            android:layout_height="1dp"
+            android:layout_height="0dp"
             android:layout_below="@+id/textView_dashboard"
             android:id="@+id/view_dashboard"
-            android:background="@android:color/darker_gray"/>
+            android:background="#84FFFF"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingTop="10dp"
             android:text="You have not uploaded a Yonder in the past 24 hours."
+            android:textColor="#000000"
             android:id="@+id/textView_no_videos"
             android:visibility="gone"
             android:layout_below="@+id/view_dashboard"

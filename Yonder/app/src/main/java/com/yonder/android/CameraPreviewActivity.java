@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -42,6 +43,8 @@ public class CameraPreviewActivity extends Activity {
 	private RelativeLayout cameraPreview;
 	private boolean cameraFront = false;
 	String userId;
+	boolean recording;
+	boolean clickOnly;
 //	private GestureDetectorCompat mDetector;
     CountDownTimer timer;
 
@@ -92,10 +95,11 @@ public class CameraPreviewActivity extends Activity {
 	}
 
 	@Override
-	protected void onStop() {
-		super.onStop();
+	protected void onPause() {
+		super.onPause();
         if (recording) {
             stopRecording();
+	        capture.setBackgroundResource(R.drawable.ic_record);
         }
 		releaseCamera();
 	}
@@ -107,7 +111,7 @@ public class CameraPreviewActivity extends Activity {
 		cameraPreview.addView(mPreview);
 
 		capture = (Button) findViewById(R.id.button_capture);
-		capture.setOnClickListener(captureListener);
+		capture.setOnTouchListener(recordListener);
 
 		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
 		switchCamera.setOnClickListener(switchCameraListener);
@@ -217,54 +221,67 @@ public class CameraPreviewActivity extends Activity {
 		}
 	}
 
-
 	// Video Recording
-	boolean recording = false;
-	OnClickListener captureListener = new OnClickListener() {
+
+	OnClickListener clickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			if (recording) {
-				Crashlytics.log(Log.INFO, TAG, "Stop recording");
-                stopRecording();
-                capture.setBackgroundResource(R.drawable.ic_record);
-                if (timer != null) {
-                    timer.cancel();
-                    TextView counter = (TextView)findViewById(R.id.recording_counter);
-                    counter.setText("10");
-                }
-			} else {
+			if (clickOnly)
+			clickOnly = true;
+		}
+	};
+
+	View.OnTouchListener recordListener = new View.OnTouchListener() {
+		@Override
+		public boolean onTouch(View v, MotionEvent event) {
+			if(event.getAction() == MotionEvent.ACTION_DOWN && !clickOnly){
 				Crashlytics.log(Log.INFO, TAG, "Start recording");
 				if (!prepareMediaRecorder()) {
 					Toast.makeText(CameraPreviewActivity.this, "Failed Recording!", Toast.LENGTH_LONG).show();
 					mActivity.recreate();
 				}
 				try {
-	                capture.setBackgroundResource(R.drawable.ic_stop);
-	                mediaRecorder.start();
-	                timer = new CountDownTimer(10000, 1000) {
-                        TextView counter = (TextView)findViewById(R.id.recording_counter);
-                        public void onTick(long millisUntilFinished) {
-                            counter.setText(""+millisUntilFinished / 1000);
-                        }
-                        public void onFinish() {
-                            if (recording) {
-                                stopRecording();
-	                            capture.setBackgroundResource(R.drawable.ic_record);
-                            }
-                            counter.setText("10");
-                        }
-                    }.start();
-                } catch (Exception e) {
-	                Toast.makeText(CameraPreviewActivity.this, "Failed Recording!", Toast.LENGTH_LONG).show();
-	                Crashlytics.logException(new Exception("Failed Recording"));
-	                mActivity.recreate();
-                }
-				recording = true;
+					capture.setBackgroundResource(R.drawable.ic_stop);
+					mediaRecorder.start();
+					timer = new CountDownTimer(10000, 1000) {
+						TextView counter = (TextView)findViewById(R.id.recording_counter);
+						public void onTick(long millisUntilFinished) {
+							counter.setText(""+millisUntilFinished / 1000);
+						}
+						public void onFinish() {
+							if (recording) {
+								stopRecording();
+								capture.setBackgroundResource(R.drawable.ic_record);
+							}
+							counter.setText("10");
+						}
+					}.start();
+				} catch (Exception e) {
+					Toast.makeText(CameraPreviewActivity.this, "Failed Recording!", Toast.LENGTH_LONG).show();
+					Crashlytics.logException(new Exception("Failed Recording"));
+					mActivity.recreate();
+				}
+				return true;
 			}
+			else if(event.getAction() == MotionEvent.ACTION_UP){
+				if (recording) {
+					Crashlytics.log(Log.INFO, TAG, "Stop recording");
+					stopRecording();
+					capture.setBackgroundResource(R.drawable.ic_record);
+					if (timer != null) {
+						timer.cancel();
+						TextView counter = (TextView)findViewById(R.id.recording_counter);
+						counter.setText("10");
+					}
+				}
+				return true;
+			}
+			else
+				return false;
 		}
 	};
 
-    protected void stopRecording() {
+    protected void stopRecording() { // Exception
         // stop recording and release camera
         mediaRecorder.stop(); // stop the recording
         releaseMediaRecorder(); // release the MediaRecorder object
@@ -317,6 +334,7 @@ public class CameraPreviewActivity extends Activity {
 			Crashlytics.logException(e);;
 			return false;
 		}
+		recording = true;
 		return true;
 
 	}

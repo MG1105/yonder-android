@@ -2,6 +2,7 @@ package com.yonder.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,6 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class CommentActivity extends Activity {
@@ -37,6 +42,7 @@ public class CommentActivity extends Activity {
 	CommentsAdapter adapter;
 	String commentId, nickname;
 	static SQLiteDatabase yonderDb;
+	static boolean updateTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +65,11 @@ public class CommentActivity extends Activity {
 		yonderDb.close();
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		updateTotal = true;
+	}
 
 	View.OnClickListener sendListener = new View.OnClickListener() {
 		@Override
@@ -66,12 +77,8 @@ public class CommentActivity extends Activity {
 			AddCommentTask addComment = new AddCommentTask();
 			commentText = (EditText) findViewById(R.id.add_comment_text); // test with '
 
-			int extra = commentText.getText().length()- 250;
 			if (commentText.getText().length() == 0) {
 				Toast toast = Toast.makeText(myActivity, "Please write a comment first!", Toast.LENGTH_LONG);
-				toast.show();
-			} else if (extra > 0) {
-				Toast toast = Toast.makeText(myActivity, "Your comment has " + extra + " too many characters!", Toast.LENGTH_LONG);
 				toast.show();
 			} else {
 				commentId = Long.toString(System.currentTimeMillis());
@@ -140,15 +147,33 @@ public class CommentActivity extends Activity {
 				TextView myRating = rating;
 				Button myLike = likeButton;
 				Button myDislike = dislikeButton;
+				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate);
+				Timer timer;
 				@Override
 				public void onClick(View v) {
 					RateTask rateComment = new RateTask();
 					rateComment.execute(id, "1");
 					getItem(pos).updateRating(1);
-					myRating.setVisibility(View.VISIBLE);
-					myLike.setVisibility(View.GONE);
-					myDislike.setVisibility(View.GONE);
-					adapter.notifyDataSetChanged();
+					myLike.startAnimation(rotation);
+					timer = new Timer();
+					timer.schedule(new StopAnimationTask(), 1000);
+				}
+
+				class StopAnimationTask extends TimerTask {
+					public void run() {
+						// When you need to modify a UI element, do so on the UI thread.
+						myActivity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								myLike.clearAnimation();
+								myRating.setVisibility(View.VISIBLE);
+								myLike.setVisibility(View.GONE);
+								myDislike.setVisibility(View.GONE);
+								adapter.notifyDataSetChanged();
+							}
+						});
+						timer.cancel(); //Terminate the timer thread
+					}
 				}
 			});
 
@@ -158,15 +183,37 @@ public class CommentActivity extends Activity {
 				TextView myRating = rating;
 				Button myLike = likeButton;
 				Button myDislike = dislikeButton;
+				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate);
+				Timer timer;
 				@Override
 				public void onClick(View v) {
 					RateTask rateComment = new RateTask();
 					rateComment.execute(id, "-1");
 					getItem(pos).updateRating(-1);
+					myDislike.startAnimation(rotation);
+					timer = new Timer();
+					timer.schedule(new StopAnimationTask(), 1000);
 					myRating.setVisibility(View.VISIBLE);
 					myLike.setVisibility(View.GONE);
 					myDislike.setVisibility(View.GONE);
 					adapter.notifyDataSetChanged();
+				}
+
+				class StopAnimationTask extends TimerTask {
+					public void run() {
+						// When you need to modify a UI element, do so on the UI thread.
+						myActivity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								myDislike.clearAnimation();
+								myRating.setVisibility(View.VISIBLE);
+								myLike.setVisibility(View.GONE);
+								myDislike.setVisibility(View.GONE);
+								adapter.notifyDataSetChanged();
+							}
+						});
+						timer.cancel(); //Terminate the timer thread
+					}
 				}
 			});
 
@@ -302,7 +349,14 @@ public class CommentActivity extends Activity {
 			JSONObject response = gae.rateComment(params[0], params[1]);
 			Database db = new Database();
 			db.rateComment(yonderDb, params[0], videoId);
-			db.cleanup(yonderDb); // too often?
+			SharedPreferences sharedPreferences = myActivity.getSharedPreferences(
+					"com.yonder.android", Context.MODE_PRIVATE);
+			long lastDbCleanup = sharedPreferences.getLong("last_db_cleanup", 0);
+			long now = System.currentTimeMillis();
+			if (lastDbCleanup == 0 || (now - lastDbCleanup) / 3600000 > 24) {
+				db.cleanup(yonderDb);
+				sharedPreferences.edit().putLong("last_db_cleanup", now).apply();
+			}
 			return response;
 		}
 

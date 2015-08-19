@@ -1,8 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.yonder.android.CommentActivity">
 
 
@@ -14,7 +12,7 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -29,16 +27,19 @@
 
         <ListView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight=".80"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:layout_above="@+id/layout_comment"
             android:id="@+id/listView_comments"/>
 
 
         <LinearLayout
             android:orientation="horizontal"
-            android:layout_weight=".10"
             android:layout_width="match_parent"
-            android:layout_height="0dp">
+            android:layout_height="wrap_content"
+            android:id="@+id/layout_comment"
+            android:layout_alignParentBottom="true">
 
             <EditText
                 android:layout_width="0dp"
@@ -47,6 +48,7 @@
                 android:id="@+id/add_comment_text"
                 android:textColor="@color/black"
                 android:text=""
+                android:maxLength="200"
                 android:hint="Add a comment" />
 
             <Button
@@ -56,6 +58,6 @@
                 android:background="@drawable/ic_send" />
 
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

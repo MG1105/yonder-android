@@ -70,12 +70,8 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         @Override
         public void onClick(View v) {
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
-            int extra = captionText.getText().length()- 45;
             if (captionText.getText().length() == 0) {
                 Toast toast = Toast.makeText(myContext, "Please add a caption first!", Toast.LENGTH_LONG);
-                toast.show();
-            } else if (extra > 0) {
-                Toast toast = Toast.makeText(myContext, "Your caption has " + extra + " too many characters!", Toast.LENGTH_LONG);
                 toast.show();
             } else {
                 Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);

@@ -6,10 +6,13 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.IOException;
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+	private final String TAG = "Log." + this.getClass().getSimpleName();
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
 
@@ -30,7 +33,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 				setAutoFocus();
 			}
 		} catch (IOException e) {
-			Log.d(VIEW_LOG_TAG, "Error setting camera preview: " + e.getMessage());
+			e.printStackTrace();
+			Crashlytics.logException(e);
 		}
 	}
 
@@ -67,7 +71,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			mCamera.startPreview();
 			setAutoFocus();
 		} catch (Exception e) {
-			Log.d(VIEW_LOG_TAG, "Error starting camera preview: " + e.getMessage());
+			e.printStackTrace();
+			Crashlytics.logException(e);
 		}
 	}
 
