@@ -65,6 +65,7 @@ public class LoadFeedActivity extends Activity {
                 R.anim.animation_leave);
         mActivity = this;
         setContentView(R.layout.activity_load_feed);
+        Crashlytics.log(Log.INFO, TAG, "Creating Activity");
         rotation = AnimationUtils.loadAnimation(this, R.anim.rotate);
         loadFeedImageView = (ImageView) findViewById(R.id.loadFeedImageView);
         loadFeedImageView.setOnClickListener(loadListener);
@@ -74,6 +75,7 @@ public class LoadFeedActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
         GetMyFeedInfoTask getMyFeedInfo = new GetMyFeedInfoTask();
         getMyFeedInfo.execute(userId);
     }
@@ -81,12 +83,14 @@ public class LoadFeedActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
         Video.obfuscate(true);
     }
 
     OnClickListener loadListener = new OnClickListener() {
         @Override
         public void onClick(View v) { // dismiss multiple clicks
+            loadFeedImageView.setClickable(false);
             loadFeedImageView.startAnimation(rotation);
             Switch myVideosOnlySwitch = (Switch) findViewById(R.id.switch_my_videos);
             myVideosOnly = myVideosOnlySwitch.isChecked();
@@ -99,10 +103,11 @@ public class LoadFeedActivity extends Activity {
                         "com.yonder.android", Context.MODE_PRIVATE);
                 long lastRequest = sharedPreferences.getLong("last_request", 0);
                 long now = System.currentTimeMillis();
-                if (lastRequest != 0 && !User.admin) {
+                if (lastRequest != 0 && User.admin) { // NOT admin
                     if ((now - lastRequest) / 60000 < 10) {
                         timer = new Timer();
                         timer.schedule(new StopAnimationTask(), 3000);
+                        loadFeedImageView.setClickable(true);
                         return;
                     } else {
                         sharedPreferences.edit().putLong("last_request", now).apply();
@@ -126,9 +131,9 @@ public class LoadFeedActivity extends Activity {
                 if (location != null) {
                     longitude = location.get(0);
                     latitude = location.get(1);
-                } else {
-                    longitude = "0";
-                    latitude = "0";
+                } else { // Default SJSU
+                    longitude = "-121.881072222222";
+                    latitude = "37.335187777777";
                 }
                 uris = new ArrayList<>();
                 AppEngine gae = new AppEngine();
@@ -163,7 +168,7 @@ public class LoadFeedActivity extends Activity {
                             uris.add(Uri.parse(url));
                         }
                         if (videos.length() > 0) {
-                            loadFeedTextView.setText("Found " + videos.length() + " videos");
+                            loadFeedTextView.setText("Found " + videos.length() + " Yonders");
                             remaining = uris.size();
                             setRequests();
                             for (Request request : requests) {
@@ -172,7 +177,7 @@ public class LoadFeedActivity extends Activity {
                             loadFeedTextView.setText("Loading...");
                             if (remaining == 0) {
                                 getFeedInfoTask infoTask = new getFeedInfoTask();
-                                infoTask.execute(listIds);
+                                infoTask.execute(listIds, userId);
                             } else {
                                 registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
                             }
@@ -185,11 +190,13 @@ public class LoadFeedActivity extends Activity {
                                 timer = new Timer();
                                 timer.schedule(new StopAnimationTask(), 3000);
                             }
+                            loadFeedImageView.setClickable(true);
                         }
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));
                         loadFeedTextView.setText("Could not retrieve new Yonders. Please try again later.");
                         loadFeedImageView.clearAnimation();
+                        loadFeedImageView.setClickable(true);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -208,11 +215,11 @@ public class LoadFeedActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             remaining--;
-            loadFeedTextView.setText("Remaining = " + remaining);
+            loadFeedTextView.setText("Loading... " + remaining);
             if (remaining == 0) {
                 Video.obfuscate(true);
                 getFeedInfoTask infoTask = new getFeedInfoTask();
-                infoTask.execute(listIds);
+                infoTask.execute(listIds, userId);
             }
         }
     };
@@ -251,8 +258,6 @@ public class LoadFeedActivity extends Activity {
                     if (response.getString("success").equals("1")) {
                         JSONArray videosArray = response.getJSONArray("videos");
                         videos = Video.fromJson(videosArray);
-                        spinner = (ProgressBar)findViewById(R.id.progress_videos);
-                        spinner.setVisibility(View.GONE);
                         if (videos.size() > 0) {
                             // Create the adapter to convert the array to views
                             adapter = new VideosAdapter(mActivity);
@@ -272,6 +277,8 @@ public class LoadFeedActivity extends Activity {
                     TextView noVideos = (TextView)findViewById(R.id.textView_no_videos);
                     noVideos.setVisibility(View.VISIBLE);
                 }
+                spinner = (ProgressBar)findViewById(R.id.progress_videos);
+                spinner.setVisibility(View.GONE);
             } catch (Exception e) {
                 e.printStackTrace();
                 Crashlytics.logException(e);;
@@ -329,7 +336,7 @@ public class LoadFeedActivity extends Activity {
         protected JSONObject doInBackground(String... params) {
             try {
                 AppEngine gae = new AppEngine();
-                JSONObject response = gae.getFeedInfo(params[0]);
+                JSONObject response = gae.getFeedInfo(params[0], params[1]);
                 return response;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -361,6 +368,7 @@ public class LoadFeedActivity extends Activity {
                     loadFeedImageView.clearAnimation();
                     loadFeedTextView.setText("Please check your connectivity and try again later.");
                 }
+                loadFeedImageView.setClickable(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 Crashlytics.logException(e);;

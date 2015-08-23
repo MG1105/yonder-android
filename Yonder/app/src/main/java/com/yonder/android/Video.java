@@ -78,11 +78,11 @@ public class Video {
 		File [] listFile = loadedDir.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
-				if ( encrypt && file.getAbsolutePath().contains(".mp4")) {
+				if ( encrypt && file.getAbsolutePath().endsWith(".mp4")) {
 					File out = new File(file.getAbsolutePath().replace(".mp4",""));
 					file.renameTo(out);
 					swapByte(out);
-				} else if (!encrypt && !file.getAbsolutePath().contains(".mp4")) {
+				} else if (!encrypt && !file.getAbsolutePath().endsWith(".mp4")) {
 					File out = new File(file.getAbsolutePath()+ ".mp4");
 					file.renameTo(out);
 					swapByte(out);
@@ -126,7 +126,7 @@ public class Video {
 			for (File file :listFile) {
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
-				if ((now - last)/3600000 > 24 || file.getAbsolutePath().contains(".mp4")) {
+				if ((now - last)/3600000 > 24 || file.getAbsolutePath().endsWith(".mp4")) {
 					Crashlytics.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
 					file.delete();
 				}

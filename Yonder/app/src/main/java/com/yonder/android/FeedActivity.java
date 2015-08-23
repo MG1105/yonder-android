@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FeedActivity extends Activity {
     // Crash? Cleanup video folders
@@ -49,11 +51,13 @@ public class FeedActivity extends Activity {
     private Activity myContext;
     LinkedHashMap<String, JSONObject> videoInfo;
     Animation rotation;
+    Timer timer;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_feed);
+        Crashlytics.log(Log.INFO, TAG, "Creating Activity");
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         myContext = this;
@@ -72,7 +76,6 @@ public class FeedActivity extends Activity {
         flagButton.setOnClickListener(flagListener);
 	    commentButton.setOnClickListener(commentListener);
 
-        rotation = AnimationUtils.loadAnimation(this, R.anim.rotate);
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         currentVideo = (VideoView) findViewById(R.id.currentVideo);
 	    currentVideo.setVideoURI(uris.get(0));
@@ -104,11 +107,11 @@ public class FeedActivity extends Activity {
 	protected void onResume() {
         Video.obfuscate(false);
         super.onResume(); // loop?
+        Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
 		currentVideo.start();
         showCaption();
 		if (CommentActivity.comments != null && CommentActivity.updateTotal) {
 			commentButton.setText(CommentActivity.comments.size() + " Comments");
-            Crashlytics.log(Log.INFO, TAG, "update total");
             CommentActivity.updateTotal = false;
 		}
 	}
@@ -117,6 +120,7 @@ public class FeedActivity extends Activity {
 	protected void onPause() {
         Video.obfuscate(true);
         super.onPause();
+        Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
 	}
 
 	public ArrayList<Uri> getContent() {
@@ -132,17 +136,21 @@ public class FeedActivity extends Activity {
 
     protected void showVideoInfo(int myRating) {
         try {
-            Crashlytics.log(Log.INFO, TAG, "currentVideoId " + currentVideoId);
-            Crashlytics.log(Log.INFO, TAG, "total comments" + videoInfo.get(currentVideoId).getString("comments_total"));
             String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
             String rating = videoInfo.get(currentVideoId).getString("rating");
             if (commentsTotal.equals("0")) {
                 commentButton.setText("Add Comment");
+            } else if (commentsTotal.equals("1")) {
+                commentButton.setText(commentsTotal + " Comment");
             } else {
                 commentButton.setText(commentsTotal + " Comments");
             }
             int latestRating = Integer.valueOf(rating) + myRating;
-            ratingButton.setText(latestRating + " Likes");
+            if (latestRating == 1 || latestRating == -1) {
+                ratingButton.setText(latestRating + " Like");
+            } else {
+                ratingButton.setText(latestRating + " Likes");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Crashlytics.logException(e);;
@@ -154,22 +162,32 @@ public class FeedActivity extends Activity {
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            likeButton.setEnabled(false);
+            dislikeButton.setEnabled(false);
+            rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
             likeButton.startAnimation(rotation);
             RateTask rate = new RateTask(); // spinner and disappear buttons
             Crashlytics.log(Log.INFO, TAG, "Liking video " + currentVideoId);
             rating = "1";
-            rate.execute(currentVideoId, rating);
+            rate.execute(currentVideoId, rating, User.getId(myContext));
+            timer = new Timer();
+            timer.schedule(new StopAnimationTask(), 200);
         }
     };
 
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            likeButton.setEnabled(false);
+            dislikeButton.setEnabled(false);
+            rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
             dislikeButton.startAnimation(rotation);
             RateTask rate = new RateTask();
             Crashlytics.log(Log.INFO, TAG, "Disliking video " + currentVideoId);
             rating = "-1";
-            rate.execute(currentVideoId, rating);
+            rate.execute(currentVideoId, rating, User.getId(myContext));
+            timer = new Timer();
+            timer.schedule(new StopAnimationTask(), 200);
         }
     };
 
@@ -181,6 +199,29 @@ public class FeedActivity extends Activity {
             report.execute(currentVideoId, User.getId(myContext));
         }
     };
+
+    class StopAnimationTask extends TimerTask {
+        public void run() {
+            // When you need to modify a UI element, do so on the UI thread.
+            myContext.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (rating.equals("1")) {
+                        //Toast.makeText(myContext, "Liked!", Toast.LENGTH_LONG).show();
+                        showVideoInfo(1);
+                        likeButton.clearAnimation();
+                    } else {
+                        //Toast.makeText(myContext, "Disliked!", Toast.LENGTH_LONG).show();
+                        showVideoInfo(-1);
+                        dislikeButton.clearAnimation();
+                    }
+                    likeButton.setVisibility(View.GONE);
+                    dislikeButton.setVisibility(View.GONE);
+                }
+            });
+            timer.cancel(); //Terminate the timer thread
+        }
+    }
 
 	View.OnClickListener commentListener = new View.OnClickListener() {
 		@Override
@@ -196,7 +237,7 @@ public class FeedActivity extends Activity {
 
         protected JSONObject doInBackground(String... params) {
             AppEngine gae = new AppEngine();
-            JSONObject response = gae.rateVideo(params[0], params[1]);
+            JSONObject response = gae.rateVideo(params[0], params[1], params[2]);
             return response;
         }
 
@@ -204,33 +245,13 @@ public class FeedActivity extends Activity {
             try {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
-                        if (rating.equals("1")) {
-                            Toast.makeText(myContext, "Liked!", Toast.LENGTH_LONG).show();
-                            showVideoInfo(1);
-                            likeButton.clearAnimation();
-                        } else {
-                            Toast.makeText(myContext, "Disliked!", Toast.LENGTH_LONG).show();
-                            showVideoInfo(-1);
-                            dislikeButton.clearAnimation();
-                        }
-                        likeButton.setVisibility(View.GONE);
-                        dislikeButton.setVisibility(View.GONE);
+
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));
-                        Toast.makeText(myContext, "Failed to rate the video!", Toast.LENGTH_LONG).show();
-                        if (rating.equals("1")) {
-                            likeButton.clearAnimation();
-                        } else {
-                            dislikeButton.clearAnimation();
-                        }
+                        //Toast.makeText(myContext, "Failed to rate the video!", Toast.LENGTH_LONG).show();
                     }
                 } else {
-                    Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
-                    if (rating.equals("1")) {
-                        likeButton.clearAnimation();
-                    } else {
-                        dislikeButton.clearAnimation();
-                    }
+                    //Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -297,6 +318,8 @@ public class FeedActivity extends Activity {
                 ratingButton.setVisibility(View.GONE);
                 likeButton.setVisibility(View.VISIBLE);
                 dislikeButton.setVisibility(View.VISIBLE);
+                likeButton.setEnabled(true);
+                dislikeButton.setEnabled(true);
             }
         } else {
             finish();

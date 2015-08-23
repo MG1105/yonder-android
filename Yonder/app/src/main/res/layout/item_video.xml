@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:textSize="15dp"
         android:textStyle="bold"
-        android:textColor="#000000"
+        android:textColor="@color/primary_dark"
         android:id="@+id/textView_caption" />
 
     <!--<TextView-->
@@ -19,11 +19,15 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="13dp"
         android:id="@+id/textView_rating" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="12dp"
         android:id="@+id/textView_comments_total" />
 
 </LinearLayout>

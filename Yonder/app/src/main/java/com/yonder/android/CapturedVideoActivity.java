@@ -42,12 +42,13 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         super.onCreate(savedInstanceState);
         myContext = this;
         setContentView(R.layout.activity_captured_video);
+        Crashlytics.log(Log.INFO, TAG, "Creating Activity");
         vidView = (VideoView) findViewById(R.id.capturedVideo);
         spinner = (ProgressBar)findViewById(R.id.uploading_in_progress);
         spinner.setVisibility(View.GONE);
         uploadPath = Video.uploadDir.getAbsolutePath();
-        videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
-        final Uri vidUri = Uri.parse(uploadPath + "/captured.mp4");
+        videoId = getIntent().getExtras().getString("videoId");
+        final Uri vidUri = Uri.parse(uploadPath + "/" + videoId);
         vidView.setVideoURI(vidUri);
 	    vidView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 		    @Override
@@ -62,6 +63,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     @Override
     protected void onResume() {
         super.onResume();
+        Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
         Alert.showVideoRule(this);
         vidView.start();
     }
@@ -69,10 +71,12 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     View.OnClickListener uploadListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            uploadButton.setEnabled(false);
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
             if (captionText.getText().length() == 0) {
                 Toast toast = Toast.makeText(myContext, "Please add a caption first!", Toast.LENGTH_LONG);
                 toast.show();
+                uploadButton.setEnabled(true);
             } else {
                 Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
                 toast.show();
@@ -83,6 +87,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                 captionText.setEnabled(false);
                 UploadVideoTask upload = new UploadVideoTask();
                 upload.execute();
+                finish();
             }
         }
     };
@@ -96,15 +101,15 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             if (location != null) {
                 longitude = location.get(0);
                 latitude = location.get(1);
-            } else {
-                longitude = "0";
-                latitude = "0";
+            } else { // Default SJSU
+                longitude = "-121.881072222222";
+                latitude = "37.335187777777";
             }
             userId = User.getId(myContext);
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
             caption = captionText.getText().toString();
             AppEngine gae = new AppEngine();
-            Crashlytics.log(Log.INFO,TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
+            Crashlytics.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
                     uploadPath, videoId, caption, userId, longitude, latitude));
             JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, longitude, latitude);
             return response;
@@ -116,11 +121,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                     if (response.getString("success").equals("1")) {
                         Toast.makeText(myContext, "Yonder Uploaded!", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
-                        finish();
                     } else {
                         Toast.makeText(myContext, "Failed to upload!", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
-                        finish();
                         Crashlytics.logException(new Exception("Server Side failure"));
                     }
                 } else {
@@ -130,10 +133,14 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                 e.printStackTrace();
                 Crashlytics.logException(e);;
             }
+            new File(uploadPath + "/"+ videoId).delete();
             File[] listFile = Video.uploadDir.listFiles();
             if (listFile != null) {
                 for (int i = 0; i < listFile.length; i++) {
-                    listFile[i].delete();  // deletes new video we just captured as this just finished
+                    if (listFile[i].getAbsolutePath().endsWith(".mp4")) {
+                        continue; // can we safely delete all files if other compression going on?
+                    }
+                    listFile[i].delete();
                 }
             }
         }
@@ -142,12 +149,17 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     private void compressVideo() {
         LoadJNI vk = new LoadJNI(); // reduce library size
         try {
+            File tmp = new File(uploadPath + "/tmp" + videoId);
+            new File(uploadPath + "/" + videoId).renameTo(tmp);
+            Crashlytics.log(Log.INFO, TAG, "Pre compression size " + tmp.length());
             // ac audio channels ar audio frequency b bitrate
-            String command = "ffmpeg -y -i " + uploadPath + "/captured.mp4" +
+            String command = "ffmpeg -y -i " + uploadPath + "/tmp"+ videoId +
                     " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId;
             Crashlytics.log(Log.INFO, TAG, command);
             String[] complexCommand = GeneralUtils.utilConvertToComplex(command);
             vk.run(complexCommand, uploadPath, getApplicationContext());
+            Crashlytics.log(Log.INFO, TAG, "Post compression size " + new File(uploadPath + "/" + videoId).length());
+            tmp.delete();
         } catch (Throwable e) {
             e.printStackTrace();
             Crashlytics.logException(e);;

@@ -1,7 +1,5 @@
 package com.yonder.android;
 
-import android.content.Context;
-
 import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONArray;
@@ -27,7 +25,7 @@ public class Comment {
 			this.rating = object.getString("rating");
 			this.nickname = object.getString("nickname");
 			this.videoId = videoId;
-			this.flagged = isFlaggedQuery();
+			this.flagged = isFlaggedQuery(); //too slow for fast scrolling
 			this.rated = isRatedQuery();
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -43,17 +41,25 @@ public class Comment {
 	}
 
 	public boolean isFlaggedQuery () {
-		Database db = new Database();
-		return db.isFlagged(CommentActivity.yonderDb, id, videoId);
+		SQL sql = new SQL();
+		return sql.isFlagged(CommentActivity.yonderDb, id, videoId);
 	}
 
 	public boolean isFlagged () {
 		return flagged;
 	}
 
+	public void setFlagged() {
+		flagged = true;
+	}
+
+	public void setRated() {
+		rated = true;
+	}
+
 	public boolean isRatedQuery () {
-		Database db = new Database();
-		return db.isRated(CommentActivity.yonderDb, id, videoId);
+		SQL sql = new SQL();
+		return sql.isRated(CommentActivity.yonderDb, id, videoId);
 	}
 
 	public boolean isRated () {

@@ -9,7 +9,7 @@ import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 
-public class Database {
+public class SQL {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 
 	protected void flagComment(SQLiteDatabase db, String commentId, String videoId) {
@@ -51,6 +51,7 @@ public class Database {
 		values.put("rated", 1);
 		values.put("ts", System.currentTimeMillis());
 		int updated = db.update("comments", values, "comment_id = ? and video_id = ?", new String[]{commentId, videoId});
+		// ava.lang.IllegalStateException: attempt to re-open an already-closed object: SQLiteDatabase
 		if (updated==0) {
 			db.insert("comments", null, values);
 		}
@@ -79,7 +80,7 @@ public class Database {
 	protected void cleanup(SQLiteDatabase db) {
 		// Define 'where' part of query.
 		long now = System.currentTimeMillis();
-		String selection = "("+ now+ "- ts)/3600000 > 24";
+		String selection = "("+ now+ "- ts)/3600000 > 1";
 		// Specify arguments in placeholder order.
 //		String[] selectionArgs = {now+""};
 		// Issue SQL statement.

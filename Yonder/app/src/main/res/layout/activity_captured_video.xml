@@ -34,9 +34,10 @@
         android:maxLength="45"
         android:textStyle="bold"
         android:layout_below="@+id/space_caption"
-        android:textColor="@android:color/white"
+        android:textColor="@color/white"
         android:gravity="center_horizontal"
         android:hint="Edit Caption"
+        android:textColorHint="@color/white"
         android:background="@android:color/transparent"/>
 
     <ProgressBar

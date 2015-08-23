@@ -2,6 +2,10 @@
 
     <color name="black_overlay">#66000000</color>
     <color name="black">#000000</color>
-    <color name="orange">#00E5FF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="red">#ff0000</color>
+    <color name="primary_dark">#0097A7</color>
+    <color name="primary_light">#00BCD4</color>
+    <color name="accent">#18FFFF</color>
 
 </resources>

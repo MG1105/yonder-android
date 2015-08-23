@@ -7,24 +7,21 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight=".50"
+        android:layout_weight=".6"
+        android:background="@color/primary_light"
         tools:context="com.yonder.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
             android:text="Yonder Player"
             android:id="@+id/textView_player"
-            android:textColor="#00E5FF"
+            android:textColor="@color/white"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:paddingTop="5dp"
             android:layout_alignParentTop="true"/>
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_below="@+id/textView_player"
-            android:background="#84FFFF"/>
 
         <ImageView
             android:id="@+id/loadFeedImageView"
@@ -39,17 +36,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tap to load Yonders near you"
-            android:textColor="#00B8D4"
+            android:textColor="@color/white"
+            android:textSize="15dp"
             android:id="@+id/loadFeedTextView"
+            android:paddingTop="10dp"
             android:layout_below="@+id/loadFeedImageView"
             android:layout_centerHorizontal="true"/>
 
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
+            android:paddingBottom="25dp"
             android:text="Play My Feed Only"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/white"
+            android:textSize="12dp"
             android:id="@+id/switch_my_videos"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
@@ -62,35 +62,30 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight=".50">
+        android:layout_weight=".40">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
             android:text="Yonder Stats"
-            android:textColor="#00E5FF"
+            android:textColor="@color/primary_light"
             android:textSize="20dp"
             android:textStyle="bold"
+            android:paddingTop="5dp"
             android:id="@+id/textView_dashboard"
             android:layout_alignParentTop="true"/>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
-            android:layout_below="@+id/textView_dashboard"
-            android:id="@+id/view_dashboard"
-            android:background="#84FFFF"/>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:text="You have not uploaded a Yonder in the past 24 hours."
-            android:textColor="#000000"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="15dp"
+            android:text="You have not uploaded a Yonder in the past 24 hours"
+            android:textColor="@color/primary_dark"
             android:id="@+id/textView_no_videos"
             android:visibility="gone"
-            android:layout_below="@+id/view_dashboard"
-            android:layout_centerHorizontal="true"/>
+            android:layout_below="@+id/textView_dashboard"/>
 
         <ProgressBar
             android:id="@+id/progress_videos"
@@ -104,8 +99,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingTop="10dp"
-            android:layout_below="@+id/view_dashboard"
+            android:paddingTop="0dp"
+            android:layout_below="@+id/textView_dashboard"
             android:listSelector="@android:color/transparent"
             android:id="@+id/listView_my_videos"/>
 

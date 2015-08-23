@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.media.CamcorderProfile;
@@ -44,9 +45,11 @@ public class CameraPreviewActivity extends Activity {
 	private boolean cameraFront = false;
 	String userId;
 	boolean recording;
-	boolean clickOnly;
+	TextView counter;
 //	private GestureDetectorCompat mDetector;
     CountDownTimer timer;
+	String videoId;
+	View switchBackground;
 
 	// Camera Preview
 
@@ -59,6 +62,7 @@ public class CameraPreviewActivity extends Activity {
 		Fabric.with(this, new Crashlytics.Builder().core(core).build());
 		userId = User.getId(this);
 		Crashlytics.setUserIdentifier(userId);
+		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
 
 		setContentView(R.layout.activity_camera_preview);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -76,6 +80,7 @@ public class CameraPreviewActivity extends Activity {
 
 	public void onResume() {
 		super.onResume();
+		Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
 		if (!hasCamera(mActivity)) {
 			Toast.makeText(mActivity, "Sorry, we could not find your camera. Exiting...", Toast.LENGTH_LONG).show();
 			Crashlytics.logException(new Exception("No Camera found"));
@@ -86,6 +91,7 @@ public class CameraPreviewActivity extends Activity {
 			if (findFrontFacingCamera() < 0) {
 				//Toast.makeText(this, "No front facing camera found.", Toast.LENGTH_LONG).show();
 				switchCamera.setVisibility(View.GONE);
+				switchBackground.setVisibility(View.GONE);
 				mCamera = Camera.open(findBackFacingCamera());
 			} else {
 				mCamera = Camera.open(findFrontFacingCamera());
@@ -97,6 +103,7 @@ public class CameraPreviewActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
         if (recording) {
             stopRecording();
 	        capture.setBackgroundResource(R.drawable.ic_record);
@@ -223,43 +230,46 @@ public class CameraPreviewActivity extends Activity {
 
 	// Video Recording
 
-	OnClickListener clickListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			if (clickOnly)
-			clickOnly = true;
-		}
-	};
-
 	View.OnTouchListener recordListener = new View.OnTouchListener() {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			if(event.getAction() == MotionEvent.ACTION_DOWN && !clickOnly){
+			if(event.getAction() == MotionEvent.ACTION_DOWN){
 				Crashlytics.log(Log.INFO, TAG, "Start recording");
 				if (!prepareMediaRecorder()) {
 					Toast.makeText(CameraPreviewActivity.this, "Failed Recording!", Toast.LENGTH_LONG).show();
-					mActivity.recreate();
+					mActivity.finish();
 				}
 				try {
 					capture.setBackgroundResource(R.drawable.ic_stop);
 					mediaRecorder.start();
+					counter = (TextView)findViewById(R.id.recording_counter);
+					switchBackground = findViewById(R.id.background_ChangeCamera);
+					feedButton.setVisibility(View.INVISIBLE);
+					switchCamera.setVisibility(View.INVISIBLE);
+					switchBackground.setVisibility(View.INVISIBLE);
+					counter.setVisibility(View.VISIBLE);
+					counter.setText("9");
 					timer = new CountDownTimer(10000, 1000) {
-						TextView counter = (TextView)findViewById(R.id.recording_counter);
+
 						public void onTick(long millisUntilFinished) {
-							counter.setText(""+millisUntilFinished / 1000);
+							counter.setText("" + millisUntilFinished / 1000);
 						}
 						public void onFinish() {
 							if (recording) {
 								stopRecording();
 								capture.setBackgroundResource(R.drawable.ic_record);
 							}
+							counter.setVisibility(View.INVISIBLE);
+							feedButton.setVisibility(View.VISIBLE);
+							switchCamera.setVisibility(View.VISIBLE);
+							switchBackground.setVisibility(View.VISIBLE);
 							counter.setText("10");
 						}
 					}.start();
 				} catch (Exception e) {
 					Toast.makeText(CameraPreviewActivity.this, "Failed Recording!", Toast.LENGTH_LONG).show();
 					Crashlytics.logException(new Exception("Failed Recording"));
-					mActivity.recreate();
+					mActivity.finish();
 				}
 				return true;
 			}
@@ -271,6 +281,10 @@ public class CameraPreviewActivity extends Activity {
 					if (timer != null) {
 						timer.cancel();
 						TextView counter = (TextView)findViewById(R.id.recording_counter);
+						counter.setVisibility(View.INVISIBLE);
+						feedButton.setVisibility(View.VISIBLE);
+						switchCamera.setVisibility(View.VISIBLE);
+						switchBackground.setVisibility(View.VISIBLE);
 						counter.setText("10");
 					}
 				}
@@ -283,12 +297,22 @@ public class CameraPreviewActivity extends Activity {
 
     protected void stopRecording() { // Exception
         // stop recording and release camera
-        mediaRecorder.stop(); // stop the recording
-        releaseMediaRecorder(); // release the MediaRecorder object
+
+	    try{
+		    mediaRecorder.stop(); // stop the recording
+	    }catch(RuntimeException stopException){
+		    //handle cleanup here
+		    releaseMediaRecorder(); // release the MediaRecorder object
+		    Toast.makeText(CameraPreviewActivity.this, "Long press to record", Toast.LENGTH_LONG).show();
+		    recording = false;
+		    return;
+	    }
+	    releaseMediaRecorder(); // release the MediaRecorder object
         Toast.makeText(CameraPreviewActivity.this, "Yonder Captured!", Toast.LENGTH_LONG).show();
         recording = false;
-        Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
-        startActivity(intent);
+	    Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
+	    intent.putExtra("videoId", videoId);
+	    startActivity(intent);
     }
 
 	private void releaseMediaRecorder() {
@@ -312,7 +336,8 @@ public class CameraPreviewActivity extends Activity {
 
 		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
 
-        String uploadPath = Video.uploadDir.getAbsolutePath() + "/captured.mp4";
+		videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
+        String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
 		mediaRecorder.setOutputFile(uploadPath);
 		mediaRecorder.setMaxDuration(15000); // Set max duration
 		if (cameraFront) {

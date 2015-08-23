@@ -4,15 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,7 +25,6 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -43,37 +43,39 @@ public class CommentActivity extends Activity {
 	String commentId, nickname;
 	static SQLiteDatabase yonderDb;
 	static boolean updateTotal;
+	ListView commentList;
+	Button sendButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_comment);
+		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
 		myActivity = this;
 		videoId = getIntent().getExtras().getString("videoId");
 		GetCommentsTask getComments = new GetCommentsTask();
 		getComments.execute();
-		Button sendButton = (Button) findViewById(R.id.add_comment_button);
+		sendButton = (Button) findViewById(R.id.add_comment_button);
 		sendButton.setOnClickListener(sendListener);
 		Alert.showCommentRule(this);
 		YonderDbHelper mDbHelper = new YonderDbHelper(this);
-		yonderDb = mDbHelper.getReadableDatabase();
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		yonderDb.close();
+		if (yonderDb == null) {
+			Crashlytics.log(Log.INFO, TAG, "Creating YonderDb");
+			yonderDb = mDbHelper.getWritableDatabase();
+		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
+		Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
 		updateTotal = true;
 	}
 
 	View.OnClickListener sendListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
+			sendButton.setEnabled(false);
 			AddCommentTask addComment = new AddCommentTask();
 			commentText = (EditText) findViewById(R.id.add_comment_text); // test with '
 
@@ -111,33 +113,53 @@ public class CommentActivity extends Activity {
 
 			// Lookup view for data population
 			TextView content = (TextView) convertView.findViewById(R.id.textView_comment);
+			TextView nickname = (TextView) convertView.findViewById(R.id.textView_nickname);
 			rating = (TextView) convertView.findViewById(R.id.textView_comment_item_rating);
 			flagButton = (Button) convertView.findViewById(R.id.button_flag);
 			likeButton = (Button) convertView.findViewById(R.id.button_comment_item_like);
 			dislikeButton = (Button) convertView.findViewById(R.id.button_comment_item_dislike);
 
 			// Populate the data into the template view using the data object
-			String sourceString = "<b>" + "@" + comment.getNickname() + "</b> " + "<br>" + comment.getContent();
-			content.setText(Html.fromHtml(sourceString));
-			rating.setText(comment.getRating() + " Likes"); // no s if 1
+			nickname.setText("@" + comment.getNickname());
+			content.setText(comment.getContent());
+			 // no s if 1
+			if (Integer.valueOf(comment.getRating()) >= 0) {
+				rating.setTextColor(Color.parseColor("#00FF00"));
+				rating.setText("+" + comment.getRating());
+			} else {
+				rating.setTextColor(Color.parseColor("#ff0000"));
+				rating.setText("\u2212" + comment.getRating().replace("-", ""));
+			}
 
 			if (comment.isFlagged()) {
 				flagButton.setVisibility(View.GONE);
+			} else {
+				flagButton.setVisibility(View.VISIBLE);
 			}
 			if (comment.isRated()) {
 				rating.setVisibility(View.VISIBLE);
 				likeButton.setVisibility(View.GONE);
 				dislikeButton.setVisibility(View.GONE);
+			} else {
+				rating.setVisibility(View.GONE);
+				likeButton.setVisibility(View.VISIBLE);
+				dislikeButton.setVisibility(View.VISIBLE);
 			}
+
+			flagButton.setEnabled(true);
+			likeButton.setEnabled(true);
+			dislikeButton.setEnabled(true);
 
 			flagButton.setOnClickListener(new View.OnClickListener() {
 				String id = comment.getId();
 				Button myFlag = flagButton;
+				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
+					myFlag.setVisibility(View.GONE);
 					ReportTask report = new ReportTask();
 					report.execute(id, User.getId(myActivity));
-					myFlag.setVisibility(View.GONE);
+					myComment.setFlagged();
 				}
 			});
 
@@ -147,16 +169,20 @@ public class CommentActivity extends Activity {
 				TextView myRating = rating;
 				Button myLike = likeButton;
 				Button myDislike = dislikeButton;
-				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate);
+				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate_fast);
 				Timer timer;
+				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
+					myDislike.setEnabled(false);
+					myLike.setEnabled(false);
 					RateTask rateComment = new RateTask();
-					rateComment.execute(id, "1");
+					rateComment.execute(id, "1", User.getId(myActivity));
 					getItem(pos).updateRating(1);
 					myLike.startAnimation(rotation);
 					timer = new Timer();
-					timer.schedule(new StopAnimationTask(), 1000);
+					timer.schedule(new StopAnimationTask(), 200);
+					myComment.setRated();
 				}
 
 				class StopAnimationTask extends TimerTask {
@@ -183,20 +209,20 @@ public class CommentActivity extends Activity {
 				TextView myRating = rating;
 				Button myLike = likeButton;
 				Button myDislike = dislikeButton;
-				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate);
+				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate_fast);
 				Timer timer;
+				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
+					myDislike.setEnabled(false);
+					myLike.setEnabled(false);
 					RateTask rateComment = new RateTask();
-					rateComment.execute(id, "-1");
+					rateComment.execute(id, "-1", User.getId(myActivity));
 					getItem(pos).updateRating(-1);
 					myDislike.startAnimation(rotation);
 					timer = new Timer();
-					timer.schedule(new StopAnimationTask(), 1000);
-					myRating.setVisibility(View.VISIBLE);
-					myLike.setVisibility(View.GONE);
-					myDislike.setVisibility(View.GONE);
-					adapter.notifyDataSetChanged();
+					timer.schedule(new StopAnimationTask(), 200);
+					myComment.setRated();
 				}
 
 				class StopAnimationTask extends TimerTask {
@@ -230,7 +256,7 @@ public class CommentActivity extends Activity {
 			try {
 				AppEngine gae = new AppEngine();
 				Crashlytics.log(Log.INFO, TAG, "Getting comments for " + videoId);
-				JSONObject response = gae.getComments(videoId);
+				JSONObject response = gae.getComments(videoId, User.getId(myActivity));
 				return response;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -249,8 +275,8 @@ public class CommentActivity extends Activity {
 							// Create the adapter to convert the array to views
 							adapter = new CommentsAdapter(myActivity);
 							// Attach the adapter to a ListView
-							ListView listView = (ListView) findViewById(R.id.listView_comments);
-							listView.setAdapter(adapter);
+							commentList= (ListView) findViewById(R.id.listView_comments);
+							commentList.setAdapter(adapter);
 							spinner = (ProgressBar)findViewById(R.id.progress_comments);
 							spinner.setVisibility(View.GONE);
 							if (comments.size() == 0) {
@@ -291,12 +317,17 @@ public class CommentActivity extends Activity {
 							TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
 							noComments.setVisibility(View.GONE);
 						}
-						comments.add(new Comment(commentId, commentText.getText().toString(),nickname));
+						comments.add(new Comment(commentId, commentText.getText().toString(), nickname));
 						adapter.notifyDataSetChanged();
 						if (commentText != null) {
 							commentText.setText("");
 						}
-						Toast.makeText(myActivity, "Sent!", Toast.LENGTH_LONG).show();
+						commentList.smoothScrollToPosition(adapter.getCount()-1);
+						InputMethodManager inputManager = (InputMethodManager)
+								getSystemService(Context.INPUT_METHOD_SERVICE);
+						inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
+								getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+						//Toast.makeText(myActivity, "Sent!", Toast.LENGTH_LONG).show();
 					} else {
 						Crashlytics.logException(new Exception("Server Side Failure"));
 						Toast.makeText(myActivity, "Failed to send comment!", Toast.LENGTH_LONG).show();
@@ -304,6 +335,7 @@ public class CommentActivity extends Activity {
 				} else {
 					Toast.makeText(myActivity, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
 				}
+				sendButton.setEnabled(true);
 			} catch (Exception e) {
 				e.printStackTrace();
 				Crashlytics.logException(e);;
@@ -317,8 +349,8 @@ public class CommentActivity extends Activity {
 			AppEngine gae = new AppEngine();
 			Crashlytics.log(Log.INFO, TAG, "Reporting comment " + params[0]);
 			JSONObject response = gae.reportComment(params[0], params[1]);
-			Database db = new Database();
-			db.flagComment(yonderDb, params[0], videoId);
+			SQL sql = new SQL();
+			sql.flagComment(yonderDb, params[0], videoId);
 			return response;
 		}
 
@@ -326,7 +358,7 @@ public class CommentActivity extends Activity {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
-						Toast toast = Toast.makeText(myActivity, "Flagged!", Toast.LENGTH_LONG);
+						Toast toast = Toast.makeText(myActivity, "Flagged", Toast.LENGTH_LONG);
 						toast.show();
 					} else {
 						Crashlytics.logException(new Exception("Server Side Failure"));
@@ -346,15 +378,15 @@ public class CommentActivity extends Activity {
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
 			Crashlytics.log(Log.INFO, TAG, "Rating comment " + params[0]+ " " + params[1]);
-			JSONObject response = gae.rateComment(params[0], params[1]);
-			Database db = new Database();
-			db.rateComment(yonderDb, params[0], videoId);
+			JSONObject response = gae.rateComment(params[0], params[1], params[2]);
+			SQL sql = new SQL();
+			sql.rateComment(yonderDb, params[0], videoId);
 			SharedPreferences sharedPreferences = myActivity.getSharedPreferences(
 					"com.yonder.android", Context.MODE_PRIVATE);
 			long lastDbCleanup = sharedPreferences.getLong("last_db_cleanup", 0);
 			long now = System.currentTimeMillis();
-			if (lastDbCleanup == 0 || (now - lastDbCleanup) / 3600000 > 24) {
-				db.cleanup(yonderDb);
+			if (lastDbCleanup == 0 || (now - lastDbCleanup) / 3600000 > 1) {
+				sql.cleanup(yonderDb);
 				sharedPreferences.edit().putLong("last_db_cleanup", now).apply();
 			}
 			return response;
@@ -364,8 +396,8 @@ public class CommentActivity extends Activity {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
-						Toast toast = Toast.makeText(myActivity, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
-						toast.show();
+						//Toast toast = Toast.makeText(myActivity, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
+						//toast.show();
 					} else {
 						Crashlytics.logException(new Exception("Server Side Failure"));
 					}

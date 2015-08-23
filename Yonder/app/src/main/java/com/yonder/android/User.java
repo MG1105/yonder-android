@@ -12,10 +12,14 @@ import java.util.Random;
 
 public class User {
 	static boolean admin = false;
+	static String androidId;
 
 	public static String getId(Context context) {
 		if (admin) {
 			return "897d1e5hb8u47u56jh6";
+		}
+		if (androidId != null) {
+			return androidId;
 		}
 		String androidId = Settings.Secure.getString(context.getContentResolver(),Settings.Secure.ANDROID_ID);
 		if (androidId == null || androidId.length() == 0 || androidId.contains("9774d56d682e549c")) {
