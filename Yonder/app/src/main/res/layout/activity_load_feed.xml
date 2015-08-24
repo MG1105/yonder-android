@@ -9,7 +9,7 @@
         android:layout_height="0dp"
         android:layout_weight=".6"
         android:background="@color/primary_light"
-        tools:context="com.yonder.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
+        tools:context="yonder.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
 
         <TextView
             android:layout_width="wrap_content"
@@ -35,11 +35,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tap to load Yonders near you"
+            android:text="Tap to look for Yonders near you"
             android:textColor="@color/white"
             android:textSize="15dp"
             android:id="@+id/loadFeedTextView"
             android:paddingTop="10dp"
+            android:gravity="center"
             android:layout_below="@+id/loadFeedImageView"
             android:layout_centerHorizontal="true"/>
 
@@ -47,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingBottom="25dp"
-            android:text="Play My Feed Only"
+            android:text="Play My Feed"
             android:textColor="@color/white"
             android:textSize="12dp"
             android:id="@+id/switch_my_videos"
