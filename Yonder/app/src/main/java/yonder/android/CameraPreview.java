@@ -1,7 +1,10 @@
 package yonder.android;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
+import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -14,27 +17,24 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
+	private int cameraId;
+	private Activity activity;
+	static int displayOrientation;
 
-	public CameraPreview(Context context, Camera camera) {
-		super(context);
+	public CameraPreview(Activity activity, int cameraId, Camera camera) {
+		super(activity);
+		this.activity = activity;
 		mCamera = camera;
+		this.cameraId = cameraId;
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-		try {
-			// create the surface and start camera preview
-			if (mCamera == null) {
-				mCamera.setPreviewDisplay(holder);
-				mCamera.setDisplayOrientation(90);
-				mCamera.startPreview();
-				setAutoFocus();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			Crashlytics.logException(e);
-		}
+		refreshCamera(cameraId, mCamera);
+	}
+
+	public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
 	}
 
 	public void setAutoFocus() {
@@ -49,7 +49,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		}
 	}
 
-	public void refreshCamera(Camera camera) {
+	public void refreshCamera(int cameraId, Camera camera) {
 		if (mHolder.getSurface() == null) {
 			// preview surface does not exist
 			return;
@@ -66,7 +66,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		mCamera = camera;
 		try {
 			mCamera.setPreviewDisplay(mHolder);
-		 	mCamera.setDisplayOrientation(90);
+			setCameraDisplayOrientation(activity, cameraId, camera);
 			mCamera.startPreview();
 			setAutoFocus();
 		} catch (Exception e) {
@@ -75,10 +75,31 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		}
 	}
 
-	public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-		// If your preview can change or rotate, take care of those events here.
-		// Make sure to stop the preview before resizing or reformatting it.
-		refreshCamera(mCamera);
+	public void setCameraDisplayOrientation(Activity activity,
+	                                               int cameraId, android.hardware.Camera camera) {
+		android.hardware.Camera.CameraInfo info =
+				new android.hardware.Camera.CameraInfo();
+		android.hardware.Camera.getCameraInfo(cameraId, info);
+		int rotation = activity.getWindowManager().getDefaultDisplay()
+				.getRotation();
+		int degrees = 0;
+		switch (rotation) {
+			case Surface.ROTATION_0: degrees = 0; break;
+			case Surface.ROTATION_90: degrees = 90; break;
+			case Surface.ROTATION_180: degrees = 180; break;
+			case Surface.ROTATION_270: degrees = 270; break;
+		}
+
+		int result;
+		if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+			result = (info.orientation + degrees) % 360;
+			result = (360 - result) % 360;  // compensate the mirror
+		} else {  // back-facing
+			result = (info.orientation - degrees + 360) % 360;
+		}
+		displayOrientation = result;
+		Crashlytics.log(Log.INFO, TAG, "Set display orientation " + displayOrientation);
+		camera.setDisplayOrientation(displayOrientation);
 	}
 
 	@Override

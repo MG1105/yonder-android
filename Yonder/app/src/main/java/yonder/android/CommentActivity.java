@@ -39,6 +39,7 @@ public class CommentActivity extends Activity {
 	Activity myActivity;
 	private ProgressBar spinner;
 	EditText commentText;
+	String comment;
 	CommentsAdapter adapter;
 	String commentId, nickname;
 	static SQLiteDatabase yonderDb;
@@ -77,19 +78,19 @@ public class CommentActivity extends Activity {
 		public void onClick(View v) {
 			sendButton.setEnabled(false);
 			AddCommentTask addComment = new AddCommentTask();
-			commentText = (EditText) findViewById(R.id.add_comment_text); // test with '
-
-			if (commentText.getText().length() == 0) {
-				Toast toast = Toast.makeText(myActivity, "Please write a comment first", Toast.LENGTH_LONG);
-				toast.show();
+			commentText = (EditText) findViewById(R.id.add_comment_text);
+			comment = commentText.getText().toString().replace("\n", " ");
+			if (comment.replace(" ", "").length() == 0) {
+				Toast.makeText(myActivity, "Please write a comment first", Toast.LENGTH_LONG).show();
+				sendButton.setEnabled(true);
 			} else {
 				commentId = Long.toString(System.currentTimeMillis());
 				nickname = User.getNickname(myActivity);
 				String userId = User.getId(myActivity);
 				Crashlytics.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
 								"commentText %s",
-						nickname, userId, videoId, commentId, commentText.getText().toString()));
-				addComment.execute(nickname, userId, videoId, commentId, commentText.getText().toString());
+						nickname, userId, videoId, commentId, comment));
+				addComment.execute(nickname, userId, videoId, commentId, comment);
 			}
 		}
 	};
@@ -123,7 +124,8 @@ public class CommentActivity extends Activity {
 			nickname.setText("@" + comment.getNickname());
 			content.setText(comment.getContent());
 			 // no s if 1
-			if (Integer.valueOf(comment.getRating()) >= 0) {
+			int ratingInt = Integer.valueOf(comment.getRating());
+			if (ratingInt >= 0) {
 				rating.setTextColor(Color.parseColor("#00FF00"));
 				rating.setText("+" + comment.getRating());
 			} else {
@@ -317,7 +319,7 @@ public class CommentActivity extends Activity {
 							TextView noComments = (TextView)findViewById(R.id.textView_no_comments);
 							noComments.setVisibility(View.GONE);
 						}
-						comments.add(new Comment(commentId, commentText.getText().toString(), nickname));
+						comments.add(new Comment(commentId, comment, nickname));
 						adapter.notifyDataSetChanged();
 						if (commentText != null) {
 							commentText.setText("");

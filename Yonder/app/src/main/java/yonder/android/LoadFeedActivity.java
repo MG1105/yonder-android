@@ -19,11 +19,13 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -52,6 +54,8 @@ public class LoadFeedActivity extends Activity {
     String userId, longitude, latitude;
     Timer timer;
     String listIds;
+    String score;
+    Switch myVideosOnlySwitch;
 
     private DownloadManager downloadManager;
     static LinkedHashMap<String, JSONObject> videoInfo;
@@ -68,6 +72,19 @@ public class LoadFeedActivity extends Activity {
         loadFeedImageView = (ImageView) findViewById(R.id.loadFeedImageView);
         loadFeedImageView.setOnClickListener(loadListener);
         userId = User.getId(this);
+        loadFeedTextView = (TextView) findViewById(R.id.loadFeedTextView);
+        myVideosOnlySwitch = (Switch) findViewById(R.id.switch_my_videos);
+        myVideosOnlySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    loadFeedTextView.setText("Tap to watch your feed");
+                } else {
+                    loadFeedTextView.setText("Tap to look for Yonders near you");
+                }
+            }
+
+        });
     }
 
     @Override
@@ -90,9 +107,8 @@ public class LoadFeedActivity extends Activity {
         public void onClick(View v) { // dismiss multiple clicks
             loadFeedImageView.setClickable(false);
             loadFeedImageView.startAnimation(rotation);
-            Switch myVideosOnlySwitch = (Switch) findViewById(R.id.switch_my_videos);
+
             myVideosOnly = myVideosOnlySwitch.isChecked();
-            loadFeedTextView = (TextView) findViewById(R.id.loadFeedTextView);
             if (myVideosOnly) {
                 loadFeedTextView.setText("Looking for your Yonders...");
             } else {
@@ -101,7 +117,7 @@ public class LoadFeedActivity extends Activity {
                         "yonder.android", Context.MODE_PRIVATE);
                 long lastRequest = sharedPreferences.getLong("last_request", 0);
                 long now = System.currentTimeMillis();
-                if (lastRequest != 0 && User.admin) { // NOT admin
+                if (lastRequest != 0 && !User.admin) {
                     if ((now - lastRequest) / 60000 < 10) {
                         timer = new Timer();
                         timer.schedule(new StopAnimationTask(), 3000);
@@ -174,9 +190,11 @@ public class LoadFeedActivity extends Activity {
                             }
                             loadFeedTextView.setText("Loading...");
                             if (remaining == 0) {
+                                Crashlytics.log(Log.INFO, TAG, "All videos in cache");
                                 getFeedInfoTask infoTask = new getFeedInfoTask();
                                 infoTask.execute(listIds, userId);
                             } else {
+                                Crashlytics.log(Log.INFO, TAG, remaining + " videos to download");
                                 registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
                             }
                         } else {
@@ -205,6 +223,7 @@ public class LoadFeedActivity extends Activity {
             } else {
                 loadFeedTextView.setText("Please check your connectivity and try again later");
                 loadFeedImageView.clearAnimation();
+                loadFeedImageView.setClickable(true);
             }
         }
     }
@@ -213,7 +232,10 @@ public class LoadFeedActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             remaining--;
-            loadFeedTextView.setText("Loading... " + remaining);
+            Crashlytics.log(Log.INFO, TAG, "Remaining " + remaining);
+            if (remaining >= 0) { // Bug < 0?
+                loadFeedTextView.setText("Loading... " + remaining);
+            }
             if (remaining == 0) {
                 Video.obfuscate(true);
                 getFeedInfoTask infoTask = new getFeedInfoTask();
@@ -236,7 +258,7 @@ public class LoadFeedActivity extends Activity {
         }
     }
 
-    class GetMyFeedInfoTask extends AsyncTask<String, Void, JSONObject> {
+    class GetMyFeedInfoTask extends AsyncTask<String, Void, JSONObject> { // Rename to GetStats
 
         protected JSONObject doInBackground(String... params) {
             try {
@@ -254,17 +276,30 @@ public class LoadFeedActivity extends Activity {
             try {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
+
+                        score = response.getString("score");
+                        TextView scoreView = (TextView)findViewById(R.id.textView_score);
+                        if (Integer.parseInt(score) == 1 || Integer.parseInt(score) == -1) {
+                            scoreView.setText(score + " Coin");
+                        } else {
+                            scoreView.setText(score + " Coins");
+                        }
+
+
                         JSONArray videosArray = response.getJSONArray("videos");
                         videos = Video.fromJson(videosArray);
+                        ListView listView = (ListView) findViewById(R.id.listView_my_videos);
+                        TextView noVideos = (TextView)findViewById(R.id.textView_no_videos);
                         if (videos.size() > 0) {
                             // Create the adapter to convert the array to views
                             adapter = new VideosAdapter(mActivity);
                             // Attach the adapter to a ListView
-                            ListView listView = (ListView) findViewById(R.id.listView_my_videos);
                             listView.setAdapter(adapter);
+                            noVideos.setVisibility(View.GONE);
+                            listView.setVisibility(View.VISIBLE);
                         } else {
-                            TextView noVideos = (TextView)findViewById(R.id.textView_no_videos);
                             noVideos.setVisibility(View.VISIBLE);
+                            listView.setVisibility(View.GONE);
                         }
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));
@@ -274,6 +309,7 @@ public class LoadFeedActivity extends Activity {
                 } else { // no internet
                     TextView noVideos = (TextView)findViewById(R.id.textView_no_videos);
                     noVideos.setVisibility(View.VISIBLE);
+                    Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
                 }
                 spinner = (ProgressBar)findViewById(R.id.progress_videos);
                 spinner.setVisibility(View.GONE);
@@ -319,8 +355,22 @@ public class LoadFeedActivity extends Activity {
             // Populate the data into the template view using the data object
 //            date.setText("Date: " + formattedDate);
             caption.setText("Caption: " + video.getCaption());
-            rating.setText(video.getRating() + " Likes");
-            comments_total.setText(video.getCommentsTotal() + " Comments");
+            int ratingInt = Integer.parseInt(video.getRating());
+            int commentsInt = Integer.parseInt(video.getCommentsTotal());
+            String commentUnit;
+            String ratingUnit;
+            if (ratingInt == 1 || ratingInt == -1) {
+                ratingUnit = " Like";
+            } else {
+                ratingUnit = " Likes";
+            }
+            if (commentsInt == 1) {
+                commentUnit = " Comment";
+            } else {
+                commentUnit = " Comments";
+            }
+            rating.setText(video.getRating() + ratingUnit);
+            comments_total.setText(video.getCommentsTotal() + commentUnit);
 
             // Return the completed view to render on screen
             return convertView;
@@ -356,7 +406,11 @@ public class LoadFeedActivity extends Activity {
                         Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
                         startActivity(intentFeedStart);
                         loadFeedImageView.clearAnimation();
-                        loadFeedTextView.setText("Tap to look for Yonders near you");
+                        if (myVideosOnly) {
+                            loadFeedTextView.setText("Tap to watch your feed");
+                        } else {
+                            loadFeedTextView.setText("Tap to look for Yonders near you");
+                        }
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));
                         loadFeedImageView.clearAnimation();

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+    android:background="@color/primary_light">
+
+    <TextView
+        android:id="@+id/text_welcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:text="Welcome to Yonder!"
+        android:textSize="22dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:layout_alignParentTop="true"/>
+
+    <ImageView
+        android:id="@+id/image_bulletpoint_4"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/text_welcome"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_tag"/>
+
+    <TextView
+        android:id="@+id/text_bulletpoint_4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:text="@string/welcome_bullet_point_3"
+        android:textSize="16dp"
+        android:paddingBottom="30dp"
+        android:layout_below="@+id/image_bulletpoint_4"/>
+
+    <ImageView
+        android:id="@+id/image_bulletpoint_5"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/text_bulletpoint_4"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_captain"/>
+
+    <TextView
+        android:id="@+id/text_bulletpoint_5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:text="@string/welcome_bullet_point_5"
+        android:textSize="16dp"
+        android:paddingBottom="30dp"
+        android:layout_below="@+id/image_bulletpoint_5"/>
+
+    <ImageView
+        android:id="@+id/image_bulletpoint_6"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/text_bulletpoint_5"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_coins"/>
+
+    <TextView
+        android:id="@+id/text_bulletpoint_6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:text="@string/welcome_bullet_point_6"
+        android:textSize="16dp"
+        android:paddingBottom="30dp"
+        android:layout_below="@+id/image_bulletpoint_6"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:text="Tap to start"
+        android:textSize="15dp"
+        android:paddingBottom="15dp"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>

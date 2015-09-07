@@ -21,11 +21,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
-
-import io.fabric.sdk.android.Fabric;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,22 +43,17 @@ public class CameraPreviewActivity extends Activity {
     CountDownTimer timer;
 	String videoId;
 	View switchBackground;
+	int cameraId;
 
 	// Camera Preview
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		Fabric.with(this, new Crashlytics());
-//		CrashlyticsCore core = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build();
-//		Fabric.with(this, new Crashlytics.Builder().core(core).build());
 		userId = User.getId(this);
-		Crashlytics.setUserIdentifier(userId);
 		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
 
 		setContentView(R.layout.activity_camera_preview);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		mActivity = this;
 //		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 		initialize();
@@ -71,30 +62,16 @@ public class CameraPreviewActivity extends Activity {
 		verifyUserTask.execute();
 		User.verify(mActivity);
 		User.setLocation(mActivity);
-		Video.cleanup(Video.loadedDir);
-		Video.cleanup(Video.uploadDir);
+		Video.cleanup(Video.loadedDir, false);
+		Video.cleanup(Video.uploadDir, true);
+		User.checkRoot(mActivity);
 	}
 
 	public void onResume() {
 		super.onResume();
 		Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
-		if (!hasCamera(mActivity)) {
-			Toast.makeText(mActivity, "Sorry, we could not find your camera", Toast.LENGTH_LONG).show();
-			Crashlytics.logException(new Exception("No Camera found"));
-			finish();
-		}
-		if (mCamera == null) {
-			// if the front facing camera does not exist
-			if (findFrontFacingCamera() < 0) {
-				//Toast.makeText(this, "No front facing camera found.", Toast.LENGTH_LONG).show();
-				switchCamera.setVisibility(View.GONE);
-				switchBackground.setVisibility(View.GONE);
-				mCamera = Camera.open(findBackFacingCamera());
-			} else {
-				mCamera = Camera.open(findFrontFacingCamera());
-			}
-			mPreview.refreshCamera(mCamera);
-		}
+		openCamera();
+		mPreview.refreshCamera(cameraId, mCamera);
 	}
 
 	@Override
@@ -111,7 +88,8 @@ public class CameraPreviewActivity extends Activity {
 	public void initialize() {
 		cameraPreview = (RelativeLayout) findViewById(R.id.camera_preview);
 
-		mPreview = new CameraPreview(mActivity, mCamera);
+		openCamera();
+		mPreview = new CameraPreview(mActivity, cameraId, mCamera);
 		cameraPreview.addView(mPreview);
 
 		capture = (Button) findViewById(R.id.button_capture);
@@ -135,7 +113,7 @@ public class CameraPreviewActivity extends Activity {
 					// release the old camera instance
 					// switch camera, from the front and the back and vice versa
 					releaseCamera();
-					chooseCamera();
+					switchCamera();
 				} else {
 					Toast.makeText(mActivity, "Sorry, your phone has only one camera", Toast.LENGTH_LONG).show();
 				}
@@ -153,24 +131,45 @@ public class CameraPreviewActivity extends Activity {
 		}
 	};
 
-	public void chooseCamera() {
+	public void switchCamera() {
 		// if the camera preview is the front
 		if (cameraFront) {
-			int cameraId = findBackFacingCamera();
+			cameraId = findBackFacingCamera();
 			if (cameraId >= 0) {
 				// open the backFacingCamera
 				// refresh the preview
 				mCamera = Camera.open(cameraId);
-				mPreview.refreshCamera(mCamera);
+				mPreview.refreshCamera(cameraId, mCamera);
+				cameraFront = false;
 			}
 		} else {
-			int cameraId = findFrontFacingCamera();
+			cameraId = findFrontFacingCamera();
 			if (cameraId >= 0) {
 				// open the backFacingCamera
 				// refresh the preview
 				mCamera = Camera.open(cameraId);
-				mPreview.refreshCamera(mCamera);
+				mPreview.refreshCamera(cameraId, mCamera);
+				cameraFront = true;
 			}
+		}
+	}
+
+	private void openCamera() {
+		if (!hasCamera(mActivity)) {
+			Toast.makeText(mActivity, "Sorry, we could not find your camera", Toast.LENGTH_LONG).show();
+			Crashlytics.logException(new Exception("No Camera found"));
+			finish();
+		}
+		if (mCamera == null) {
+			int frontFacingCamId = findFrontFacingCamera();
+			int backFacingCamId = findBackFacingCamera();
+			if (frontFacingCamId < 0) {
+				switchCamera.setVisibility(View.GONE);
+				switchBackground.setVisibility(View.GONE);
+			}
+			mCamera = Camera.open(backFacingCamId);
+			cameraId = backFacingCamId;
+			cameraFront = false;
 		}
 	}
 
@@ -183,7 +182,6 @@ public class CameraPreviewActivity extends Activity {
 			Camera.getCameraInfo(i, info);
 			if (info.facing == CameraInfo.CAMERA_FACING_FRONT) {
 				cameraId = i;
-				cameraFront = true;
 				break;
 			}
 		}
@@ -201,7 +199,6 @@ public class CameraPreviewActivity extends Activity {
 			Camera.getCameraInfo(i, info);
 			if (info.facing == CameraInfo.CAMERA_FACING_BACK) {
 				cameraId = i;
-				cameraFront = false;
 				break;
 			}
 		}
@@ -209,7 +206,7 @@ public class CameraPreviewActivity extends Activity {
 	}
 
 	private boolean hasCamera(Context context) {
-		// check if the device has camera
+		// check if the device has rear camera, could also add or front
 		if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
 			return true;
 		} else {
@@ -331,15 +328,15 @@ public class CameraPreviewActivity extends Activity {
 		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-		mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
-
 		videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
         String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
 		mediaRecorder.setOutputFile(uploadPath);
 		mediaRecorder.setMaxDuration(15000); // Set max duration
 		if (cameraFront) {
+			mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_HIGH));
 			mediaRecorder.setOrientationHint(270);
 		} else {
+			mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_BACK, CamcorderProfile.QUALITY_HIGH));
 			mediaRecorder.setOrientationHint(90);
 		}
 

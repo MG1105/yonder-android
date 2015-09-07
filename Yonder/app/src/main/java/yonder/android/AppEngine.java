@@ -11,11 +11,13 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 
 public class AppEngine {
     private final String TAG = "Log." + this.getClass().getSimpleName();
@@ -48,7 +50,12 @@ public class AppEngine {
             conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
             conn.setRequestProperty("ENCTYPE", "multipart/form-data"); // Needed?
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
-            dos = new DataOutputStream( conn.getOutputStream() );
+            try {
+                dos = new DataOutputStream( conn.getOutputStream() );
+            } catch (UnknownHostException e) {
+                Crashlytics.log(Log.ERROR, TAG, "Failed to connect");
+                return null;
+            }
             dos.writeBytes(twoHyphens + boundary + lineEnd);
             dos.writeBytes("Content-Disposition: form-data; name=uploadedfile;filename=" + videoId + lineEnd);
             dos.writeBytes(lineEnd);
@@ -79,8 +86,8 @@ public class AppEngine {
             dos.close();
         } catch (Exception e) {
             e.printStackTrace();
-            Crashlytics.logException(e);;
-
+            Crashlytics.logException(e);
+            return null;
         }
         return getResponse();
     }
@@ -95,8 +102,7 @@ public class AppEngine {
             query += "&search=near";
         }
         String urlString = "http://subtle-analyzer-90706.appspot.com/videos" + query;
-        get(urlString);
-        return getResponse();
+        return get(urlString);
     }
 
     protected JSONObject getFeedInfo(String ids, String userId) {
@@ -106,8 +112,7 @@ public class AppEngine {
         encodedIds = encode(ids);
         query = "?ids=" + encodedIds + "&user=" + userId;
         String urlString = "http://subtle-analyzer-90706.appspot.com/videos/info" + query;
-        get(urlString);
-        return getResponse();
+        return get(urlString);
     }
 
     protected JSONObject getMyFeedInfo(String user) {
@@ -115,8 +120,7 @@ public class AppEngine {
         String query = "";
         query = "?user=" + user;
         String urlString = "http://subtle-analyzer-90706.appspot.com/myvideos/info" + query;
-        get(urlString);
-        return getResponse();
+        return get(urlString);
     }
 
     protected JSONObject addComment(String nickname, String userId, String videoId, String commentId, String comment) {
@@ -124,54 +128,47 @@ public class AppEngine {
         String encodedComment = encode(comment);
         query = "comment=" + encodedComment + "&user=" + userId + "&id=" + commentId + "&nickname=" + nickname;
         String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
-        post(urlString, query);
-        return getResponse();
+        return post(urlString, query);
     }
 
     protected JSONObject getComments(String videoId, String userId) {
         String query = "?user=" + userId;
         String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments"+ query;
-        get(urlString);
-        return getResponse();
+        return get(urlString);
     }
 
     protected JSONObject reportVideo(String videoId, String userId) {
         String query = "user=" + userId;
         String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/flag";
-        post(urlString, query);
-        return getResponse();
+        return post(urlString, query);
     }
 
 
     protected JSONObject reportComment(String commentId, String userId) {
         String query = "user=" + userId;
         String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/flag";
-        post(urlString, query);
-        return getResponse();
+        return post(urlString, query);
     }
 
     protected JSONObject rateVideo(String videoId, String rating, String userId) {
         String query = "";
         query = "rating=" + rating + "&user=" + userId;
         String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/rating";
-        post(urlString, query);
-        return getResponse();
+        return post(urlString, query);
     }
 
     protected JSONObject rateComment(String commentId, String rating, String userId) {
         String query = "";
         query = "rating=" + rating + "&user=" + userId;
         String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/rating";
-        post(urlString, query);
-        return getResponse();
+        return post(urlString, query);
     }
 
     protected JSONObject verifyUser(String userId) {
         String query = "";
         query = "?version=" + BuildConfig.VERSION_CODE;
         String urlString = "http://subtle-analyzer-90706.appspot.com/users/" + userId + "/verify" + query;
-        get(urlString);
-        return getResponse();
+        return get(urlString);
     }
 
     private String encode (String in) {
@@ -184,7 +181,7 @@ public class AppEngine {
         }
         return out;
     }
-    private void get(String urlString) {
+    private JSONObject get(String urlString) {
         try
         {
             URL url = new URL(urlString);
@@ -196,10 +193,12 @@ public class AppEngine {
         } catch (Exception e) {
             e.printStackTrace();
             Crashlytics.logException(e);
+            return null;
         }
+        return getResponse();
     }
 
-    private void post(String urlString, String query) {
+    private JSONObject post(String urlString, String query) {
         try
         {
             DataOutputStream dos;
@@ -211,14 +210,21 @@ public class AppEngine {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;");
-            dos = new DataOutputStream( conn.getOutputStream() );
+            try {
+                dos = new DataOutputStream( conn.getOutputStream() );
+            } catch (UnknownHostException e) {
+                Crashlytics.log(Log.ERROR, TAG, "Failed to connect");
+                return null;
+            }
             dos.writeBytes(query);
             dos.flush();
             dos.close();
         } catch (Exception e) {
             e.printStackTrace();
             Crashlytics.logException(e);
+            return null;
         }
+        return getResponse();
     }
 
     private JSONObject getResponse() {
@@ -226,7 +232,12 @@ public class AppEngine {
         response = "";
         JSONObject out = null;
         try {
-            reader =  new BufferedReader( new InputStreamReader(conn.getInputStream() )); // getErrorStream
+            try {
+                reader =  new BufferedReader( new InputStreamReader(conn.getInputStream() )); // getErrorStream
+            } catch (UnknownHostException e) {
+                Crashlytics.log(Log.ERROR, TAG, "Failed to connect");
+                return null;
+            }
             String line;
 
             while (( line = reader.readLine()) != null)
@@ -241,7 +252,7 @@ public class AppEngine {
         }
 
         try {
-            if (!response.equals("")) { // ignore no internet issue
+            if (!response.equals("")) {
                 out = new JSONObject(response);
             }
         } catch (JSONException e) {

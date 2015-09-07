@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +37,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     String userId;
     String longitude;
     String latitude;
+    PowerManager.WakeLock wakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +75,14 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         public void onClick(View v) {
             uploadButton.setEnabled(false);
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
-            if (captionText.getText().length() == 0) {
-                Toast toast = Toast.makeText(myContext, "Please add a caption first", Toast.LENGTH_LONG);
-                toast.show();
+            caption = captionText.getText().toString().replace("\n", " ");
+            if (caption.replace(" ", "").length() == 0) {
+                Toast.makeText(myContext, "Please add a caption first", Toast.LENGTH_LONG).show();
                 uploadButton.setEnabled(true);
             } else {
+                PowerManager mgr = (PowerManager)myContext.getSystemService(Context.POWER_SERVICE);
+                wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "UploadingWakeLock");
+                wakeLock.acquire(300000); // time out in case something goes wrong
                 Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
                 toast.show();
                 vidView.pause();
@@ -106,8 +111,6 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                 latitude = "37.335187777777";
             }
             userId = User.getId(myContext);
-            EditText captionText = (EditText) findViewById(R.id.editText_caption);
-            caption = captionText.getText().toString();
             AppEngine gae = new AppEngine();
             Crashlytics.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
                     uploadPath, videoId, caption, userId, longitude, latitude));
@@ -142,6 +145,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                     }
                     listFile[i].delete();
                 }
+            }
+            if (wakeLock.isHeld()) {
+                wakeLock.release();
             }
         }
     }

@@ -7,8 +7,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -29,7 +29,7 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".SplashScreen"
+            android:name=".SplashActivity"
             android:configChanges="orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >
@@ -37,6 +37,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".WelcomeActivity"
+            android:configChanges="orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".CameraPreviewActivity"
@@ -50,23 +56,22 @@
             android:configChanges="orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustNothing"
-            android:parentActivityName=".CameraPreviewActivity">
+            android:windowSoftInputMode="adjustNothing">
         </activity>
         <activity
             android:name=".LoadFeedActivity"
             android:configChanges="orientation"
             android:theme="@style/AppTheme"
             android:label="@string/title_activity_load_feed"
-            android:parentActivityName=".CameraPreviewActivity">
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".CommentActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
-            android:label="@string/title_activity_comment"
-            android:parentActivityName=".FeedActivity">
+            android:label="@string/title_activity_comment">
         </activity>
         <meta-data
             android:name="io.fabric.ApiKey"

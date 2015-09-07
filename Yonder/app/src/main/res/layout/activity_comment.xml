@@ -50,7 +50,7 @@
                 android:id="@+id/add_comment_text"
                 android:textColor="@color/black"
                 android:text=""
-                android:maxLength="200"
+                android:maxLength="180"
                 android:hint="Add a comment" />
 
             <Button

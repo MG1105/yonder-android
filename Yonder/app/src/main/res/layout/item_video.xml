@@ -7,7 +7,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="15dp"
-        android:textStyle="bold"
         android:textColor="@color/primary_dark"
         android:id="@+id/textView_caption" />
 
@@ -19,15 +18,15 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
-        android:textSize="13dp"
+        android:textColor="@color/material_blue_grey_800"
+        android:textSize="11dp"
         android:id="@+id/textView_rating" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
-        android:textSize="12dp"
+        android:textColor="@color/material_blue_grey_800"
+        android:textSize="11dp"
         android:id="@+id/textView_comments_total" />
 
 </LinearLayout>

@@ -2,6 +2,7 @@ package yonder.android;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -56,7 +57,6 @@ public class FeedActivity extends Activity {
 		setContentView(R.layout.activity_feed);
         Crashlytics.log(Log.INFO, TAG, "Creating Activity");
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         myContext = this;
         videoInfo = LoadFeedActivity.videoInfo;
 	    uris = getContent();
@@ -142,12 +142,15 @@ public class FeedActivity extends Activity {
             } else {
                 commentButton.setText(commentsTotal + " Comments");
             }
-            int latestRating = Integer.valueOf(rating) + myRating;
-            if (latestRating == 1 || latestRating == -1) {
-                ratingButton.setText(latestRating + " Like");
+
+            int ratingInt = Integer.valueOf(rating) + myRating;
+            String unit;
+            if (ratingInt == 1 || ratingInt == -1) {
+                unit = "Like";
             } else {
-                ratingButton.setText(latestRating + " Likes");
+                unit = "Likes";
             }
+            ratingButton.setText(ratingInt + " " + unit);
         } catch (Exception e) {
             e.printStackTrace();
             Crashlytics.logException(e);;

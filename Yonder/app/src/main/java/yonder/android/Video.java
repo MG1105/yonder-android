@@ -21,7 +21,6 @@ public class Video {
 	private String caption;
 	static File uploadDir;
 	static File loadedDir;
-	static boolean obfuscating;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Video(JSONObject object){
@@ -67,41 +66,46 @@ public class Video {
 		return videos;
 	}
 
-	static void obfuscate(boolean encrypt) {
-		if (obfuscating) {
-			return;
-		}
-		obfuscating = true;
+	static synchronized void obfuscate(boolean encrypt) {
 		File [] listFile = loadedDir.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
-				if ( encrypt && file.getAbsolutePath().endsWith(".mp4")) {
+				if ( encrypt && file.getAbsolutePath().endsWith(".mp4") && file.length()>0) {
 					File out = new File(file.getAbsolutePath().replace(".mp4",""));
 					file.renameTo(out);
 					swapByte(out);
-				} else if (!encrypt && !file.getAbsolutePath().endsWith(".mp4")) {
+					file.delete(); // make sure it is gone
+				} else if (!encrypt && !file.getAbsolutePath().endsWith(".mp4") && file.length()>0) {
 					File out = new File(file.getAbsolutePath()+ ".mp4");
 					file.renameTo(out);
 					swapByte(out);
+					file.delete();
 				}
 			}
 		}
-		obfuscating = false;
 	}
 
 	static void swapByte(File file) {
 		RandomAccessFile raf = null;
 		try {
 			raf = new RandomAccessFile(file, "rw");
+
 			raf.seek(5);
 			int b1 = raf.read();
 			raf.seek(11);
 			int b2 = raf.read();
-			raf.seek(11);
-			raf.write(b1);
-			raf.seek(5);
-			raf.write(b2);
-			Crashlytics.log(Log.INFO, "Log.Video", "Swap Bytes " + file.getPath() + " b1 " + b1 + " b2 " + b2);
+
+			if (b1 != -1 && b2 != -1) {
+				raf.seek(11);
+				raf.write(b1);
+				raf.seek(5);
+				raf.write(b2);
+				Crashlytics.log(Log.INFO, "Log.Video", "Swap Bytes " + file.getPath() + " b1 " + b1 + " b2 " + b2);
+			} else {
+				Crashlytics.log(Log.ERROR, "Log.Video", "Skip swapping bytes because b1 or b2 = -1 in "
+						+ file.getPath());
+				Crashlytics.logException(new Exception("Failed to swap bytes"));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			Crashlytics.logException(e);
@@ -117,13 +121,16 @@ public class Video {
 		}
 	}
 
-	static void cleanup (File folder) {
+	static void cleanup (File folder, boolean upload) {
 		File [] listFile = folder.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
+				if (file.getAbsolutePath().endsWith("nomedia")) {
+					continue;
+				}
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
-				if ((now - last)/3600000 > 24 || file.getAbsolutePath().endsWith(".mp4")) {
+				if ((now - last)/3600000 > 24 || (file.getAbsolutePath().endsWith(".mp4") && !upload)) {
 					Crashlytics.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
 					file.delete();
 				}
@@ -134,5 +141,15 @@ public class Video {
 	static void setPaths(Activity activity) {
 		loadedDir = activity.getExternalFilesDir("lvd");
 		uploadDir = activity.getExternalFilesDir("uvd");
+
+		File loadedNomedia = new File(loadedDir, ".nomedia");
+		File uploadNomedia = new File(uploadDir, ".nomedia");
+		try {
+			loadedNomedia.createNewFile();
+			uploadNomedia.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+			Crashlytics.logException(new Exception("Failed to create nomedia"));
+		}
 	}
 }

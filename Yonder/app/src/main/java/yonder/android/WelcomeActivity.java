@@ -1,0 +1,60 @@
+package yonder.android;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.v4.view.GestureDetectorCompat;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+
+import com.crashlytics.android.Crashlytics;
+
+public class WelcomeActivity extends Activity {
+
+	private final String TAG = "Log." + this.getClass().getSimpleName();
+	private GestureDetectorCompat mDetector;
+	private int tap = 0;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_welcome_1);
+		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
+
+	}
+
+	// Handle touch
+	@Override
+	public boolean onTouchEvent(MotionEvent event){
+		this.mDetector.onTouchEvent(event);
+		return super.onTouchEvent(event);
+	}
+
+	class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+		@Override
+		public boolean onDown(MotionEvent event) {
+			return true;
+		}
+
+		@Override
+		public boolean onSingleTapUp(MotionEvent event) {
+			if (tap == 0) {
+				setContentView(R.layout.activity_welcome_2);
+				tap = 1;
+			} else if (tap == 1) {
+				SharedPreferences sharedPreferences = WelcomeActivity.this.getSharedPreferences(
+						"yonder.android", Context.MODE_PRIVATE);
+				sharedPreferences.edit().putString("welcome", "yes").apply();
+				Intent intent = new Intent(WelcomeActivity.this,CameraPreviewActivity.class);
+				startActivity(intent);
+				finish();
+			}
+
+			return true;
+		}
+	}
+}

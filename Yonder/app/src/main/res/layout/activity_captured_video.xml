@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/editText_caption"
         android:textSize="25dp"
-        android:maxLength="45"
+        android:maxLength="60"
         android:textStyle="bold"
         android:layout_below="@+id/space_caption"
         android:textColor="@color/white"
