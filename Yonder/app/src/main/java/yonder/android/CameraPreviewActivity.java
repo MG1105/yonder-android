@@ -25,6 +25,7 @@ import com.crashlytics.android.Crashlytics;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 
 public class CameraPreviewActivity extends Activity {
@@ -228,6 +229,26 @@ public class CameraPreviewActivity extends Activity {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if(event.getAction() == MotionEvent.ACTION_DOWN){
+				if (User.admin) {
+					File[] listFile = Video.uploadDir.listFiles();
+					if (listFile != null) {
+						for (File file :listFile) {
+							if (file.getAbsolutePath().endsWith("nomedia")) {
+								continue;
+							}
+							videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
+							String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
+							File out = new File(uploadPath);
+							file.renameTo(out);
+							file.delete();
+							break;
+						}
+					}
+					Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
+					intent.putExtra("videoId", videoId);
+					startActivity(intent);
+					return true;
+				}
 				Crashlytics.log(Log.INFO, TAG, "Start recording");
 				if (!prepareMediaRecorder()) {
 					Toast.makeText(CameraPreviewActivity.this, "Unexpected error while recording", Toast.LENGTH_LONG).show();

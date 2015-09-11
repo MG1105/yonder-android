@@ -101,7 +101,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     class UploadVideoTask extends AsyncTask<Void, Void, JSONObject> {
 
         protected JSONObject doInBackground(Void... params) {
-            compressVideo();
+            if (!User.admin) {
+                compressVideo();
+            }
             ArrayList<String> location = User.getLocation(myContext);
             if (location != null) {
                 longitude = location.get(0);

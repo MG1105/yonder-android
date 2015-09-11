@@ -38,7 +38,7 @@ public class AppEngine {
             String encodedCaption = URLEncoder.encode(caption, "UTF-8");
             query = "?caption=" + encodedCaption + "&user=" + userId + "&long=" + longitude + "&lat=" + latitude;
 
-            String urlString = "http://subtle-analyzer-90706.appspot.com/videos" + query;
+            String urlString = "https://subtle-analyzer-90706.appspot.com/videos" + query;
 
             FileInputStream fileInputStream = new FileInputStream(new File(uploadPath+"/"+videoId) );
             URL url = new URL(urlString);
@@ -101,7 +101,7 @@ public class AppEngine {
         } else {
             query += "&search=near";
         }
-        String urlString = "http://subtle-analyzer-90706.appspot.com/videos" + query;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos" + query;
         return get(urlString);
     }
 
@@ -111,7 +111,7 @@ public class AppEngine {
         String encodedIds = null;
         encodedIds = encode(ids);
         query = "?ids=" + encodedIds + "&user=" + userId;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/videos/info" + query;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/info" + query;
         return get(urlString);
     }
 
@@ -119,7 +119,7 @@ public class AppEngine {
 
         String query = "";
         query = "?user=" + user;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/myvideos/info" + query;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/myvideos/info" + query;
         return get(urlString);
     }
 
@@ -127,47 +127,47 @@ public class AppEngine {
         String query = "";
         String encodedComment = encode(comment);
         query = "comment=" + encodedComment + "&user=" + userId + "&id=" + commentId + "&nickname=" + nickname;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
         return post(urlString, query);
     }
 
     protected JSONObject getComments(String videoId, String userId) {
         String query = "?user=" + userId;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments"+ query;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments"+ query;
         return get(urlString);
     }
 
     protected JSONObject reportVideo(String videoId, String userId) {
         String query = "user=" + userId;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/flag";
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/flag";
         return post(urlString, query);
     }
 
 
     protected JSONObject reportComment(String commentId, String userId) {
         String query = "user=" + userId;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/flag";
+        String urlString = "https://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/flag";
         return post(urlString, query);
     }
 
     protected JSONObject rateVideo(String videoId, String rating, String userId) {
         String query = "";
         query = "rating=" + rating + "&user=" + userId;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/rating";
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/rating";
         return post(urlString, query);
     }
 
     protected JSONObject rateComment(String commentId, String rating, String userId) {
         String query = "";
         query = "rating=" + rating + "&user=" + userId;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/rating";
+        String urlString = "https://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/rating";
         return post(urlString, query);
     }
 
     protected JSONObject verifyUser(String userId) {
         String query = "";
         query = "?version=" + BuildConfig.VERSION_CODE;
-        String urlString = "http://subtle-analyzer-90706.appspot.com/users/" + userId + "/verify" + query;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/users/" + userId + "/verify" + query;
         return get(urlString);
     }
 
