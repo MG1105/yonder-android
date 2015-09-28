@@ -92,12 +92,14 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject getFeed(String userId, String longitude, String latitude, boolean myVideosOnly) {
+    protected JSONObject getFeed(String userId, String longitude, String latitude, boolean myVideosOnly, boolean count) {
 
         String query = "";
         query = "?user=" + userId + "&long=" + longitude + "&lat=" + latitude;
         if (myVideosOnly) {
             query += "&search=mine";
+        } else  if (count) {
+            query += "&search=count";
         } else {
             query += "&search=near";
         }

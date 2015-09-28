@@ -85,11 +85,7 @@ public class FeedActivity extends Activity {
         currentVideoId = uris.get(0).getLastPathSegment().replace(".mp4", "");
         Crashlytics.log(Log.INFO, TAG, "currentVideoId " + currentVideoId);
 
-        if (User.admin) {
-            likeButton.setVisibility(View.GONE);
-            dislikeButton.setVisibility(View.GONE);
-            showVideoInfo(0);
-        } else if (LoadFeedActivity.myVideosOnly) {
+        if (LoadFeedActivity.myVideosOnly) {
             likeButton.setVisibility(View.GONE);
             dislikeButton.setVisibility(View.GONE);
             flagButton.setVisibility(View.GONE);
@@ -304,11 +300,7 @@ public class FeedActivity extends Activity {
             });
             currentVideo.start();
             showCaption();
-            if (User.admin) {
-                likeButton.setVisibility(View.GONE);
-                dislikeButton.setVisibility(View.GONE);
-                showVideoInfo(0);
-            } else if (LoadFeedActivity.myVideosOnly) {
+            if (LoadFeedActivity.myVideosOnly) {
                 likeButton.setVisibility(View.GONE);
                 dislikeButton.setVisibility(View.GONE);
                 flagButton.setVisibility(View.GONE);

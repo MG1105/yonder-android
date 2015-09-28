@@ -124,7 +124,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             try {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
-                        Toast.makeText(myContext, "Yonder uploaded", Toast.LENGTH_LONG).show();
+                        Toast.makeText(myContext, "Yondor uploaded", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
                     } else {
                         Toast.makeText(myContext, "Failed to upload", Toast.LENGTH_LONG).show();
@@ -162,7 +162,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             Crashlytics.log(Log.INFO, TAG, "Pre compression size " + tmp.length());
             // ac audio channels ar audio frequency b bitrate
             String command = "ffmpeg -y -i " + uploadPath + "/tmp"+ videoId +
-                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 " + uploadPath + "/" + videoId;
+                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 -t 10 " + uploadPath + "/" + videoId;
             Crashlytics.log(Log.INFO, TAG, command);
             String[] complexCommand = GeneralUtils.utilConvertToComplex(command);
             vk.run(complexCommand, uploadPath, getApplicationContext());

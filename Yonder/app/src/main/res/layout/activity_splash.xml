@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:textColor="@color/white"
-        android:text="Yonder"
+        android:text="Yondor"
         android:textSize="60dp"
         android:textStyle="bold"
         android:paddingTop="20dp"

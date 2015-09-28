@@ -22,10 +22,21 @@ public class SplashActivity extends Activity {
 		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
 		setContentView(R.layout.activity_splash);
 
+		SharedPreferences sharedPreferences = this.getSharedPreferences(
+				"yonder.android", Context.MODE_PRIVATE);
+		int upgrade = sharedPreferences.getInt("upgrade", 0);
+		int ban = sharedPreferences.getInt("ban", 0);
+		AlarmReceiver alarmReceiver = new AlarmReceiver();
+		if (ban == 0 && upgrade != 2 && !User.admin) {
+			alarmReceiver.setAlarm(this);
+		} else {
+			alarmReceiver.cancelAlarm(this);
+		}
+
 		Thread timerThread = new Thread(){
 			public void run(){
 				try{
-					sleep(3000);
+					sleep(1000);
 				}catch(InterruptedException e){
 					e.printStackTrace();
 				}finally{

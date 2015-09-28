@@ -13,8 +13,8 @@ public class Alert {
 		AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 		alertDialog.setTitle("Warning");
 		alertDialog.setMessage("Many users found the content you have posted offensive.\n" +
-				"If more users flag your content, you will be automatically banned from Yonder.\n" +
-				"The Yonder Team would hate to see you go. Please help us build a positively fun community.");
+				"If more users flag your content, you will be automatically banned from Yondor.\n" +
+				"The Yondor Team would hate to see you go. Please help us build a positively fun community.");
 		alertDialog.setCancelable(false);
 		alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
@@ -31,12 +31,12 @@ public class Alert {
 		String message = "";
 		if (level == 1) {
 			message = "Many users found the content you have posted offensive and flagged it.\n" +
-					"You were automatically banned from Yonder for a week.\n" +
-					"The Yonder Team hates to see you go. Please help us build a positively fun community when you come back.";
+					"You were automatically banned from Yondor for a week.\n" +
+					"The Yondor Team hates to see you go. Please help us build a positively fun community when you come back.";
 		} else if (level == 2) {
 			message = "Many users found the content you have posted offensive and flagged it.\n" +
-					"You were automatically banned from Yonder for a month.\n" +
-					"The Yonder Team hates to see you go. Please help us build a positively fun community when you come back.";
+					"You were automatically banned from Yondor for a month.\n" +
+					"The Yondor Team hates to see you go. Please help us build a positively fun community when you come back.";
 		}
 		alertDialog.setMessage(message);
 		alertDialog.setCancelable(false);
@@ -57,9 +57,9 @@ public class Alert {
 		if (rule == null ) {
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 			alertDialog.setTitle("Automated Admin");
-			alertDialog.setMessage("Please help us keep Yonder a positively fun community and refrain " +
+			alertDialog.setMessage("Please help us keep Yondor a positively fun community and refrain " +
 					"from posting anything offensive.\nUsers who get flagged repeatedly" +
-					" are automatically banned from Yonder.");
+					" are automatically banned from Yondor.");
 			alertDialog.setCancelable(false);
 			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -81,9 +81,9 @@ public class Alert {
 		if (rule == null) {
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 			alertDialog.setTitle("Automated Admin");
-			alertDialog.setMessage("Please help us keep Yonder a positively fun community by flagging" +
+			alertDialog.setMessage("Please help us keep Yondor a positively fun community by flagging" +
 					" comments and videos you find offensive.\nUsers who get flagged repeatedly" +
-					" are automatically banned from Yonder.");
+					" are automatically banned from Yondor.");
 			alertDialog.setCancelable(false);
 			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -103,7 +103,7 @@ public class Alert {
 		AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 		alertDialog.setTitle("Upgrade Available");
 		alertDialog.setMessage("Our servers have undergone a major revamp in order to increase performance and security.\n" +
-				"Please upgrade to the newest version of Yonder on Google Play as this version is no longer supported.\n");
+				"Please upgrade to the newest version of Yondor on Google Play as this version is no longer supported.\n");
 		alertDialog.setCancelable(false);
 		alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {

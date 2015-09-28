@@ -5,13 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,14 +29,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 public class CameraPreviewActivity extends Activity {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private MediaRecorder mediaRecorder;
-	private Button capture, switchCamera, feedButton;
+	private Button capture, switchCamera, feedButton, addVideoButton;
 	private Activity mActivity;
 	private RelativeLayout cameraPreview;
 	private boolean cameraFront = false;
@@ -99,6 +105,9 @@ public class CameraPreviewActivity extends Activity {
 		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
 		switchCamera.setOnClickListener(switchCameraListener);
 
+		addVideoButton = (Button) findViewById(R.id.button_add);
+		addVideoButton.setOnClickListener(addVideoListener);
+
 		feedButton = (Button) findViewById(R.id.button_feed);
 		feedButton.setOnClickListener(feedButtonListener);
 	}
@@ -129,6 +138,20 @@ public class CameraPreviewActivity extends Activity {
 		public void onClick(View v) {
 			Intent intent = new Intent(mActivity, LoadFeedActivity.class);
 			startActivity(intent);
+		}
+	};
+
+	OnClickListener addVideoListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			if (!recording) {
+				Crashlytics.log(Log.INFO, TAG, "Opening gallery");
+				Intent mediaChooser = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+				mediaChooser.setType("video/*");
+				startActivityForResult(mediaChooser, 1);
+			} else {
+				Toast.makeText(mActivity, "Sorry, cannot open gallery while recording", Toast.LENGTH_LONG).show();
+			}
 		}
 	};
 
@@ -229,26 +252,6 @@ public class CameraPreviewActivity extends Activity {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if(event.getAction() == MotionEvent.ACTION_DOWN){
-				if (User.admin) {
-					File[] listFile = Video.uploadDir.listFiles();
-					if (listFile != null) {
-						for (File file :listFile) {
-							if (file.getAbsolutePath().endsWith("nomedia")) {
-								continue;
-							}
-							videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
-							String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
-							File out = new File(uploadPath);
-							file.renameTo(out);
-							file.delete();
-							break;
-						}
-					}
-					Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
-					intent.putExtra("videoId", videoId);
-					startActivity(intent);
-					return true;
-				}
 				Crashlytics.log(Log.INFO, TAG, "Start recording");
 				if (!prepareMediaRecorder()) {
 					Toast.makeText(CameraPreviewActivity.this, "Unexpected error while recording", Toast.LENGTH_LONG).show();
@@ -260,6 +263,7 @@ public class CameraPreviewActivity extends Activity {
 					counter = (TextView)findViewById(R.id.recording_counter);
 					switchBackground = findViewById(R.id.background_ChangeCamera);
 					feedButton.setVisibility(View.INVISIBLE);
+					addVideoButton.setVisibility(View.INVISIBLE);
 					switchCamera.setVisibility(View.INVISIBLE);
 					switchBackground.setVisibility(View.INVISIBLE);
 					counter.setVisibility(View.VISIBLE);
@@ -276,6 +280,7 @@ public class CameraPreviewActivity extends Activity {
 							}
 							counter.setVisibility(View.INVISIBLE);
 							feedButton.setVisibility(View.VISIBLE);
+							addVideoButton.setVisibility(View.VISIBLE);
 							switchCamera.setVisibility(View.VISIBLE);
 							switchBackground.setVisibility(View.VISIBLE);
 							counter.setText("10");
@@ -298,6 +303,7 @@ public class CameraPreviewActivity extends Activity {
 						TextView counter = (TextView)findViewById(R.id.recording_counter);
 						counter.setVisibility(View.INVISIBLE);
 						feedButton.setVisibility(View.VISIBLE);
+						addVideoButton.setVisibility(View.VISIBLE);
 						switchCamera.setVisibility(View.VISIBLE);
 						switchBackground.setVisibility(View.VISIBLE);
 						counter.setText("10");
@@ -323,7 +329,7 @@ public class CameraPreviewActivity extends Activity {
 		    return;
 	    }
 	    releaseMediaRecorder(); // release the MediaRecorder object
-        Toast.makeText(CameraPreviewActivity.this, "Yonder Captured", Toast.LENGTH_LONG).show();
+        Toast.makeText(CameraPreviewActivity.this, "Yondor Captured", Toast.LENGTH_LONG).show();
         recording = false;
 	    Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
 	    intent.putExtra("videoId", videoId);
@@ -425,6 +431,60 @@ public class CameraPreviewActivity extends Activity {
 			} else { // could also be server side failure
 				Toast.makeText(mActivity, "Could not connect to the Internet. Please try again later", Toast.LENGTH_LONG).show();
 				finish();
+			}
+
+		}
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == 1) {
+			if (resultCode == Activity.RESULT_OK) {
+
+				videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
+				String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
+
+				try {
+					Uri selectedUri = data.getData();
+					String[] filePathColumn = {MediaStore.Video.Media.DATA};
+					Cursor cursor = getContentResolver().query(selectedUri, filePathColumn, null, null, null);
+					String in = "";
+					if(cursor.moveToFirst()){
+						int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+						in = cursor.getString(columnIndex);
+					} else {
+						//boooo, cursor doesn't have rows ...
+					}
+					cursor.close();
+
+					// source file channel
+					// return the unique FileChannel object associated with this file input stream.
+					FileChannel srcChannel = new FileInputStream(in).getChannel();
+
+					// destination file channel
+					// return the unique FileChannel object associated with this file output stream.
+					FileChannel dstChannel = new FileOutputStream(uploadPath).getChannel();
+
+					// transfer bytes into this channel's file from the given readable byte channel
+					dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
+
+					// close channels
+					srcChannel.close();
+					dstChannel.close();
+
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+					Crashlytics.logException(e);
+					Toast.makeText(mActivity, "Could not access the video", Toast.LENGTH_LONG).show();
+					return;
+				}
+
+				Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
+				intent.putExtra("videoId", videoId);
+				startActivity(intent);
+
 			}
 
 		}
