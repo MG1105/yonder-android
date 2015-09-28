@@ -35,6 +35,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -80,7 +81,7 @@ public class LoadFeedActivity extends Activity {
                 if (isChecked) {
                     loadFeedTextView.setText("Tap to watch your feed");
                 } else {
-                    loadFeedTextView.setText("Tap to look for Yonders near you");
+                    loadFeedTextView.setText("Tap to look for Yondors near you");
                 }
             }
 
@@ -110,15 +111,17 @@ public class LoadFeedActivity extends Activity {
 
             myVideosOnly = myVideosOnlySwitch.isChecked();
             if (myVideosOnly) {
-                loadFeedTextView.setText("Looking for your Yonders...");
+                loadFeedTextView.setText("Looking for your Yondors...");
             } else {
-                loadFeedTextView.setText("Looking for Yonders around you...");
+                loadFeedTextView.setText("Looking for Yondors around you...");
                 SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
                         "yonder.android", Context.MODE_PRIVATE);
                 long lastRequest = sharedPreferences.getLong("last_request", 0);
                 long now = System.currentTimeMillis();
+                Random generator = new Random();
+                int wait = generator.nextInt(10) + 10;
                 if (lastRequest != 0 && !User.admin) {
-                    if ((now - lastRequest) / 60000 < 10) {
+                    if ((now - lastRequest) / 60000 < wait) {
                         timer = new Timer();
                         timer.schedule(new StopAnimationTask(), 3000);
                         loadFeedImageView.setClickable(true);
@@ -153,7 +156,7 @@ public class LoadFeedActivity extends Activity {
                 AppEngine gae = new AppEngine();
                 Crashlytics.log(Log.INFO, TAG, String.format("Getting feed for userId %s longitude %s latitude %s myVideosOnly %s",
                         userId, longitude, latitude, myVideosOnly));
-                JSONObject response = gae.getFeed(userId, longitude, latitude, myVideosOnly);
+                JSONObject response = gae.getFeed(userId, longitude, latitude, myVideosOnly, false);
                 return response;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -182,7 +185,7 @@ public class LoadFeedActivity extends Activity {
                             uris.add(Uri.parse(url));
                         }
                         if (videos.length() > 0) {
-                            loadFeedTextView.setText("Found " + videos.length() + " Yonders");
+                            loadFeedTextView.setText("Found " + videos.length() + " Yondors");
                             remaining = uris.size();
                             setRequests();
                             for (Request request : requests) {
@@ -199,7 +202,7 @@ public class LoadFeedActivity extends Activity {
                             }
                         } else {
                             if (myVideosOnly) {
-                                loadFeedTextView.setText("We did not find any Yonder you uploaded or commented on " +
+                                loadFeedTextView.setText("We did not find any Yondor you uploaded or commented on " +
                                         "in the past 24 hours");
                                 loadFeedImageView.clearAnimation();
                             } else {
@@ -210,14 +213,14 @@ public class LoadFeedActivity extends Activity {
                         }
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));
-                        loadFeedTextView.setText("Could not retrieve new Yonders. Please try again later");
+                        loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
                         loadFeedImageView.clearAnimation();
                         loadFeedImageView.setClickable(true);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                     Crashlytics.logException(e);;
-                    loadFeedTextView.setText("Could not retrieve new Yonders. Please try again later");
+                    loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
                     loadFeedImageView.clearAnimation();
                 }
             } else {
@@ -250,7 +253,7 @@ public class LoadFeedActivity extends Activity {
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    loadFeedTextView.setText("No new Yonders found. Please try again later");
+                    loadFeedTextView.setText("No new Yondors found. Please try again later");
                     loadFeedImageView.clearAnimation();
                 }
             });
@@ -409,12 +412,12 @@ public class LoadFeedActivity extends Activity {
                         if (myVideosOnly) {
                             loadFeedTextView.setText("Tap to watch your feed");
                         } else {
-                            loadFeedTextView.setText("Tap to look for Yonders near you");
+                            loadFeedTextView.setText("Tap to look for Yondors near you");
                         }
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));
                         loadFeedImageView.clearAnimation();
-                        loadFeedTextView.setText("Could not retrieve new Yonders. Please try again later");
+                        loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
                     }
                 } else {
                     loadFeedImageView.clearAnimation();

@@ -92,6 +92,8 @@ public class AlarmReceiver extends BroadcastReceiver
 							PendingIntent contentIntent = PendingIntent.getActivity(myContext, 0, new Intent(myContext, SplashActivity.class), 0);
 
 							Notification notification  = new Notification.Builder(myContext)
+									.setContentTitle("New Yondors near you")
+									.setContentText("Tap to open Yondor")
 									.setSmallIcon(R.mipmap.ic_launcher)
 									.setContentIntent(contentIntent)
 									.setAutoCancel(true).build();
