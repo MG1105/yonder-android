@@ -40,7 +40,7 @@ public class AlarmReceiver extends BroadcastReceiver
 		AlarmManager alarmManager =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-		long delta = 1000 * 60 * 60 * 24; // Millisec * Second * Minute * Hour
+		long delta = 1000 * 60 * 60 * 72; // Millisec * Second * Minute * Hour
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delta, delta, pendingIntent);
 	}
 

@@ -81,7 +81,7 @@ public class LoadFeedActivity extends Activity {
                 if (isChecked) {
                     loadFeedTextView.setText("Tap to watch your feed");
                 } else {
-                    loadFeedTextView.setText("Tap to look for Yondors near you");
+                    loadFeedTextView.setText("Tap to look for Yondors around you");
                 }
             }
 
@@ -253,7 +253,7 @@ public class LoadFeedActivity extends Activity {
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    loadFeedTextView.setText("No new Yondors found. Please try again later");
+                    loadFeedTextView.setText("No new Yondors for now :/ You should come back later for more!");
                     loadFeedImageView.clearAnimation();
                 }
             });
@@ -412,7 +412,7 @@ public class LoadFeedActivity extends Activity {
                         if (myVideosOnly) {
                             loadFeedTextView.setText("Tap to watch your feed");
                         } else {
-                            loadFeedTextView.setText("Tap to look for Yondors near you");
+                            loadFeedTextView.setText("Tap to look for Yondors around you");
                         }
                     } else {
                         Crashlytics.logException(new Exception("Server Side Failure"));

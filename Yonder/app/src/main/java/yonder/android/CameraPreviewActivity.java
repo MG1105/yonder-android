@@ -162,7 +162,15 @@ public class CameraPreviewActivity extends Activity {
 			if (cameraId >= 0) {
 				// open the backFacingCamera
 				// refresh the preview
-				mCamera = Camera.open(cameraId);
+				try {
+					mCamera = Camera.open(cameraId);
+				}
+				catch (RuntimeException e) {
+					e.printStackTrace();
+					Crashlytics.logException(e);
+					Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
+					mActivity.finish();
+				}
 				mPreview.refreshCamera(cameraId, mCamera);
 				cameraFront = false;
 			}
@@ -171,7 +179,15 @@ public class CameraPreviewActivity extends Activity {
 			if (cameraId >= 0) {
 				// open the backFacingCamera
 				// refresh the preview
-				mCamera = Camera.open(cameraId);
+				try {
+					mCamera = Camera.open(cameraId);
+				}
+				catch (RuntimeException e) {
+					e.printStackTrace();
+					Crashlytics.logException(e);
+					Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
+					mActivity.finish();
+				}
 				mPreview.refreshCamera(cameraId, mCamera);
 				cameraFront = true;
 			}
@@ -191,7 +207,16 @@ public class CameraPreviewActivity extends Activity {
 				switchCamera.setVisibility(View.GONE);
 				switchBackground.setVisibility(View.GONE);
 			}
-			mCamera = Camera.open(backFacingCamId);
+			try {
+				mCamera = Camera.open(backFacingCamId);
+			}
+			catch (RuntimeException e) {
+				e.printStackTrace();
+				Crashlytics.logException(e);
+				Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
+				mActivity.finish();
+			}
+
 			cameraId = backFacingCamId;
 			cameraFront = false;
 		}
@@ -444,12 +469,11 @@ public class CameraPreviewActivity extends Activity {
 
 				videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
 				String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
-
+				String in = "";
 				try {
 					Uri selectedUri = data.getData();
 					String[] filePathColumn = {MediaStore.Video.Media.DATA};
 					Cursor cursor = getContentResolver().query(selectedUri, filePathColumn, null, null, null);
-					String in = "";
 					if(cursor.moveToFirst()){
 						int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
 						in = cursor.getString(columnIndex);
@@ -458,6 +482,13 @@ public class CameraPreviewActivity extends Activity {
 					}
 					cursor.close();
 
+					File inFile = new File(in);
+					if (inFile.length() > 50000000) {
+						Toast.makeText(mActivity, "Video cannot be larger than 50 MB", Toast.LENGTH_LONG).show();
+						return;
+					}
+
+					Toast.makeText(mActivity, "Preparing the video", Toast.LENGTH_LONG).show();
 					// source file channel
 					// return the unique FileChannel object associated with this file input stream.
 					FileChannel srcChannel = new FileInputStream(in).getChannel();
@@ -480,9 +511,9 @@ public class CameraPreviewActivity extends Activity {
 					Toast.makeText(mActivity, "Could not access the video", Toast.LENGTH_LONG).show();
 					return;
 				}
-
 				Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
 				intent.putExtra("videoId", videoId);
+				intent.putExtra("originalPath", in);
 				startActivity(intent);
 
 			}

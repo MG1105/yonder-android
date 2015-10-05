@@ -123,7 +123,7 @@ public class Video {
 
 	static void cleanup (File folder, boolean upload) {
 		File [] listFile = folder.listFiles();
-		if (listFile != null && !User.admin) {
+		if (listFile != null) {
 			for (File file :listFile) {
 				if (file.getAbsolutePath().endsWith("nomedia")) {
 					continue;

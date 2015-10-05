@@ -36,7 +36,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tap to look for Yonders near you"
+            android:text="Tap to look for Yondors around you"
             android:textColor="@color/white"
             android:textSize="15dp"
             android:textStyle="bold"
@@ -84,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:text="You have not uploaded a Yonder in the past 24 hours"
+            android:text="You have not uploaded a Yondor in the past 24 hours"
             android:textColor="@color/primary_dark"
             android:id="@+id/textView_no_videos"
             android:visibility="gone"

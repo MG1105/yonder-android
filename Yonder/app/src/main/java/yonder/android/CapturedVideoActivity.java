@@ -3,10 +3,13 @@ package yonder.android;
 import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.PowerManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +27,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class CapturedVideoActivity extends Activity { // Test phone screen off/lock
     private final String TAG = "Log." + this.getClass().getSimpleName();
@@ -38,6 +43,8 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     String longitude;
     String latitude;
     PowerManager.WakeLock wakeLock;
+    private String originalPath;
+    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         spinner.setVisibility(View.GONE);
         uploadPath = Video.uploadDir.getAbsolutePath();
         videoId = getIntent().getExtras().getString("videoId");
+        originalPath = getIntent().getExtras().getString("originalPath");
         final Uri vidUri = Uri.parse(uploadPath + "/" + videoId);
         vidView.setVideoURI(vidUri);
 	    vidView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -68,6 +76,20 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
         Alert.showVideoRule(this);
         vidView.start();
+        timer = new Timer();
+        timer.schedule(new StopPlaybackTask(), 11000);
+    }
+
+    class StopPlaybackTask extends TimerTask {
+        public void run() {
+            // When you need to modify a UI element, do so on the UI thread.
+            if (vidView.isPlaying()) {
+                if (vidView.getCurrentPosition() > 10000) {
+                    vidView.stopPlayback();
+                }
+            }
+            timer.cancel(); //Terminate the timer thread
+        }
     }
 
     View.OnClickListener uploadListener = new View.OnClickListener() {
@@ -126,6 +148,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                     if (response.getString("success").equals("1")) {
                         Toast.makeText(myContext, "Yondor uploaded", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
+                        if (User.admin) {
+                            new File(originalPath).delete();
+                        }
                     } else {
                         Toast.makeText(myContext, "Failed to upload", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);

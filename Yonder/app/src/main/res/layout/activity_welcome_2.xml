@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:textColor="@color/white"
-        android:text="Welcome to Yonder!"
+        android:text="Welcome to Yondor!"
         android:textSize="22dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"

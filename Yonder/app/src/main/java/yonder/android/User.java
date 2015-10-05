@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class User {
-	static boolean admin = false;
+	static boolean admin = true;
 	static String androidId;
 
 	public static String getId(Context context) {
