@@ -3,13 +3,10 @@ package yonder.android;
 import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.PowerManager;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +15,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.crashlytics.android.Crashlytics;
 import com.netcompss.ffmpeg4android.GeneralUtils;
 import com.netcompss.loader.LoadJNI;
 
@@ -45,13 +41,15 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     PowerManager.WakeLock wakeLock;
     private String originalPath;
     private Timer timer;
+    private Activity myActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         myContext = this;
+        myActivity = this;
         setContentView(R.layout.activity_captured_video);
-        Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+        Logger.log(Log.INFO, TAG, "Creating Activity");
         vidView = (VideoView) findViewById(R.id.capturedVideo);
         spinner = (ProgressBar)findViewById(R.id.uploading_in_progress);
         spinner.setVisibility(View.GONE);
@@ -73,11 +71,19 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     @Override
     protected void onResume() {
         super.onResume();
-        Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
+        Logger.log(Log.INFO, TAG, "Resuming Activity");
         Alert.showVideoRule(this);
         vidView.start();
         timer = new Timer();
         timer.schedule(new StopPlaybackTask(), 11000);
+        Logger.fbActivate(this, true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Logger.log(Log.INFO, TAG, "Pausing Activity");
+        Logger.fbActivate(this, false);
     }
 
     class StopPlaybackTask extends TimerTask {
@@ -106,6 +112,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                 wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "UploadingWakeLock");
                 wakeLock.acquire(300000); // time out in case something goes wrong
                 Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
+                Logger.trackEvent(myActivity, "Upload", "Upload Video");
                 toast.show();
                 vidView.pause();
                 spinner.setVisibility(View.VISIBLE);
@@ -136,7 +143,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             }
             userId = User.getId(myContext);
             AppEngine gae = new AppEngine();
-            Crashlytics.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
+            Logger.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
                     uploadPath, videoId, caption, userId, longitude, latitude));
             JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, longitude, latitude);
             return response;
@@ -154,14 +161,13 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                     } else {
                         Toast.makeText(myContext, "Failed to upload", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
-                        Crashlytics.logException(new Exception("Server Side failure"));
+                        Logger.log(new Exception("Server Side failure"));
                     }
                 } else {
                     Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);;
             }
             new File(uploadPath + "/"+ videoId).delete();
             File[] listFile = Video.uploadDir.listFiles();
@@ -184,18 +190,17 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         try {
             File tmp = new File(uploadPath + "/tmp" + videoId);
             new File(uploadPath + "/" + videoId).renameTo(tmp);
-            Crashlytics.log(Log.INFO, TAG, "Pre compression size " + tmp.length());
+            Logger.log(Log.INFO, TAG, "Pre compression size " + tmp.length());
             // ac audio channels ar audio frequency b bitrate
             String command = "ffmpeg -y -i " + uploadPath + "/tmp"+ videoId +
                     " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 -t 10 " + uploadPath + "/" + videoId;
-            Crashlytics.log(Log.INFO, TAG, command);
+            Logger.log(Log.INFO, TAG, command);
             String[] complexCommand = GeneralUtils.utilConvertToComplex(command);
             vk.run(complexCommand, uploadPath, getApplicationContext());
-            Crashlytics.log(Log.INFO, TAG, "Post compression size " + new File(uploadPath + "/" + videoId).length());
+            Logger.log(Log.INFO, TAG, "Post compression size " + new File(uploadPath + "/" + videoId).length());
             tmp.delete();
         } catch (Throwable e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);;
+            Logger.log(e);
         }
     }
 

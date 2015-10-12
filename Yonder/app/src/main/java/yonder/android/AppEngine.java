@@ -2,8 +2,6 @@ package yonder.android;
 
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -53,7 +50,7 @@ public class AppEngine {
             try {
                 dos = new DataOutputStream( conn.getOutputStream() );
             } catch (UnknownHostException e) {
-                Crashlytics.log(Log.ERROR, TAG, "Failed to connect");
+                Logger.log(Log.ERROR, TAG, "Failed to connect");
                 return null;
             }
             dos.writeBytes(twoHyphens + boundary + lineEnd);
@@ -78,15 +75,14 @@ public class AppEngine {
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
-            Crashlytics.log(Log.INFO, TAG, "File written");
+            Logger.log(Log.INFO, TAG, "File written");
 
             // close streams
             fileInputStream.close();
             dos.flush();
             dos.close();
         } catch (Exception e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            Logger.log(e);
             return null;
         }
         return getResponse();
@@ -173,13 +169,19 @@ public class AppEngine {
         return get(urlString);
     }
 
+    protected JSONObject pingHome(String userId) {
+        String query = "";
+        query = "?version=" + BuildConfig.VERSION_CODE;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/users/" + userId + "/ping" + query;
+        return get(urlString);
+    }
+
     private String encode (String in) {
         String out = "";
         try {
             out = URLEncoder.encode(in, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            Logger.log(e);
         }
         return out;
     }
@@ -193,8 +195,7 @@ public class AppEngine {
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Connection", "Keep-Alive"); // Needed?
         } catch (Exception e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            Logger.log(e);
             return null;
         }
         return getResponse();
@@ -215,15 +216,14 @@ public class AppEngine {
             try {
                 dos = new DataOutputStream( conn.getOutputStream() );
             } catch (UnknownHostException e) {
-                Crashlytics.log(Log.ERROR, TAG, "Failed to connect");
+                Logger.log(Log.ERROR, TAG, "Failed to connect");
                 return null;
             }
             dos.writeBytes(query);
             dos.flush();
             dos.close();
         } catch (Exception e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            Logger.log(e);
             return null;
         }
         return getResponse();
@@ -237,7 +237,7 @@ public class AppEngine {
             try {
                 reader =  new BufferedReader( new InputStreamReader(conn.getInputStream() )); // getErrorStream
             } catch (UnknownHostException e) {
-                Crashlytics.log(Log.ERROR, TAG, "Failed to connect");
+                Logger.log(Log.ERROR, TAG, "Failed to connect");
                 return null;
             }
             String line;
@@ -246,11 +246,10 @@ public class AppEngine {
             {
                 response += line;
             }
-            Crashlytics.log(Log.INFO, TAG, "Server Response:\n" + response);
+            Logger.log(Log.INFO, TAG, "Server Response:\n" + response);
             reader.close();
         } catch (Exception e){
-            e.printStackTrace();
-            Crashlytics.logException(e);;
+            Logger.log(e);;
         }
 
         try {
@@ -258,8 +257,7 @@ public class AppEngine {
                 out = new JSONObject(response);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            Logger.log(e);
         }
         return out;
     }

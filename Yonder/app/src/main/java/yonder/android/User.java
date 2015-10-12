@@ -9,8 +9,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -18,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class User {
-	static boolean admin = true;
+	static boolean admin = false;
 	static String androidId;
 
 	public static String getId(Context context) {
@@ -94,26 +92,25 @@ public class User {
 		long lastRootCheck = sharedPreferences.getLong("last_root", 0);
 		long now = System.currentTimeMillis();
 		if (lastRootCheck == 0 || (now - lastRootCheck) / 3600000 > 24) {
-			Crashlytics.log(Log.INFO, "Log.User", "Checking if device is rooted");
+			Logger.log(Log.INFO, "Log.User", "Checking if device is rooted");
 			try {
 				if (checkRootMethod1() || checkRootMethod2() || checkRootMethod3()) {
-					Crashlytics.logException(new Exception("Rooted Device"));
+					Logger.log(new Exception("Rooted Device"));
 					Toast.makeText(activity, "Yonder is not supported on rooted devices for now", Toast.LENGTH_LONG).show();
 					activity.finish();
 					sharedPreferences.edit().putBoolean("root", true).apply();
 				} else {
-					Crashlytics.log(Log.INFO, "Log.User", "Device is not rooted");
+					Logger.log(Log.INFO, "Log.User", "Device is not rooted");
 					sharedPreferences.edit().putBoolean("root", false).apply();
 				}
 				sharedPreferences.edit().putLong("last_root", now).apply();
 				return;
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);;
 			}
 		}
 		if (sharedPreferences.getBoolean("root", false)) {
-			Crashlytics.log(Log.INFO, "Log.User", "Exiting since device is rooted");
+			Logger.log(Log.INFO, "Log.User", "Exiting since device is rooted");
 			Toast.makeText(activity, "Yonder is not supported on rooted devices for now", Toast.LENGTH_LONG).show();
 			activity.finish();
 		}

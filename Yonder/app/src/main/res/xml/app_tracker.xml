@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- The apps Analytics Tracking Id -->
+    <string name="ga_trackingId">UA-68587108-1</string>
+
+    <!-- Enable automatic Activity measurement -->
+    <bool name="ga_autoActivityTracking">true</bool>
+
+    <integer name="ga_sessionTimeout">30</integer>
+
+    <!-- The screen names that will appear in reports -->
+    <screenName name="yonder.android.CameraPreviewActivity">
+        Camera Preview Activity
+    </screenName>
+
+    <screenName name="yonder.android.CapturedVideoActivity">
+        Captured Video Activity
+    </screenName>
+
+    <screenName name="yonder.android.CommentActivity">
+        Comment Activity
+    </screenName>
+
+    <screenName name="yonder.android.FeedActivity">
+        Feed Activity
+    </screenName>
+
+    <screenName name="yonder.android.LoadFeedActivity">
+        Load Feed Activity
+    </screenName>
+
+    <screenName name="yonder.android.WelcomeActivity">
+        Welcome Activity
+    </screenName>
+
+    <screenName name="yonder.android.SplashActivity">
+        Splash Activity
+    </screenName>
+
+</resources>

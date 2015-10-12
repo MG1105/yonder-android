@@ -2,7 +2,6 @@ package yonder.android;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,8 +18,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
-
-import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,12 +47,14 @@ public class FeedActivity extends Activity {
     LinkedHashMap<String, JSONObject> videoInfo;
     Animation rotation;
     Timer timer;
+    int percentageWatched;
+    String gaCategory;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_feed);
-        Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+        Logger.log(Log.INFO, TAG, "Creating Activity");
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         myContext = this;
         videoInfo = LoadFeedActivity.videoInfo;
@@ -76,23 +75,28 @@ public class FeedActivity extends Activity {
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         currentVideo = (VideoView) findViewById(R.id.currentVideo);
 	    currentVideo.setVideoURI(uris.get(0));
-        currentVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        percentageWatched = 0;
+        currentVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.setLooping(true);
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                percentageWatched = 100;
+                mediaPlayer.seekTo(0);
+                mediaPlayer.start();
             }
         });
         currentVideoId = uris.get(0).getLastPathSegment().replace(".mp4", "");
-        Crashlytics.log(Log.INFO, TAG, "currentVideoId " + currentVideoId);
+        Logger.log(Log.INFO, TAG, "currentVideoId " + currentVideoId);
 
         if (LoadFeedActivity.myVideosOnly) {
             likeButton.setVisibility(View.GONE);
             dislikeButton.setVisibility(View.GONE);
             flagButton.setVisibility(View.GONE);
             showVideoInfo(0);
+            gaCategory = "My Feed";
         } else {
             commentButton.setVisibility(View.GONE);
             ratingButton.setVisibility(View.GONE);
+            gaCategory = "Nearby Feed";
         }
     }
 
@@ -100,20 +104,22 @@ public class FeedActivity extends Activity {
 	protected void onResume() {
         Video.obfuscate(false);
         super.onResume(); // loop?
-        Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
+        Logger.log(Log.INFO, TAG, "Resuming Activity");
 		currentVideo.start();
         showCaption();
 		if (CommentActivity.comments != null && CommentActivity.updateTotal) {
 			commentButton.setText(CommentActivity.comments.size() + " Comments");
             CommentActivity.updateTotal = false;
 		}
+        Logger.fbActivate(this, true);
 	}
 
 	@Override
 	protected void onPause() {
         Video.obfuscate(true);
         super.onPause();
-        Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
+        Logger.log(Log.INFO, TAG, "Pausing Activity");
+        Logger.fbActivate(this, false);
 	}
 
 	public ArrayList<Uri> getContent() {
@@ -123,7 +129,7 @@ public class FeedActivity extends Activity {
         for (Map.Entry<String, JSONObject> entry : videoInfo.entrySet()) {
             uris.add(Uri.parse(videosPath + "/" +entry.getKey()+".mp4"));
         }
-        Crashlytics.log(Log.INFO, TAG, "Feed videos " + uris.toString());
+        Logger.log(Log.INFO, TAG, "Feed videos " + uris.toString());
         return uris;
 	}
 
@@ -148,8 +154,7 @@ public class FeedActivity extends Activity {
             }
             ratingButton.setText(ratingInt + " " + unit);
         } catch (Exception e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);;
+            Logger.log(e);;
         }
         commentButton.setVisibility(View.VISIBLE);
         ratingButton.setVisibility(View.VISIBLE);
@@ -163,7 +168,8 @@ public class FeedActivity extends Activity {
             rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
             likeButton.startAnimation(rotation);
             RateTask rate = new RateTask(); // spinner and disappear buttons
-            Crashlytics.log(Log.INFO, TAG, "Liking video " + currentVideoId);
+            Logger.log(Log.INFO, TAG, "Liking video " + currentVideoId);
+            Logger.trackEvent(myContext, gaCategory, "Like Video");
             rating = "1";
             rate.execute(currentVideoId, rating, User.getId(myContext));
             timer = new Timer();
@@ -179,7 +185,8 @@ public class FeedActivity extends Activity {
             rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
             dislikeButton.startAnimation(rotation);
             RateTask rate = new RateTask();
-            Crashlytics.log(Log.INFO, TAG, "Disliking video " + currentVideoId);
+            Logger.log(Log.INFO, TAG, "Disliking video " + currentVideoId);
+            Logger.trackEvent(myContext, gaCategory, "Dislike Video");
             rating = "-1";
             rate.execute(currentVideoId, rating, User.getId(myContext));
             timer = new Timer();
@@ -191,7 +198,8 @@ public class FeedActivity extends Activity {
         @Override
         public void onClick(View v) {
             ReportTask report = new ReportTask();
-            Crashlytics.log(Log.INFO, TAG, "Flagging video " + currentVideoId);
+            Logger.log(Log.INFO, TAG, "Flagging video " + currentVideoId);
+            Logger.trackEvent(myContext, gaCategory, "Flag Video");
             report.execute(currentVideoId, User.getId(myContext));
         }
     };
@@ -225,6 +233,7 @@ public class FeedActivity extends Activity {
 			Intent intent = new Intent(myContext, CommentActivity.class);
 			intent.putExtra("videoId", currentVideoId);
 			startActivity(intent);
+            Logger.trackEvent(myContext, gaCategory, "Open Comments");
 		}
 	};
 
@@ -243,15 +252,14 @@ public class FeedActivity extends Activity {
                     if (response.getString("success").equals("1")) {
 
                     } else {
-                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Logger.log(new Exception("Server Side Failure"));
                         //Toast.makeText(myContext, "Failed to rate the video!", Toast.LENGTH_LONG).show();
                     }
                 } else {
                     //Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);;
             }
         }
     }
@@ -271,15 +279,14 @@ public class FeedActivity extends Activity {
                         Toast.makeText(myContext, "Flagged", Toast.LENGTH_LONG).show();
                         flagButton.setVisibility(View.GONE);
                     } else {
-                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Logger.log(new Exception("Server Side Failure"));
                         Toast.makeText(myContext, "Failed to flag the video!", Toast.LENGTH_LONG).show();
                     }
                 } else {
                     Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);
             }
         }
     }
@@ -287,17 +294,28 @@ public class FeedActivity extends Activity {
     public void playNextVideo() {
         if (tap < uris.size()-1) {
             tap++;
+            setPercentageWatched();
+            if (percentageWatched != 0) {
+                Logger.trackEvent(myContext, gaCategory, "View Video", percentageWatched);
+                if (percentageWatched < 33) {
+                    Logger.trackEvent(myContext, gaCategory, "Skip Video", percentageWatched);
+                }
+            }
+            Logger.log(Log.INFO, TAG, "Watched " + percentageWatched + "%");
             currentVideo.stopPlayback();
             flagButton.setVisibility(View.VISIBLE);
             currentVideo.setVideoURI(uris.get(tap));
             currentVideoId = uris.get(tap).getLastPathSegment().replace(".mp4", "");
-            Crashlytics.log(Log.INFO, TAG, "Playing " + currentVideoId);
-            currentVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            Logger.log(Log.INFO, TAG, "Playing " + currentVideoId);
+            currentVideo.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
-                public void onPrepared(MediaPlayer mp) {
-                    mp.setLooping(true);
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    percentageWatched = 100;
+                    mediaPlayer.seekTo(0);
+                    mediaPlayer.start();
                 }
             });
+            percentageWatched = 0;
             currentVideo.start();
             showCaption();
             if (LoadFeedActivity.myVideosOnly) {
@@ -314,6 +332,14 @@ public class FeedActivity extends Activity {
                 dislikeButton.setEnabled(true);
             }
         } else {
+            setPercentageWatched();
+            if (percentageWatched != 0) {
+                Logger.trackEvent(myContext, gaCategory, "View Video", percentageWatched);
+                if (percentageWatched < 33) {
+                    Logger.trackEvent(myContext, gaCategory, "Skip Video", percentageWatched);
+                }
+            }
+            Logger.log(Log.INFO, TAG, "Watched " + percentageWatched + "%");
             finish();
         }
     }
@@ -324,9 +350,24 @@ public class FeedActivity extends Activity {
             String captionContent = videoInfo.get(currentVideoId).getString("caption");
             caption.setText(captionContent);
         } catch (JSONException e) {
-            Crashlytics.logException(e);;
+            Logger.log(e);;
         }
     }
+
+    public void setPercentageWatched () {
+        if (percentageWatched == 100) {
+            return;
+        }
+        double current = currentVideo.getCurrentPosition();
+        double duration = currentVideo.getDuration();
+        System.out.println("current "+ current +"duration "+ + duration);
+        if (current > 0 && duration > 0) {
+            percentageWatched = (int) (current/duration * 100);
+        } else {
+            percentageWatched = 0;
+        }
+    }
+
 	// Handle Touch
 
 	@Override

@@ -10,8 +10,6 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
-import com.crashlytics.android.Crashlytics;
-
 public class WelcomeActivity extends Activity {
 
 	private final String TAG = "Log." + this.getClass().getSimpleName();
@@ -20,11 +18,24 @@ public class WelcomeActivity extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+		Logger.log(Log.INFO, TAG, "Creating Activity");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_welcome_1);
 		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
+	}
+
+	public void onResume() {
+		super.onResume();
+		Logger.log(Log.INFO, TAG, "Resuming Activity");
+		Logger.fbActivate(this, true);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Logger.log(Log.INFO, TAG, "Pausing Activity");
+		Logger.fbActivate(this, false);
 	}
 
 	// Handle touch

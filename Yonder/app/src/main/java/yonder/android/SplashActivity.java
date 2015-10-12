@@ -7,9 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
-
 public class SplashActivity extends Activity {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 
@@ -17,9 +14,8 @@ public class SplashActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		Fabric.with(this, new Crashlytics());
-		Crashlytics.setUserIdentifier(User.getId(this));
-		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+		Logger.init(this);
+		Logger.log(Log.INFO, TAG, "Creating Activity");
 		setContentView(R.layout.activity_splash);
 
 		SharedPreferences sharedPreferences = this.getSharedPreferences(
@@ -28,10 +24,16 @@ public class SplashActivity extends Activity {
 		int ban = sharedPreferences.getInt("ban", 0);
 		AlarmReceiver alarmReceiver = new AlarmReceiver();
 		if (ban == 0 && upgrade != 2 && !User.admin) {
-			alarmReceiver.setAlarm(this);
+			alarmReceiver.setNotificationAlarm(this);
 		} else {
-			alarmReceiver.cancelAlarm(this);
+			alarmReceiver.cancelNotificationAlarm(this);
 		}
+
+		if (!User.admin) {
+			alarmReceiver.setPingAlarm(this);
+		}
+
+		Logger.startSession(this);
 
 		Thread timerThread = new Thread(){
 			public void run(){
@@ -60,7 +62,7 @@ public class SplashActivity extends Activity {
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		super.onPause();
-		Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
+		Logger.log(Log.INFO, TAG, "Pausing Activity");
 		finish();
 	}
 

@@ -22,8 +22,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -51,7 +49,7 @@ public class CommentActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_comment);
-		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+		Logger.log(Log.INFO, TAG, "Creating Activity");
 		myActivity = this;
 		videoId = getIntent().getExtras().getString("videoId");
 		GetCommentsTask getComments = new GetCommentsTask();
@@ -61,16 +59,24 @@ public class CommentActivity extends Activity {
 		Alert.showCommentRule(this);
 		YonderDbHelper mDbHelper = new YonderDbHelper(this);
 		if (yonderDb == null) {
-			Crashlytics.log(Log.INFO, TAG, "Creating YonderDb");
+			Logger.log(Log.INFO, TAG, "Creating YonderDb");
 			yonderDb = mDbHelper.getWritableDatabase();
 		}
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		Logger.log(Log.INFO, TAG, "Resuming Activity");
+		Logger.fbActivate(this, true);
+	}
+
+	@Override
 	protected void onPause() {
 		super.onPause();
-		Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
+		Logger.log(Log.INFO, TAG, "Pausing Activity");
 		updateTotal = true;
+		Logger.fbActivate(this, false);
 	}
 
 	View.OnClickListener sendListener = new View.OnClickListener() {
@@ -87,9 +93,10 @@ public class CommentActivity extends Activity {
 				commentId = Long.toString(System.currentTimeMillis());
 				nickname = User.getNickname(myActivity);
 				String userId = User.getId(myActivity);
-				Crashlytics.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
+				Logger.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
 								"commentText %s",
 						nickname, userId, videoId, commentId, comment));
+				Logger.trackEvent(myActivity, "Comment", "Add Comment");
 				addComment.execute(nickname, userId, videoId, commentId, comment);
 			}
 		}
@@ -162,6 +169,7 @@ public class CommentActivity extends Activity {
 					ReportTask report = new ReportTask();
 					report.execute(id, User.getId(myActivity));
 					myComment.setFlagged();
+					Logger.trackEvent(myActivity, "Comment", "Flag Comment");
 				}
 			});
 
@@ -185,6 +193,7 @@ public class CommentActivity extends Activity {
 					timer = new Timer();
 					timer.schedule(new StopAnimationTask(), 200);
 					myComment.setRated();
+					Logger.trackEvent(myActivity, "Comment", "Like Comment");
 				}
 
 				class StopAnimationTask extends TimerTask {
@@ -225,6 +234,7 @@ public class CommentActivity extends Activity {
 					timer = new Timer();
 					timer.schedule(new StopAnimationTask(), 200);
 					myComment.setRated();
+					Logger.trackEvent(myActivity, "Comment", "Dislike Comment");
 				}
 
 				class StopAnimationTask extends TimerTask {
@@ -257,12 +267,11 @@ public class CommentActivity extends Activity {
 		protected JSONObject doInBackground(Void... params) {
 			try {
 				AppEngine gae = new AppEngine();
-				Crashlytics.log(Log.INFO, TAG, "Getting comments for " + videoId);
+				Logger.log(Log.INFO, TAG, "Getting comments for " + videoId);
 				JSONObject response = gae.getComments(videoId, User.getId(myActivity));
 				return response;
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);
 				return null;
 			}
 		}
@@ -287,7 +296,7 @@ public class CommentActivity extends Activity {
 							}
 						}
 					} else {
-						Crashlytics.logException(new Exception("Server Side Failure"));
+						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(myActivity, "Failed to retrieve comments!", Toast.LENGTH_LONG).show();
 						finish();
 					}
@@ -296,8 +305,7 @@ public class CommentActivity extends Activity {
 					finish();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);;
 			}
 		}
 	}
@@ -331,7 +339,7 @@ public class CommentActivity extends Activity {
 								getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 						//Toast.makeText(myActivity, "Sent!", Toast.LENGTH_LONG).show();
 					} else {
-						Crashlytics.logException(new Exception("Server Side Failure"));
+						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(myActivity, "Failed to send comment", Toast.LENGTH_LONG).show();
 					}
 				} else {
@@ -339,8 +347,7 @@ public class CommentActivity extends Activity {
 				}
 				sendButton.setEnabled(true);
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);;
 			}
 		}
 	}
@@ -349,7 +356,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			Crashlytics.log(Log.INFO, TAG, "Reporting comment " + params[0]);
+			Logger.log(Log.INFO, TAG, "Reporting comment " + params[0]);
 			JSONObject response = gae.reportComment(params[0], params[1]);
 			SQL sql = new SQL();
 			sql.flagComment(yonderDb, params[0], videoId);
@@ -363,14 +370,13 @@ public class CommentActivity extends Activity {
 						Toast toast = Toast.makeText(myActivity, "Flagged", Toast.LENGTH_LONG);
 						toast.show();
 					} else {
-						Crashlytics.logException(new Exception("Server Side Failure"));
+						Logger.log(new Exception("Server Side Failure"));
 					}
 				} else {
 
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);;
 			}
 		}
 	}
@@ -379,7 +385,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			Crashlytics.log(Log.INFO, TAG, "Rating comment " + params[0]+ " " + params[1]);
+			Logger.log(Log.INFO, TAG, "Rating comment " + params[0]+ " " + params[1]);
 			JSONObject response = gae.rateComment(params[0], params[1], params[2]);
 			SQL sql = new SQL();
 			sql.rateComment(yonderDb, params[0], videoId);
@@ -388,7 +394,7 @@ public class CommentActivity extends Activity {
 			long lastDbCleanup = sharedPreferences.getLong("last_db_cleanup", 0);
 			long now = System.currentTimeMillis();
 			if (lastDbCleanup == 0 || (now - lastDbCleanup) / 3600000 > 24) {
-				Crashlytics.log(Log.INFO, TAG, "Cleaning up android db");
+				Logger.log(Log.INFO, TAG, "Cleaning up android db");
 				sql.cleanup(yonderDb);
 				sharedPreferences.edit().putLong("last_db_cleanup", now).apply();
 			}
@@ -402,14 +408,13 @@ public class CommentActivity extends Activity {
 						//Toast toast = Toast.makeText(myActivity, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
 						//toast.show();
 					} else {
-						Crashlytics.logException(new Exception("Server Side Failure"));
+						Logger.log(new Exception("Server Side Failure"));
 					}
 				} else {
 
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);
 			}
 		}
 	}

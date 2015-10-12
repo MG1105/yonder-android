@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/C:/Users/MediGouta/Documents/GitHub/yonder-android/Yonder/ffmpeg4android_lib/build/intermediates/bundles/debug/res/values/values.xml -->
-    <eat-comment/>
     <string name="app_name">Demo</string>
     <string name="commandText">ffmpeg -y -i /sdcard/videokit/in.mp4 -strict experimental -vf transpose=1 -s 160x120 -r 30 -aspect 4:3 -ab 48000 -ac 2 -ar 22050 -b 2097k /sdcard/videokit/out.mp4</string>
     <string name="commandTextView">This command will rotate /sdcard/videokit/in.mp4 90 degrees, and create /sdcard/videokit/out.mp4:</string>

@@ -1,7 +1,5 @@
 package yonder.android;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,8 +26,7 @@ public class Comment {
 			this.flagged = isFlaggedQuery(); //too slow for fast scrolling
 			this.rated = isRatedQuery();
 		} catch (JSONException e) {
-			e.printStackTrace();
-			Crashlytics.logException(e);
+			Logger.log(e);
 		}
 	}
 
@@ -96,8 +93,7 @@ public class Comment {
 			try {
 				users.add(new Comment(jsonObjects.getJSONObject(i), videoId));
 			} catch (JSONException e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);
+				Logger.log(e);
 			}
 		}
 		return users;

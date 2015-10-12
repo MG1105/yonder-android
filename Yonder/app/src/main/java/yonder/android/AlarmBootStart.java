@@ -12,7 +12,7 @@ public class AlarmBootStart extends BroadcastReceiver
 	{
 		if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED) && !User.admin)
 		{
-			alarmReceiver.setAlarm(context);
+			alarmReceiver.setBootAlarm(context);
 		}
 	}
 }

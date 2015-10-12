@@ -5,8 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
-
 public class SQL {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 
@@ -20,7 +18,7 @@ public class SQL {
 		if (updated==0) {
 			db.insert("comments", null, values);
 		}
-		Crashlytics.log(Log.INFO, TAG, "Recording comment flag " + values.valueSet().toString());
+		Logger.log(Log.INFO, TAG, "Recording comment flag " + values.valueSet().toString());
 	}
 
 	protected boolean isFlagged(SQLiteDatabase db, String commentId, String videoId) {
@@ -53,7 +51,7 @@ public class SQL {
 		if (updated==0) {
 			db.insert("comments", null, values);
 		}
-		Crashlytics.log(Log.INFO, TAG, "Recording comment rating " + values.valueSet().toString());
+		Logger.log(Log.INFO, TAG, "Recording comment rating " + values.valueSet().toString());
 	}
 
 	protected boolean isRated(SQLiteDatabase db, String commentId, String videoId) {

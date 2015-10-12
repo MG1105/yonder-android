@@ -27,8 +27,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -57,6 +55,7 @@ public class LoadFeedActivity extends Activity {
     String listIds;
     String score;
     Switch myVideosOnlySwitch;
+    String gaCategory;
 
     private DownloadManager downloadManager;
     static LinkedHashMap<String, JSONObject> videoInfo;
@@ -68,7 +67,7 @@ public class LoadFeedActivity extends Activity {
                 R.anim.animation_leave);
         mActivity = this;
         setContentView(R.layout.activity_load_feed);
-        Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+        Logger.log(Log.INFO, TAG, "Creating Activity");
         rotation = AnimationUtils.loadAnimation(this, R.anim.rotate);
         loadFeedImageView = (ImageView) findViewById(R.id.loadFeedImageView);
         loadFeedImageView.setOnClickListener(loadListener);
@@ -91,16 +90,18 @@ public class LoadFeedActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
+        Logger.log(Log.INFO, TAG, "Resuming Activity");
         GetMyFeedInfoTask getMyFeedInfo = new GetMyFeedInfoTask();
         getMyFeedInfo.execute(userId);
+        Logger.fbActivate(this, true);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
+        Logger.log(Log.INFO, TAG, "Pausing Activity");
         Video.obfuscate(true);
+        Logger.fbActivate(this, false);
     }
 
     OnClickListener loadListener = new OnClickListener() {
@@ -111,8 +112,12 @@ public class LoadFeedActivity extends Activity {
 
             myVideosOnly = myVideosOnlySwitch.isChecked();
             if (myVideosOnly) {
+                gaCategory = "My Feed";
+                Logger.trackEvent(mActivity, gaCategory, "Load Request");
                 loadFeedTextView.setText("Looking for your Yondors...");
             } else {
+                gaCategory = "Nearby Feed";
+                Logger.trackEvent(mActivity, gaCategory, "Load Request");
                 loadFeedTextView.setText("Looking for Yondors around you...");
                 SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
                         "yonder.android", Context.MODE_PRIVATE);
@@ -127,9 +132,11 @@ public class LoadFeedActivity extends Activity {
                         loadFeedImageView.setClickable(true);
                         return;
                     } else {
+                        Logger.trackEvent(mActivity, gaCategory, "Server Request");
                         sharedPreferences.edit().putLong("last_request", now).apply();
                     }
                 } else {
+                    Logger.trackEvent(mActivity, gaCategory, "Server Request");
                     sharedPreferences.edit().putLong("last_request", now).apply();
                 }
             }
@@ -154,13 +161,12 @@ public class LoadFeedActivity extends Activity {
                 }
                 uris = new ArrayList<>();
                 AppEngine gae = new AppEngine();
-                Crashlytics.log(Log.INFO, TAG, String.format("Getting feed for userId %s longitude %s latitude %s myVideosOnly %s",
+                Logger.log(Log.INFO, TAG, String.format("Getting feed for userId %s longitude %s latitude %s myVideosOnly %s",
                         userId, longitude, latitude, myVideosOnly));
                 JSONObject response = gae.getFeed(userId, longitude, latitude, myVideosOnly, false);
                 return response;
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);
                 return null;
             }
         }
@@ -193,11 +199,11 @@ public class LoadFeedActivity extends Activity {
                             }
                             loadFeedTextView.setText("Loading...");
                             if (remaining == 0) {
-                                Crashlytics.log(Log.INFO, TAG, "All videos in cache");
+                                Logger.log(Log.INFO, TAG, "All videos in cache");
                                 getFeedInfoTask infoTask = new getFeedInfoTask();
                                 infoTask.execute(listIds, userId);
                             } else {
-                                Crashlytics.log(Log.INFO, TAG, remaining + " videos to download");
+                                Logger.log(Log.INFO, TAG, remaining + " videos to download");
                                 registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
                             }
                         } else {
@@ -205,21 +211,22 @@ public class LoadFeedActivity extends Activity {
                                 loadFeedTextView.setText("We did not find any Yondor you uploaded or commented on " +
                                         "in the past 24 hours");
                                 loadFeedImageView.clearAnimation();
+                                Logger.trackEvent(mActivity, gaCategory, "No Content");
                             } else {
                                 timer = new Timer();
                                 timer.schedule(new StopAnimationTask(), 3000);
+                                Logger.trackEvent(mActivity, gaCategory, "No Content");
                             }
                             loadFeedImageView.setClickable(true);
                         }
                     } else {
-                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Logger.log(new Exception("Server Side Failure"));
                         loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
                         loadFeedImageView.clearAnimation();
                         loadFeedImageView.setClickable(true);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    Crashlytics.logException(e);;
+                    Logger.log(e);
                     loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
                     loadFeedImageView.clearAnimation();
                 }
@@ -235,7 +242,7 @@ public class LoadFeedActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             remaining--;
-            Crashlytics.log(Log.INFO, TAG, "Remaining " + remaining);
+            Logger.log(Log.INFO, TAG, "Remaining " + remaining);
             if (remaining >= 0) { // Bug < 0?
                 loadFeedTextView.setText("Loading... " + remaining);
             }
@@ -269,8 +276,7 @@ public class LoadFeedActivity extends Activity {
                 JSONObject response = gae.getMyFeedInfo(params[0]);
                 return response;
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);
                 return null;
             }
         }
@@ -305,7 +311,7 @@ public class LoadFeedActivity extends Activity {
                             listView.setVisibility(View.GONE);
                         }
                     } else {
-                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Logger.log(new Exception("Server Side Failure"));
                         TextView noVideos = (TextView)findViewById(R.id.textView_no_videos);
                         noVideos.setVisibility(View.VISIBLE);
                     }
@@ -317,8 +323,7 @@ public class LoadFeedActivity extends Activity {
                 spinner = (ProgressBar)findViewById(R.id.progress_videos);
                 spinner.setVisibility(View.GONE);
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);
             }
         }
     }
@@ -390,8 +395,7 @@ public class LoadFeedActivity extends Activity {
                 JSONObject response = gae.getFeedInfo(params[0], params[1]);
                 return response;
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);
                 return null;
             }
         }
@@ -415,7 +419,7 @@ public class LoadFeedActivity extends Activity {
                             loadFeedTextView.setText("Tap to look for Yondors around you");
                         }
                     } else {
-                        Crashlytics.logException(new Exception("Server Side Failure"));
+                        Logger.log(new Exception("Server Side Failure"));
                         loadFeedImageView.clearAnimation();
                         loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
                     }
@@ -425,8 +429,7 @@ public class LoadFeedActivity extends Activity {
                 }
                 loadFeedImageView.setClickable(true);
             } catch (Exception e) {
-                e.printStackTrace();
-                Crashlytics.logException(e);;
+                Logger.log(e);
             }
         }
     }

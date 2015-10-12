@@ -2,8 +2,7 @@ package yonder.android;
 
 import android.app.Activity;
 import android.util.Log;
-
-import com.crashlytics.android.Crashlytics;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,8 +29,7 @@ public class Video {
 			this.commentsTotal = object.getString("comments_total");
 			this.rating = object.getString("rating");
 		} catch (JSONException e) {
-			e.printStackTrace();
-			Crashlytics.logException(e);
+			Logger.log(e);
 		}
 	}
 
@@ -59,8 +57,7 @@ public class Video {
 			try {
 				videos.add(new Video(jsonObjects.getJSONObject(i)));
 			} catch (JSONException e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);
+				Logger.log(e);
 			}
 		}
 		return videos;
@@ -100,23 +97,21 @@ public class Video {
 				raf.write(b1);
 				raf.seek(5);
 				raf.write(b2);
-				Crashlytics.log(Log.INFO, "Log.Video", "Swap Bytes " + file.getPath() + " b1 " + b1 + " b2 " + b2);
+				Logger.log(Log.INFO, "Log.Video", "Swap Bytes " + file.getPath() + " b1 " + b1 + " b2 " + b2);
 			} else {
-				Crashlytics.log(Log.ERROR, "Log.Video", "Skip swapping bytes because b1 or b2 = -1 in "
+				Logger.log(Log.ERROR, "Log.Video", "Skip swapping bytes because b1 or b2 = -1 in "
 						+ file.getPath());
-				Crashlytics.logException(new Exception("Failed to swap bytes"));
+				Logger.log(new Exception("Failed to swap bytes"));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			Crashlytics.logException(e);
+			Logger.log(e);
 		} finally {
 			try {
 				if (raf != null) {
 					raf.close(); // Flush/save changes and close resource.
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);
+				Logger.log(e);
 			}
 		}
 	}
@@ -131,7 +126,7 @@ public class Video {
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
 				if ((now - last)/3600000 > 24 || (file.getAbsolutePath().endsWith(".mp4") && !upload)) {
-					Crashlytics.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
+					Logger.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
 					file.delete();
 				}
 			}
@@ -147,9 +142,10 @@ public class Video {
 		try {
 			loadedNomedia.createNewFile();
 			uploadNomedia.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-			Crashlytics.logException(new Exception("Failed to create nomedia"));
+		} catch (IOException e) { // Seen on TCT/TCL unknown chinese devices
+			Logger.log(e);
+			Toast.makeText(activity, "Sorry, we do not support this device for now", Toast.LENGTH_LONG).show();
+			activity.finish();
 		}
 	}
 }

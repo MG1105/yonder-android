@@ -1,16 +1,12 @@
 package yonder.android;
 
 import android.app.Activity;
-import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.crashlytics.android.Crashlytics;
-
-import java.io.IOException;
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -31,7 +27,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	}
 
 	public void surfaceCreated(SurfaceHolder holder) {
-		refreshCamera(cameraId, mCamera);
+		if (mCamera != null) {
+			refreshCamera(cameraId, mCamera);
+		}
 	}
 
 	public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -70,8 +68,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			mCamera.startPreview();
 			setAutoFocus();
 		} catch (Exception e) {
-			e.printStackTrace();
-			Crashlytics.logException(e);
+			Logger.log(e);
 		}
 	}
 
@@ -98,7 +95,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			result = (info.orientation - degrees + 360) % 360;
 		}
 		displayOrientation = result;
-		Crashlytics.log(Log.INFO, TAG, "Set display orientation " + displayOrientation);
+		Logger.log(Log.INFO, TAG, "Set display orientation " + displayOrientation);
 		camera.setDisplayOrientation(displayOrientation);
 	}
 

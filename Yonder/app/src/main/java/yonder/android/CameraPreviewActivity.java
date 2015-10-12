@@ -19,12 +19,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.crashlytics.android.Crashlytics;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -58,7 +57,7 @@ public class CameraPreviewActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		userId = User.getId(this);
-		Crashlytics.log(Log.INFO, TAG, "Creating Activity");
+		Logger.log(Log.INFO, TAG, "Creating Activity");
 
 		setContentView(R.layout.activity_camera_preview);
 		mActivity = this;
@@ -76,20 +75,22 @@ public class CameraPreviewActivity extends Activity {
 
 	public void onResume() {
 		super.onResume();
-		Crashlytics.log(Log.INFO, TAG, "Resuming Activity");
+		Logger.log(Log.INFO, TAG, "Resuming Activity");
 		openCamera();
 		mPreview.refreshCamera(cameraId, mCamera);
+		Logger.fbActivate(this, true);
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Crashlytics.log(Log.INFO, TAG, "Pausing Activity");
+		Logger.log(Log.INFO, TAG, "Pausing Activity");
         if (recording) {
             stopRecording();
 	        capture.setBackgroundResource(R.drawable.ic_record);
         }
 		releaseCamera();
+		Logger.fbActivate(this, false);
 	}
 
 	public void initialize() {
@@ -117,7 +118,7 @@ public class CameraPreviewActivity extends Activity {
 		public void onClick(View v) {
 			// get the number of cameras
 			if (!recording) {
-				Crashlytics.log(Log.INFO, TAG, "Request to switch cameras");
+				Logger.log(Log.INFO, TAG, "Request to switch cameras");
 				int camerasNumber = Camera.getNumberOfCameras();
 				if (camerasNumber > 1) {
 					// release the old camera instance
@@ -145,7 +146,8 @@ public class CameraPreviewActivity extends Activity {
 		@Override
 		public void onClick(View v) {
 			if (!recording) {
-				Crashlytics.log(Log.INFO, TAG, "Opening gallery");
+				Logger.log(Log.INFO, TAG, "Opening gallery");
+				Logger.trackEvent(mActivity, "Upload", "Open Gallery");
 				Intent mediaChooser = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
 				mediaChooser.setType("video/*");
 				startActivityForResult(mediaChooser, 1);
@@ -166,10 +168,10 @@ public class CameraPreviewActivity extends Activity {
 					mCamera = Camera.open(cameraId);
 				}
 				catch (RuntimeException e) {
-					e.printStackTrace();
-					Crashlytics.logException(e);
+					Logger.log(e);
 					Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
 					mActivity.finish();
+					return;
 				}
 				mPreview.refreshCamera(cameraId, mCamera);
 				cameraFront = false;
@@ -183,10 +185,10 @@ public class CameraPreviewActivity extends Activity {
 					mCamera = Camera.open(cameraId);
 				}
 				catch (RuntimeException e) {
-					e.printStackTrace();
-					Crashlytics.logException(e);
+					Logger.log(e);
 					Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
 					mActivity.finish();
+					return;
 				}
 				mPreview.refreshCamera(cameraId, mCamera);
 				cameraFront = true;
@@ -197,8 +199,9 @@ public class CameraPreviewActivity extends Activity {
 	private void openCamera() {
 		if (!hasCamera(mActivity)) {
 			Toast.makeText(mActivity, "Sorry, we could not find your camera", Toast.LENGTH_LONG).show();
-			Crashlytics.logException(new Exception("No Camera found"));
+			Logger.log(new Exception("No Camera found"));
 			finish();
+			return;
 		}
 		if (mCamera == null) {
 			int frontFacingCamId = findFrontFacingCamera();
@@ -211,8 +214,7 @@ public class CameraPreviewActivity extends Activity {
 				mCamera = Camera.open(backFacingCamId);
 			}
 			catch (RuntimeException e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);
+				Logger.log(e);
 				Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
 				mActivity.finish();
 			}
@@ -277,10 +279,12 @@ public class CameraPreviewActivity extends Activity {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			if(event.getAction() == MotionEvent.ACTION_DOWN){
-				Crashlytics.log(Log.INFO, TAG, "Start recording");
+				Logger.log(Log.INFO, TAG, "Start recording");
+				Logger.trackEvent(mActivity, "Upload", "Record Video");
 				if (!prepareMediaRecorder()) {
 					Toast.makeText(CameraPreviewActivity.this, "Unexpected error while recording", Toast.LENGTH_LONG).show();
 					mActivity.finish();
+					return true;
 				}
 				try {
 					capture.setBackgroundResource(R.drawable.ic_stop);
@@ -313,14 +317,14 @@ public class CameraPreviewActivity extends Activity {
 					}.start();
 				} catch (Exception e) {
 					Toast.makeText(CameraPreviewActivity.this, "Failed recording", Toast.LENGTH_LONG).show();
-					Crashlytics.logException(new Exception("Failed Recording"));
+					Logger.log(new Exception("Failed Recording"));
 					mActivity.finish();
 				}
 				return true;
 			}
 			else if(event.getAction() == MotionEvent.ACTION_UP){
 				if (recording) {
-					Crashlytics.log(Log.INFO, TAG, "Stop recording");
+					Logger.log(Log.INFO, TAG, "Stop recording");
 					stopRecording();
 					capture.setBackgroundResource(R.drawable.ic_record);
 					if (timer != null) {
@@ -396,13 +400,11 @@ public class CameraPreviewActivity extends Activity {
 			mediaRecorder.prepare();
 		} catch (IllegalStateException e) {
 			releaseMediaRecorder();
-			e.printStackTrace();
-			Crashlytics.logException(e);;
+			Logger.log(e);;
 			return false;
 		} catch (IOException e) {
 			releaseMediaRecorder();
-			e.printStackTrace();
-			Crashlytics.logException(e);;
+			Logger.log(e);;
 			return false;
 		}
 		recording = true;
@@ -417,20 +419,19 @@ public class CameraPreviewActivity extends Activity {
 		protected JSONObject doInBackground(Void... params) {
 			try {
 				AppEngine gae = new AppEngine();
-				Crashlytics.log(Log.INFO, TAG, "Verifying user id " + userId);
+				Logger.log(Log.INFO, TAG, "Verifying user id " + userId);
 				JSONObject response = gae.verifyUser(userId);
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
 						JSONObject userObject = response.getJSONObject("user");
 						return userObject;
 					} else { // server side failure
-						Crashlytics.logException(new Exception("Server Side failure"));
+						Logger.log(new Exception("Server Side failure"));
 						return null;
 					}
 				} else return null; // no internet
 			} catch (Exception e) {
-				e.printStackTrace();
-				Crashlytics.logException(e);;
+				Logger.log(e);;
 				return null;
 			}
 		}
@@ -450,8 +451,7 @@ public class CameraPreviewActivity extends Activity {
 						Alert.ban(mActivity, user.getInt("ban"));
 					}
 				} catch (JSONException e) {
-					e.printStackTrace();
-					Crashlytics.logException(e);;
+					Logger.log(e);;
 				}
 			} else { // could also be server side failure
 				Toast.makeText(mActivity, "Could not connect to the Internet. Please try again later", Toast.LENGTH_LONG).show();
@@ -506,8 +506,7 @@ public class CameraPreviewActivity extends Activity {
 
 				}
 				catch (Exception e) {
-					e.printStackTrace();
-					Crashlytics.logException(e);
+					Logger.log(e);
 					Toast.makeText(mActivity, "Could not access the video", Toast.LENGTH_LONG).show();
 					return;
 				}
