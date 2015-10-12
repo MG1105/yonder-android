@@ -16,3 +16,5 @@
 #   public *;
 #}
 -keepattributes SourceFile,LineNumberTable
+-keep public class com.google.android.gms.* { public *; }
+-dontwarn com.google.android.gms.**
