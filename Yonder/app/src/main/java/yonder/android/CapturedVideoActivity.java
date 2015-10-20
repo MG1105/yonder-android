@@ -89,7 +89,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     class StopPlaybackTask extends TimerTask {
         public void run() {
             // When you need to modify a UI element, do so on the UI thread.
-            if (vidView.isPlaying()) {
+            if (vidView.isPlaying() && originalPath != null) {
                 if (vidView.getCurrentPosition() > 10000) {
                     vidView.stopPlayback();
                 }

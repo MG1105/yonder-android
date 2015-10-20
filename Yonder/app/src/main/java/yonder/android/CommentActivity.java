@@ -93,6 +93,12 @@ public class CommentActivity extends Activity {
 				commentId = Long.toString(System.currentTimeMillis());
 				nickname = User.getNickname(myActivity);
 				String userId = User.getId(myActivity);
+				if (User.admin) {
+					if (comment.startsWith("@")) {
+						nickname = comment.substring(1,5);
+						comment = comment.substring(6);
+					}
+				}
 				Logger.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
 								"commentText %s",
 						nickname, userId, videoId, commentId, comment));

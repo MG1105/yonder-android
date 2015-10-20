@@ -48,18 +48,24 @@ public class AlarmReceiver extends BroadcastReceiver
 		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delta, delta, pendingIntent);
 	}
 
-	public void setPingAlarm(Context context) {
+	public void setPingAlarm(Context context, boolean boot) {
 		AlarmManager alarmManager =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.putExtra("code", 2);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 2, intent, 0);
 		long delta = 1000 * 60 * 60 * 24; // Millisec * Second * Minute * Hour
-		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + delta, delta, pendingIntent);
+		long triggerDelta;
+		if (boot) {
+			triggerDelta = 30000;
+		} else {
+			triggerDelta = delta;
+		}
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + triggerDelta, delta, pendingIntent);
 	}
 
 	public void setBootAlarm(Context context) {
 		setNotificationAlarm(context);
-		setPingAlarm(context);
+		setPingAlarm(context, true);
 	}
 
 	public void cancelNotificationAlarm(Context context) {

@@ -30,7 +30,7 @@ public class SplashActivity extends Activity {
 		}
 
 		if (!User.admin) {
-			alarmReceiver.setPingAlarm(this);
+			alarmReceiver.setPingAlarm(this, false);
 		}
 
 		Logger.startSession(this);
@@ -44,7 +44,7 @@ public class SplashActivity extends Activity {
 				}finally{
 					SharedPreferences sharedPreferences = SplashActivity.this.getSharedPreferences(
 							"yonder.android", Context.MODE_PRIVATE);
-					String welcome = sharedPreferences.getString("welcome", null);
+					String welcome = sharedPreferences.getString("welcome_8", null);
 					if (welcome == null) {
 						Intent intent = new Intent(SplashActivity.this,WelcomeActivity.class);
 						startActivity(intent);

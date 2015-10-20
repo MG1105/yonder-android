@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -84,6 +85,16 @@ public class FeedActivity extends Activity {
                 mediaPlayer.start();
             }
         });
+        currentVideo.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Logger.log(Log.ERROR, TAG, "Failed to play video " + currentVideoId + " Type " + what + " Code " + extra);
+                Logger.log(new Exception("Failed to play video"));
+                playNextVideo();
+                return true;
+            }
+        });
         currentVideoId = uris.get(0).getLastPathSegment().replace(".mp4", "");
         Logger.log(Log.INFO, TAG, "currentVideoId " + currentVideoId);
 
@@ -93,6 +104,10 @@ public class FeedActivity extends Activity {
             flagButton.setVisibility(View.GONE);
             showVideoInfo(0);
             gaCategory = "My Feed";
+        } else if (User.admin) {
+            showVideoInfo(0);
+            likeButton.setY(-150);
+            dislikeButton.setY(-150);
         } else {
             commentButton.setVisibility(View.GONE);
             ratingButton.setVisibility(View.GONE);
@@ -163,8 +178,10 @@ public class FeedActivity extends Activity {
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            likeButton.setEnabled(false);
-            dislikeButton.setEnabled(false);
+            if (!User.admin) {
+                likeButton.setEnabled(false);
+                dislikeButton.setEnabled(false);
+            }
             rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
             likeButton.startAnimation(rotation);
             RateTask rate = new RateTask(); // spinner and disappear buttons
@@ -180,8 +197,10 @@ public class FeedActivity extends Activity {
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            likeButton.setEnabled(false);
-            dislikeButton.setEnabled(false);
+            if (!User.admin) {
+                likeButton.setEnabled(false);
+                dislikeButton.setEnabled(false);
+            }
             rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
             dislikeButton.startAnimation(rotation);
             RateTask rate = new RateTask();
@@ -219,8 +238,10 @@ public class FeedActivity extends Activity {
                         showVideoInfo(-1);
                         dislikeButton.clearAnimation();
                     }
-                    likeButton.setVisibility(View.GONE);
-                    dislikeButton.setVisibility(View.GONE);
+                    if (!User.admin) {
+                        likeButton.setVisibility(View.GONE);
+                        dislikeButton.setVisibility(View.GONE);
+                    }
                 }
             });
             timer.cancel(); //Terminate the timer thread
@@ -315,6 +336,16 @@ public class FeedActivity extends Activity {
                     mediaPlayer.start();
                 }
             });
+            currentVideo.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    Logger.log(Log.ERROR, TAG, "Failed to play video " + currentVideoId + " Type " + what + " Code " + extra);
+                    Logger.log(new Exception("Failed to play video"));
+                    playNextVideo();
+                    return true;
+                }
+            });
             percentageWatched = 0;
             currentVideo.start();
             showCaption();
@@ -323,6 +354,12 @@ public class FeedActivity extends Activity {
                 dislikeButton.setVisibility(View.GONE);
                 flagButton.setVisibility(View.GONE);
                 showVideoInfo(0);
+            } else if (User.admin) {
+                showVideoInfo(0);
+                likeButton.setVisibility(View.VISIBLE);
+                dislikeButton.setVisibility(View.VISIBLE);
+                likeButton.setEnabled(true);
+                dislikeButton.setEnabled(true);
             } else {
                 commentButton.setVisibility(View.GONE);
                 ratingButton.setVisibility(View.GONE);

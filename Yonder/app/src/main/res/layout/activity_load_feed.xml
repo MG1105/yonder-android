@@ -128,7 +128,7 @@
             android:paddingTop="15dp"
             android:textColor="@color/primary_light"
             android:textSize="20dp"
-            android:text="Recently Uploaded"
+            android:text="Stats"
             android:textStyle="bold"
             android:id="@+id/textView_list"
             android:layout_below="@+id/textView_score"/>

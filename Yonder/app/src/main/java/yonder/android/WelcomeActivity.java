@@ -59,7 +59,7 @@ public class WelcomeActivity extends Activity {
 			} else if (tap == 1) {
 				SharedPreferences sharedPreferences = WelcomeActivity.this.getSharedPreferences(
 						"yonder.android", Context.MODE_PRIVATE);
-				sharedPreferences.edit().putString("welcome", "yes").apply();
+				sharedPreferences.edit().putString("welcome_8", "yes").apply();
 				Intent intent = new Intent(WelcomeActivity.this,CameraPreviewActivity.class);
 				startActivity(intent);
 				finish();
