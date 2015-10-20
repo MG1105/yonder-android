@@ -94,6 +94,14 @@ public class LoadFeedActivity extends Activity {
         GetMyFeedInfoTask getMyFeedInfo = new GetMyFeedInfoTask();
         getMyFeedInfo.execute(userId);
         Logger.fbActivate(this, true);
+        SharedPreferences sharedPreferences = this.getSharedPreferences(
+                "yonder.android", Context.MODE_PRIVATE);
+        String first = sharedPreferences.getString("first_loadFeedActivity", null);
+        if (first == null) {
+            Toast.makeText(mActivity, "Tap on the pirate bird to look for videos", Toast.LENGTH_LONG).show();
+            Toast.makeText(mActivity, "Tap on the pirate bird to look for videos", Toast.LENGTH_LONG).show();
+            sharedPreferences.edit().putString("first_loadFeedActivity", "yes").apply();
+        }
     }
 
     @Override
@@ -198,6 +206,14 @@ public class LoadFeedActivity extends Activity {
                                 downloadManager.enqueue(request);
                             }
                             loadFeedTextView.setText("Loading...");
+                            SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
+                                    "yonder.android", Context.MODE_PRIVATE);
+                            String first = sharedPreferences.getString("first_loading", null);
+                            if (first == null) {
+                                Toast.makeText(mActivity, "Please do not leave this screen while your videos are loading :)", Toast.LENGTH_LONG).show();
+                                Toast.makeText(mActivity, "For heightened security, we remove all data as soon as you leave", Toast.LENGTH_LONG).show();
+                                sharedPreferences.edit().putString("first_loading", "yes").apply();
+                            }
                             if (remaining == 0) {
                                 Logger.log(Log.INFO, TAG, "All videos in cache");
                                 getFeedInfoTask infoTask = new getFeedInfoTask();
