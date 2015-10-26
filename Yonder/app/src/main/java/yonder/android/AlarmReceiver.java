@@ -53,7 +53,7 @@ public class AlarmReceiver extends BroadcastReceiver
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.putExtra("code", 2);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 2, intent, 0);
-		long delta = 1000 * 60 * 60 * 24; // Millisec * Second * Minute * Hour
+		long delta = 1000 * 60 * 60 * 12; // Millisec * Second * Minute * Hour
 		long triggerDelta;
 		if (boot) {
 			triggerDelta = 30000;

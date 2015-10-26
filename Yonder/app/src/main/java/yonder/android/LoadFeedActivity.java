@@ -133,7 +133,7 @@ public class LoadFeedActivity extends Activity {
                 long now = System.currentTimeMillis();
                 Random generator = new Random();
                 int wait = generator.nextInt(10) + 10;
-                if (lastRequest != 0 && !User.admin) {
+                if (lastRequest != 0 && !User.admin && false) {
                     if ((now - lastRequest) / 60000 < wait) {
                         timer = new Timer();
                         timer.schedule(new StopAnimationTask(), 3000);
@@ -144,7 +144,7 @@ public class LoadFeedActivity extends Activity {
                         sharedPreferences.edit().putLong("last_request", now).apply();
                     }
                 } else {
-                    Logger.trackEvent(mActivity, gaCategory, "Server Request");
+                    //Logger.trackEvent(mActivity, gaCategory, "Server Request");
                     sharedPreferences.edit().putLong("last_request", now).apply();
                 }
             }
