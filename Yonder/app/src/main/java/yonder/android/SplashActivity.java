@@ -49,7 +49,7 @@ public class SplashActivity extends Activity {
 						Intent intent = new Intent(SplashActivity.this,WelcomeActivity.class);
 						startActivity(intent);
 					} else {
-						Intent intent = new Intent(SplashActivity.this,CameraPreviewActivity.class);
+						Intent intent = new Intent(SplashActivity.this,ChannelActivity.class);
 						startActivity(intent);
 					}
 				}

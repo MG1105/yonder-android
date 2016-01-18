@@ -58,7 +58,7 @@ public class FeedActivity extends Activity {
         Logger.log(Log.INFO, TAG, "Creating Activity");
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         myContext = this;
-        videoInfo = LoadFeedActivity.videoInfo;
+        videoInfo = ChannelActivity.channelInfo.get(getIntent().getExtras().getString("channelId"));
 	    uris = getContent();
 
         flagButton = (Button) findViewById(R.id.flag_button);

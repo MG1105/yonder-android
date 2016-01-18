@@ -1,0 +1,76 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:id="@+id/item_channel_space"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item_channel_space"
+        android:textSize="15dp"
+        android:textColor="@color/black"
+        android:id="@+id/textView_channel_name" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView_channel_name"
+        android:gravity="center_horizontal"
+        android:paddingBottom="7dp"
+        android:paddingTop="10dp"
+        android:textSize="12dp"
+        android:textColor="@color/grey_dark"
+        android:text="load"
+        android:id="@+id/textView_channel_load" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView_channel_name"
+        android:paddingBottom="7dp"
+        android:paddingTop="10dp"
+        android:textSize="12dp"
+        android:textColor="@color/grey_dark"
+        android:text="12 new"
+        android:id="@+id/textView_channel_new" />
+
+    <Button
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_toLeftOf="@+id/textView_channel_item_rating"
+        android:layout_below="@+id/item_channel_space"
+        android:background="@drawable/ic_up"
+        android:id="@+id/button_channel_like" />
+
+    <Button
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentRight="true"
+        android:layout_above="@+id/button_channel_dislike_space"
+        android:background="@drawable/ic_down"
+        android:id="@+id/button_channel_dislike" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_below="@+id/textView_channel_item_rating"
+        android:id="@+id/button_channel_dislike_space"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/button_channel_dislike"
+        android:layout_below="@+id/item_channel_space"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:textSize="17dp"
+        android:text="12"
+        android:textColor="@color/grey"
+        android:id="@+id/textView_channel_item_rating" />
+
+</RelativeLayout>

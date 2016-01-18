@@ -70,7 +70,7 @@ public class CameraPreviewActivity extends Activity {
 		User.setLocation(mActivity);
 		Video.cleanup(Video.loadedDir, false);
 		Video.cleanup(Video.uploadDir, true);
-		User.checkRoot(mActivity);
+		//User.checkRoot(mActivity);
 	}
 
 	public void onResume() {

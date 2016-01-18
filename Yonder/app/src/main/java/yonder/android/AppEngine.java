@@ -121,6 +121,20 @@ public class AppEngine {
         return get(urlString);
     }
 
+    protected JSONObject getChannels(String user, String sort) {
+        String query = "";
+        query = "?user=" + user + "&sort=" + sort;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/channels" + query;
+        return get(urlString);
+    }
+
+    protected JSONObject getNotifications(String user, String seen) {
+        String query = "";
+        query = "?user=" + user + "&seen=" + seen;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/notifications" + query;
+        return get(urlString);
+    }
+
     protected JSONObject addComment(String nickname, String userId, String videoId, String commentId, String comment) {
         String query = "";
         String encodedComment = encode(comment);

@@ -76,6 +76,20 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".ChannelActivity"
+            android:configChanges="orientation"
+            android:theme="@style/AppTheme"
+            android:label="@string/title_activity_load_feed"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".NotificationActivity"
+            android:configChanges="orientation"
+            android:theme="@style/AppTheme"
+            android:label="Notifications"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".CommentActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait"
