@@ -12,8 +12,8 @@ public class Comment {
 	private String rating;
 	private String nickname;
 	private String videoId;
-	private boolean rated;
-	private boolean flagged;
+	private int rated = 0;
+	private int myRating;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Comment(JSONObject object, String videoId){
@@ -23,8 +23,7 @@ public class Comment {
 			this.rating = object.getString("rating");
 			this.nickname = object.getString("nickname");
 			this.videoId = videoId;
-			this.flagged = isFlaggedQuery(); //too slow for fast scrolling
-			this.rated = isRatedQuery();
+			this.rated = object.getInt("rated");
 		} catch (JSONException e) {
 			Logger.log(e);
 		}
@@ -37,29 +36,23 @@ public class Comment {
 		this.nickname = nickname;
 	}
 
-	public boolean isFlaggedQuery () {
-		SQL sql = new SQL();
-		return sql.isFlagged(CommentActivity.yonderDb, id, videoId);
+	public void updateRating() {
+		int overrideOldRating = 0;
+		if (rated == 1) {
+			overrideOldRating = -1;
+		} else if (rated == -1) {
+			overrideOldRating = 1;
+		}
+		int rating = Integer.valueOf(this.rating) + myRating + overrideOldRating;
+		this.rating = "" + rating;
+		rated = myRating;
 	}
 
-	public boolean isFlagged () {
-		return flagged;
+	public void setRating(int rating) { // tmp until post exec calls updateRating
+		myRating = rating;
 	}
 
-	public void setFlagged() {
-		flagged = true;
-	}
-
-	public void setRated() {
-		rated = true;
-	}
-
-	public boolean isRatedQuery () {
-		SQL sql = new SQL();
-		return sql.isRated(CommentActivity.yonderDb, id, videoId);
-	}
-
-	public boolean isRated () {
+	public int getRated() {
 		return rated;
 	}
 
@@ -77,12 +70,6 @@ public class Comment {
 
 	public String getNickname() {
 		return nickname;
-	}
-
-	public String updateRating(int add) {
-		int rating = Integer.valueOf(this.rating) + add;
-		this.rating = "" + rating;
-		return this.rating;
 	}
 
 	// Factory method to convert an array of JSON objects into a list of objects

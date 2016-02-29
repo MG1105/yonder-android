@@ -37,19 +37,18 @@ public class FeedActivity extends Activity {
     VideoView currentVideo;
     String currentVideoId;
     ArrayList<Uri> uris;
-    Button flagButton;
     Button likeButton;
     Button dislikeButton;
     Button commentButton;
     Button ratingButton;
     TextView caption;
-    String rating;
+    int myRating = 0;
+    int rating;
+    int rated;
     private Activity myContext;
     LinkedHashMap<String, JSONObject> videoInfo;
-    Animation rotation;
-    Timer timer;
     int percentageWatched;
-    String gaCategory;
+    String gaCategory; // not set
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +57,14 @@ public class FeedActivity extends Activity {
         Logger.log(Log.INFO, TAG, "Creating Activity");
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         myContext = this;
-        videoInfo = ChannelActivity.channelInfo.get(getIntent().getExtras().getString("channelId"));
+        if (getIntent().getExtras().containsKey("channelId")) {
+            videoInfo = ChannelActivity.channelInfo.get(getIntent().getExtras().getString("channelId"));
+        } else {
+            videoInfo = NotificationActivity.notificationInfo.get(getIntent().getExtras().getString("notificationId"));
+        }
+
 	    uris = getContent();
 
-        flagButton = (Button) findViewById(R.id.flag_button);
         likeButton = (Button) findViewById(R.id.like_button);
         dislikeButton = (Button) findViewById(R.id.dislike_button);
         commentButton = (Button) findViewById(R.id.comment_button);
@@ -70,7 +73,6 @@ public class FeedActivity extends Activity {
 
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
-        flagButton.setOnClickListener(flagListener);
 	    commentButton.setOnClickListener(commentListener);
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
@@ -98,26 +100,12 @@ public class FeedActivity extends Activity {
         currentVideoId = uris.get(0).getLastPathSegment().replace(".mp4", "");
         Logger.log(Log.INFO, TAG, "currentVideoId " + currentVideoId);
 
-        if (LoadFeedActivity.myVideosOnly) {
-            likeButton.setVisibility(View.GONE);
-            dislikeButton.setVisibility(View.GONE);
-            flagButton.setVisibility(View.GONE);
-            showVideoInfo(0);
-            gaCategory = "My Feed";
-        } else if (User.admin) {
-            showVideoInfo(0);
-            likeButton.setY(-150);
-            dislikeButton.setY(-150);
-        } else {
-            commentButton.setVisibility(View.GONE);
-            ratingButton.setVisibility(View.GONE);
-            gaCategory = "Nearby Feed";
-        }
+        showCommentsTotal();
+        showLikesTotal();
     }
 
 	@Override
 	protected void onResume() {
-        Video.obfuscate(false);
         super.onResume(); // loop?
         Logger.log(Log.INFO, TAG, "Resuming Activity");
 		currentVideo.start();
@@ -131,7 +119,6 @@ public class FeedActivity extends Activity {
 
 	@Override
 	protected void onPause() {
-        Video.obfuscate(true);
         super.onPause();
         Logger.log(Log.INFO, TAG, "Pausing Activity");
         Logger.fbActivate(this, false);
@@ -148,10 +135,9 @@ public class FeedActivity extends Activity {
         return uris;
 	}
 
-    protected void showVideoInfo(int myRating) {
+    protected void showCommentsTotal(){
         try {
             String commentsTotal = videoInfo.get(currentVideoId).getString("comments_total");
-            String rating = videoInfo.get(currentVideoId).getString("rating");
             if (commentsTotal.equals("0")) {
                 commentButton.setText("Add Comment");
             } else if (commentsTotal.equals("1")) {
@@ -159,94 +145,90 @@ public class FeedActivity extends Activity {
             } else {
                 commentButton.setText(commentsTotal + " Comments");
             }
+        } catch (Exception e) {
+            Logger.log(e);;
+        }
+    }
 
-            int ratingInt = Integer.valueOf(rating) + myRating;
+    protected void showLikesTotal() {
+        try {
+            myRating = 0;
+            rated = videoInfo.get(currentVideoId).getInt("rated");
+            rating = Integer.valueOf(videoInfo.get(currentVideoId).getString("rating"));
+            if (rated == 1) {
+                dislikeButton.setEnabled(true);
+                likeButton.setEnabled(false);
+            } else if (rated == -1) {
+                dislikeButton.setEnabled(false);
+                likeButton.setEnabled(true);
+            }
+
             String unit;
-            if (ratingInt == 1 || ratingInt == -1) {
+            if (rating == 1 || rating == -1) {
                 unit = "Like";
             } else {
                 unit = "Likes";
             }
-            ratingButton.setText(ratingInt + " " + unit);
+            ratingButton.setText(rating + " " + unit);
         } catch (Exception e) {
             Logger.log(e);;
         }
-        commentButton.setVisibility(View.VISIBLE);
-        ratingButton.setVisibility(View.VISIBLE);
+    }
+
+    void updateLikesTotal() {
+        try {
+            int overrideOldRating = 0;
+            if (rated == 1) {
+                overrideOldRating = -1;
+            } else if (rated == -1) {
+                overrideOldRating = 1;
+            }
+            rated = myRating;
+            if (myRating == 1) {
+                dislikeButton.setEnabled(true);
+                likeButton.setEnabled(false);
+            } else if (myRating == -1) {
+                dislikeButton.setEnabled(false);
+                likeButton.setEnabled(true);
+            }
+
+            rating = rating + myRating + overrideOldRating;
+            String unit;
+            if (rating == 1 || rating == -1) {
+                unit = "Like";
+            } else {
+                unit = "Likes";
+            }
+            ratingButton.setText(rating + " " + unit);
+        } catch (Exception e) {
+            Logger.log(e);;
+        }
+
     }
 
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (!User.admin) {
-                likeButton.setEnabled(false);
-                dislikeButton.setEnabled(false);
-            }
-            rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
-            likeButton.startAnimation(rotation);
-            RateTask rate = new RateTask(); // spinner and disappear buttons
+            likeButton.setEnabled(false);
+            dislikeButton.setEnabled(false);
+            RateTask rate = new RateTask(1); // spinner and disappear buttons
             Logger.log(Log.INFO, TAG, "Liking video " + currentVideoId);
             Logger.trackEvent(myContext, gaCategory, "Like Video");
-            rating = "1";
-            rate.execute(currentVideoId, rating, User.getId(myContext));
-            timer = new Timer();
-            timer.schedule(new StopAnimationTask(), 200);
+            rate.execute(currentVideoId, "1", User.getId(myContext));
         }
     };
 
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (!User.admin) {
-                likeButton.setEnabled(false);
-                dislikeButton.setEnabled(false);
-            }
-            rotation = AnimationUtils.loadAnimation(myContext, R.anim.rotate_fast);
-            dislikeButton.startAnimation(rotation);
-            RateTask rate = new RateTask();
+            likeButton.setEnabled(false);
+            dislikeButton.setEnabled(false);
+            RateTask rate = new RateTask(-1);
             Logger.log(Log.INFO, TAG, "Disliking video " + currentVideoId);
             Logger.trackEvent(myContext, gaCategory, "Dislike Video");
-            rating = "-1";
-            rate.execute(currentVideoId, rating, User.getId(myContext));
-            timer = new Timer();
-            timer.schedule(new StopAnimationTask(), 200);
+            rate.execute(currentVideoId, "-1", User.getId(myContext));
         }
     };
-
-    View.OnClickListener flagListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            ReportTask report = new ReportTask();
-            Logger.log(Log.INFO, TAG, "Flagging video " + currentVideoId);
-            Logger.trackEvent(myContext, gaCategory, "Flag Video");
-            report.execute(currentVideoId, User.getId(myContext));
-        }
-    };
-
-    class StopAnimationTask extends TimerTask {
-        public void run() {
-            // When you need to modify a UI element, do so on the UI thread.
-            myContext.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (rating.equals("1")) {
-                        //Toast.makeText(myContext, "Liked!", Toast.LENGTH_LONG).show();
-                        showVideoInfo(1);
-                        likeButton.clearAnimation();
-                    } else {
-                        //Toast.makeText(myContext, "Disliked!", Toast.LENGTH_LONG).show();
-                        showVideoInfo(-1);
-                        dislikeButton.clearAnimation();
-                    }
-                    if (!User.admin) {
-                        likeButton.setVisibility(View.GONE);
-                        dislikeButton.setVisibility(View.GONE);
-                    }
-                }
-            });
-            timer.cancel(); //Terminate the timer thread
-        }
-    }
 
 	View.OnClickListener commentListener = new View.OnClickListener() {
 		@Override
@@ -261,6 +243,11 @@ public class FeedActivity extends Activity {
 
 	class RateTask extends AsyncTask<String, Void, JSONObject> {
 
+        int rating;
+        RateTask (int rating) {
+            this.rating = rating;
+        }
+
         protected JSONObject doInBackground(String... params) {
             AppEngine gae = new AppEngine();
             JSONObject response = gae.rateVideo(params[0], params[1], params[2]);
@@ -271,43 +258,18 @@ public class FeedActivity extends Activity {
             try {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
-
+                        myRating = rating;
+                        updateLikesTotal();
                     } else {
                         Logger.log(new Exception("Server Side Failure"));
-                        //Toast.makeText(myContext, "Failed to rate the video!", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    //Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
-                }
-            } catch (Exception e) {
-                Logger.log(e);;
-            }
-        }
-    }
-
-    class ReportTask extends AsyncTask<String, Void, JSONObject> {
-
-        protected JSONObject doInBackground(String... params) {
-            AppEngine gae = new AppEngine();
-            JSONObject response = gae.reportVideo(params[0],params[1]);
-            return response;
-        }
-
-        protected void onPostExecute(JSONObject response) {
-            try {
-                if (response != null) {
-                    if (response.getString("success").equals("1")) {
-                        Toast.makeText(myContext, "Flagged", Toast.LENGTH_LONG).show();
-                        flagButton.setVisibility(View.GONE);
-                    } else {
-                        Logger.log(new Exception("Server Side Failure"));
-                        Toast.makeText(myContext, "Failed to flag the video!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                     }
                 } else {
                     Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
                 Logger.log(e);
+                Toast.makeText(myContext, "Please check your connectivity and try again later!", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -324,7 +286,6 @@ public class FeedActivity extends Activity {
             }
             Logger.log(Log.INFO, TAG, "Watched " + percentageWatched + "%");
             currentVideo.stopPlayback();
-            flagButton.setVisibility(View.VISIBLE);
             currentVideo.setVideoURI(uris.get(tap));
             currentVideoId = uris.get(tap).getLastPathSegment().replace(".mp4", "");
             Logger.log(Log.INFO, TAG, "Playing " + currentVideoId);
@@ -349,25 +310,10 @@ public class FeedActivity extends Activity {
             percentageWatched = 0;
             currentVideo.start();
             showCaption();
-            if (LoadFeedActivity.myVideosOnly) {
-                likeButton.setVisibility(View.GONE);
-                dislikeButton.setVisibility(View.GONE);
-                flagButton.setVisibility(View.GONE);
-                showVideoInfo(0);
-            } else if (User.admin) {
-                showVideoInfo(0);
-                likeButton.setVisibility(View.VISIBLE);
-                dislikeButton.setVisibility(View.VISIBLE);
-                likeButton.setEnabled(true);
-                dislikeButton.setEnabled(true);
-            } else {
-                commentButton.setVisibility(View.GONE);
-                ratingButton.setVisibility(View.GONE);
-                likeButton.setVisibility(View.VISIBLE);
-                dislikeButton.setVisibility(View.VISIBLE);
-                likeButton.setEnabled(true);
-                dislikeButton.setEnabled(true);
-            }
+            showCommentsTotal();
+            showLikesTotal();
+            likeButton.setEnabled(true);
+            dislikeButton.setEnabled(true);
         } else {
             setPercentageWatched();
             if (percentageWatched != 0) {

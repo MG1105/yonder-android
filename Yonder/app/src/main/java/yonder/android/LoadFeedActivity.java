@@ -171,7 +171,7 @@ public class LoadFeedActivity extends Activity {
                 AppEngine gae = new AppEngine();
                 Logger.log(Log.INFO, TAG, String.format("Getting feed for userId %s longitude %s latitude %s myVideosOnly %s",
                         userId, longitude, latitude, myVideosOnly));
-                JSONObject response = gae.getFeed(userId, longitude, latitude, myVideosOnly, false);
+                JSONObject response = gae.getFeed(userId, "", "");
                 return response;
             } catch (Exception e) {
                 Logger.log(e);

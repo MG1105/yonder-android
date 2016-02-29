@@ -15,8 +15,12 @@ import java.util.ArrayList;
 
 public class Channel {
 	private String id;
+	private String rating;
+	private int myRating;
 	private String name;
 	private Boolean loading = false;
+	private int rated = 0;
+	private String unseen;
 	ArrayList<String> videos = new ArrayList<>();
 
 	// Constructor to convert JSON object into a Java class instance
@@ -24,6 +28,9 @@ public class Channel {
 		try {
 			this.id = object.getString("id");
 			this.name = object.getString("name");
+			this.rating = object.getString("rating");
+			this.unseen = object.getString("unseen");
+			rated = object.getInt("rated");
 		} catch (JSONException e) {
 			Logger.log(e);
 		}
@@ -37,12 +44,16 @@ public class Channel {
 		return name;
 	}
 
+	public String getUnseen() {
+		return unseen;
+	}
+
 	public Boolean isLoaded() {
 		if (videos.isEmpty())
 			return false;
 		boolean loaded = true;
 		for (String id : videos) {
-			if (!new File(Video.loadedDir.getAbsolutePath()+"/"+id).isFile()){
+			if (!new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile()){
 				loaded = false;
 				break;
 			}
@@ -54,6 +65,10 @@ public class Channel {
 		return loading;
 	}
 
+	public void setReload() {
+		videos.clear();
+	}
+
 	public void setLoading(Boolean loading) {
 		this.loading = loading;
 	}
@@ -61,6 +76,31 @@ public class Channel {
 	public void addVideo(String video) {
 		videos.add(video);
 	}
+
+	public void updateRating() {
+		int overrideOldRating = 0;
+		if (rated == 1) {
+			overrideOldRating = -1;
+		} else if (rated == -1) {
+			overrideOldRating = 1;
+		}
+		int rating = Integer.valueOf(this.rating) + myRating + overrideOldRating;
+		this.rating = "" + rating;
+		rated = myRating;
+	}
+
+	public void setRating(int rating) { // tmp until post exec calls updateRating
+		myRating = rating;
+	}
+
+	public String getRating() {
+		return rating;
+	}
+
+	public int getRated() {
+		return rated;
+	}
+
 
 
 	// Factory method to convert an array of JSON objects into a list of objects

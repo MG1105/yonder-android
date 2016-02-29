@@ -63,14 +63,6 @@ public class CameraPreviewActivity extends Activity {
 		mActivity = this;
 //		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 		initialize();
-		Video.setPaths(mActivity);
-		VerifyUserTask verifyUserTask = new VerifyUserTask();
-		verifyUserTask.execute();
-		User.verify(mActivity);
-		User.setLocation(mActivity);
-		Video.cleanup(Video.loadedDir, false);
-		Video.cleanup(Video.uploadDir, true);
-		//User.checkRoot(mActivity);
 	}
 
 	public void onResume() {
@@ -362,6 +354,8 @@ public class CameraPreviewActivity extends Activity {
         recording = false;
 	    Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
 	    intent.putExtra("videoId", videoId);
+	    String channelId = getIntent().getExtras().getString("channelId");
+	    intent.putExtra("channelId", channelId);
 	    startActivity(intent);
     }
 
@@ -410,55 +404,6 @@ public class CameraPreviewActivity extends Activity {
 		recording = true;
 		return true;
 
-	}
-
-	// Verify User
-
-	class VerifyUserTask extends AsyncTask<Void, Void, JSONObject> {
-
-		protected JSONObject doInBackground(Void... params) {
-			try {
-				AppEngine gae = new AppEngine();
-				Logger.log(Log.INFO, TAG, "Verifying user id " + userId);
-				JSONObject response = gae.verifyUser(userId);
-				if (response != null) {
-					if (response.getString("success").equals("1")) {
-						JSONObject userObject = response.getJSONObject("user");
-						return userObject;
-					} else { // server side failure
-						Logger.log(new Exception("Server Side failure"));
-						return null;
-					}
-				} else return null; // no internet
-			} catch (Exception e) {
-				Logger.log(e);;
-				return null;
-			}
-		}
-
-		protected void onPostExecute(JSONObject user) {
-			if (user != null) {
-				try {
-					SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
-							"yonder.android", Context.MODE_PRIVATE);
-					sharedPreferences.edit().putInt("upgrade", user.getInt("upgrade")).apply();
-					sharedPreferences.edit().putInt("ban", user.getInt("ban")).apply();
-					if (user.getInt("warn") != 0 ) {
-						Alert.showWarning(mActivity);
-					} else if (user.getInt("upgrade") != 0) {
-						Alert.forceUpgrade(mActivity, user.getInt("upgrade"));
-					} else if (user.getInt("ban") != 0) {
-						Alert.ban(mActivity, user.getInt("ban"));
-					}
-				} catch (JSONException e) {
-					Logger.log(e);;
-				}
-			} else { // could also be server side failure
-				Toast.makeText(mActivity, "Could not connect to the Internet. Please try again later", Toast.LENGTH_LONG).show();
-				finish();
-			}
-
-		}
 	}
 
 	@Override
@@ -513,6 +458,8 @@ public class CameraPreviewActivity extends Activity {
 				Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
 				intent.putExtra("videoId", videoId);
 				intent.putExtra("originalPath", in);
+				String channelId = getIntent().getExtras().getString("channelId");
+				intent.putExtra("channelId", channelId);
 				startActivity(intent);
 
 			}

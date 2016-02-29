@@ -5,8 +5,10 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -30,7 +32,9 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 
@@ -45,7 +49,7 @@ public class NotificationActivity extends Activity {
     Activity mActivity;
     ArrayList<Request> requests;
     ArrayList<Uri> uris = new ArrayList<>();
-    int remaining;
+    int remaining = 0;
     static boolean myVideosOnly;
     String userId, longitude, latitude;
     Timer timer;
@@ -55,7 +59,7 @@ public class NotificationActivity extends Activity {
     String gaCategory;
 
     private DownloadManager downloadManager;
-    static LinkedHashMap<String, JSONObject> videoInfo;
+    static HashMap<String, LinkedHashMap<String, JSONObject>> notificationInfo = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,8 @@ public class NotificationActivity extends Activity {
         Logger.log(Log.INFO, TAG, "Creating Activity");
         userId = User.getId(this);
         spinner = (ProgressBar)findViewById(R.id.progress_notifications);
+        GetNotificationsTask getNotificationTask = new GetNotificationsTask();
+        getNotificationTask.execute(userId, "1");
     }
 
     @Override
@@ -72,8 +78,6 @@ public class NotificationActivity extends Activity {
         super.onResume();
         Logger.log(Log.INFO, TAG, "Resuming Activity");
         Logger.fbActivate(this, true);
-        GetNotificationsTask getNotificationTask = new GetNotificationsTask();
-        getNotificationTask.execute(userId, "1");
 
     }
 
@@ -151,43 +155,46 @@ public class NotificationActivity extends Activity {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_notification, parent, false);
             }
 
+            if (notification.getChannelId() == null && notification.getVideoId() == null) {
+                load.setVisibility(View.INVISIBLE);
+            }
+
             // Lookup view for data population
             TextView notificationBody = (TextView) convertView.findViewById(R.id.textView_notification_body);
             notificationBody.setText(notification.getContent());
 
 
-            load = (TextView) convertView.findViewById(R.id.textView_channel_load);
-            if (channel.isLoaded()) {
-                channel.setLoading(false);
+            load = (TextView) convertView.findViewById(R.id.textView_notification_load);
+            if (notification.isLoaded()) {
+                notification.setLoading(false);
                 load.setText("Play");
             }
 
-            // Lookup view for data population
-            TextView name = (TextView) convertView.findViewById(R.id.textView_channel_name);
-            name.setText((position+1) + ". #" + channel.getName());
-
 
             load.setOnClickListener(new View.OnClickListener() {
-                Channel myChannel = channel;
+                Notification myNotification = notification;
                 TextView myLoad = load;
-                Boolean loaded = channel.isLoaded();
-                Boolean loading = channel.isLoading();
+                Boolean loaded = myNotification.isLoaded();
+                Boolean loading = myNotification.isLoading();
 
                 @Override
                 public void onClick(View v) {
                     if (loading) {
-
+                        Logger.log(Log.INFO, TAG, "Ignoring click as channel is loading");
                     } else if (loaded) {
                         Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
-                        intentFeedStart.putExtra("channelId", myChannel.getId());
+                        intentFeedStart.putExtra("notificationId", myNotification.getId());
                         startActivity(intentFeedStart);
+                        myNotification.setReload();
+                        adapter.notifyDataSetChanged();
+                        myLoad.setText("Load");
                     } else {
-                        channel.setLoading(true);
-                        gaCategory = "Channel";
+                        myNotification.setLoading(true);
+                        gaCategory = "Notification";
                         Logger.trackEvent(mActivity, gaCategory, "Load Request");
                         myLoad.setText("Loading...");
                         downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                        GetFeedTask getFeed = new GetFeedTask(myChannel);
+                        GetFeedTask getFeed = new GetFeedTask(myNotification, myLoad);
                         getFeed.execute();
                     }
 
@@ -199,6 +206,126 @@ public class NotificationActivity extends Activity {
 
         }
 
+    }
+
+    class GetFeedTask extends AsyncTask<Void, Void, JSONObject> {
+
+        Notification notification;
+        TextView load;
+
+        protected GetFeedTask(Notification notification, TextView myLoad) {
+            this.notification = notification;
+            load = myLoad;
+        }
+
+        protected JSONObject doInBackground(Void... params) {
+            try {
+                ArrayList<String> location = User.getLocation(mActivity);
+                if (location != null) {
+                    longitude = location.get(0);
+                    latitude = location.get(1);
+                } else { // Default SJSU
+                    longitude = "-121.881072222222";
+                    latitude = "37.335187777777";
+                }
+                uris = new ArrayList<>();
+                AppEngine gae = new AppEngine();
+                Logger.log(Log.INFO, TAG, String.format("Getting feed for userId %s longitude %s latitude %s myVideosOnly %s",
+                        userId, longitude, latitude, myVideosOnly));
+                JSONObject response = gae.getFeed(userId, notification.getChannelId(), notification.getVideoId());
+                return response;
+            } catch (Exception e) {
+                Logger.log(e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(JSONObject response) {
+            if (response != null) {
+                try {
+                    if (response.getString("success").equals("1")) {
+                        JSONArray videos = response.getJSONArray("videos");
+
+                        LinkedHashMap<String, JSONObject> videoInfo = new LinkedHashMap<>();
+                        for (int i = 0; i < videos.length(); i++) { // background?
+                            JSONObject vid = videos.getJSONObject(i);
+                            videoInfo.put(vid.getString("id"), vid);
+
+                            String id = vid.getString("id");
+                            notification.addVideo(id);
+
+                            if (isLoaded(id)) {
+                                continue;
+                            }
+                            String url = "http://storage.googleapis.com/yander/" + id + ".mp4";
+                            uris.add(Uri.parse(url));
+                        }
+
+                        if (videos.length() > 0) {
+                            remaining += uris.size();
+                            notificationInfo.put(notification.getId(), videoInfo);
+                            setRequests();
+                            for (Request request : requests) {
+                                downloadManager.enqueue(request);
+                            }
+                            if (remaining == 0) {
+                                Logger.log(Log.INFO, TAG, "All videos in cache");
+                                // channel is ready
+                                adapter.notifyDataSetChanged();
+                                Logger.log(Log.INFO, TAG, "Channel modified");
+                            } else {
+                                Logger.log(Log.INFO, TAG, remaining + " videos to download");
+                                registerReceiver(loadBroadcastReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                            }
+                        } else {
+                            notification.setLoading(false);
+                            load.setText("No videos found");
+                        }
+
+                    } else {
+                        Logger.log(new Exception("Server Side Failure"));
+                        Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                        load.setText("Load");
+                        notification.setLoading(false);
+
+                    }
+                } catch (Exception e) {
+                    Logger.log(e);
+                    Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                    load.setText("Load");
+                    notification.setLoading(false);
+                }
+            } else {
+                Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                load.setText("Load");
+                notification.setLoading(false);
+            }
+        }
+    }
+
+    BroadcastReceiver loadBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            remaining--;
+            Logger.log(Log.INFO, TAG, "Remaining " + remaining);
+            adapter.notifyDataSetChanged();
+        }
+    };
+
+    private void setRequests() {
+        requests = new ArrayList<>();
+        for (Uri uri : uris) {
+            Request request = new Request(uri);
+            request.setVisibleInDownloadsUi(false);
+            request.setNotificationVisibility(Request.VISIBILITY_HIDDEN);
+            request.setDestinationUri(Uri.fromFile(new File(Video.loadedDir.getAbsolutePath() + "/" + uri.getLastPathSegment())));
+            requests.add(request);
+        }
+    }
+
+    private boolean isLoaded (String id) {
+        boolean loaded = new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile();
+        return loaded;
     }
 
 }

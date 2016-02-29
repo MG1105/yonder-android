@@ -93,12 +93,6 @@ public class CommentActivity extends Activity {
 				commentId = Long.toString(System.currentTimeMillis());
 				nickname = User.getNickname(myActivity);
 				String userId = User.getId(myActivity);
-				if (User.admin) {
-					if (comment.startsWith("@")) {
-						nickname = comment.substring(1,5);
-						comment = comment.substring(6);
-					}
-				}
 				Logger.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
 								"commentText %s",
 						nickname, userId, videoId, commentId, comment));
@@ -112,7 +106,7 @@ public class CommentActivity extends Activity {
 	class CommentsAdapter extends ArrayAdapter<Comment> {
 		Comment comment;
 		TextView rating;
-		Button likeButton, dislikeButton, flagButton;
+		Button likeButton, dislikeButton;
 
 		public CommentsAdapter(Context context) {
 			super(context, android.R.layout.simple_list_item_1, comments);
@@ -129,7 +123,6 @@ public class CommentActivity extends Activity {
 			TextView content = (TextView) convertView.findViewById(R.id.textView_comment);
 			TextView nickname = (TextView) convertView.findViewById(R.id.textView_nickname);
 			rating = (TextView) convertView.findViewById(R.id.textView_comment_item_rating);
-			flagButton = (Button) convertView.findViewById(R.id.button_flag);
 			likeButton = (Button) convertView.findViewById(R.id.button_comment_item_like);
 			dislikeButton = (Button) convertView.findViewById(R.id.button_comment_item_dislike);
 
@@ -146,120 +139,46 @@ public class CommentActivity extends Activity {
 				rating.setText("\u2212" + comment.getRating().replace("-", ""));
 			}
 
-			if (comment.isFlagged()) {
-				flagButton.setVisibility(View.GONE);
-			} else {
-				flagButton.setVisibility(View.VISIBLE);
-			}
-			if (comment.isRated()) {
-				rating.setVisibility(View.VISIBLE);
-				likeButton.setVisibility(View.GONE);
-				dislikeButton.setVisibility(View.GONE);
-			} else {
-				rating.setVisibility(View.GONE);
-				likeButton.setVisibility(View.VISIBLE);
-				dislikeButton.setVisibility(View.VISIBLE);
-			}
 
-			flagButton.setEnabled(true);
-			likeButton.setEnabled(true);
-			dislikeButton.setEnabled(true);
-
-			flagButton.setOnClickListener(new View.OnClickListener() {
-				String id = comment.getId();
-				Button myFlag = flagButton;
-				Comment myComment = comment;
-				@Override
-				public void onClick(View v) {
-					myFlag.setVisibility(View.GONE);
-					ReportTask report = new ReportTask();
-					report.execute(id, User.getId(myActivity));
-					myComment.setFlagged();
-					Logger.trackEvent(myActivity, "Comment", "Flag Comment");
-				}
-			});
+			if (comment.getRated() == 1) {
+				dislikeButton.setEnabled(true);
+				likeButton.setEnabled(false);
+			} else if (comment.getRated() == -1) {
+				dislikeButton.setEnabled(false);
+				likeButton.setEnabled(true);
+			}
 
 			likeButton.setOnClickListener(new View.OnClickListener() {
-				String id = comment.getId();
-				int pos = position;
-				TextView myRating = rating;
 				Button myLike = likeButton;
 				Button myDislike = dislikeButton;
-				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate_fast);
-				Timer timer;
 				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
-					RateTask rateComment = new RateTask();
-					rateComment.execute(id, "1", User.getId(myActivity));
-					getItem(pos).updateRating(1);
-					myLike.startAnimation(rotation);
-					timer = new Timer();
-					timer.schedule(new StopAnimationTask(), 200);
-					myComment.setRated();
+					RateTask rateComment = new RateTask(myComment, myLike, myDislike);
+					rateComment.execute("1", User.getId(myActivity));
+					myComment.setRating(1);
 					Logger.trackEvent(myActivity, "Comment", "Like Comment");
-				}
-
-				class StopAnimationTask extends TimerTask {
-					public void run() {
-						// When you need to modify a UI element, do so on the UI thread.
-						myActivity.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								myLike.clearAnimation();
-								myRating.setVisibility(View.VISIBLE);
-								myLike.setVisibility(View.GONE);
-								myDislike.setVisibility(View.GONE);
-								adapter.notifyDataSetChanged();
-							}
-						});
-						timer.cancel(); //Terminate the timer thread
-					}
 				}
 			});
 
 			dislikeButton.setOnClickListener(new View.OnClickListener() {
-				String id = comment.getId();
-				int pos = position;
-				TextView myRating = rating;
 				Button myLike = likeButton;
 				Button myDislike = dislikeButton;
-				Animation rotation = AnimationUtils.loadAnimation(myActivity, R.anim.rotate_fast);
-				Timer timer;
 				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
-					RateTask rateComment = new RateTask();
-					rateComment.execute(id, "-1", User.getId(myActivity));
-					getItem(pos).updateRating(-1);
-					myDislike.startAnimation(rotation);
-					timer = new Timer();
-					timer.schedule(new StopAnimationTask(), 200);
-					myComment.setRated();
+					RateTask rateComment = new RateTask(myComment, myLike, myDislike);
+					rateComment.execute("-1", User.getId(myActivity));
+					myComment.setRating(-1);
 					Logger.trackEvent(myActivity, "Comment", "Dislike Comment");
 				}
-
-				class StopAnimationTask extends TimerTask {
-					public void run() {
-						// When you need to modify a UI element, do so on the UI thread.
-						myActivity.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								myDislike.clearAnimation();
-								myRating.setVisibility(View.VISIBLE);
-								myLike.setVisibility(View.GONE);
-								myDislike.setVisibility(View.GONE);
-								adapter.notifyDataSetChanged();
-							}
-						});
-						timer.cancel(); //Terminate the timer thread
-					}
-				}
 			});
+
+
 
 			// Return the completed view to render on screen
 			return convertView;
@@ -358,52 +277,22 @@ public class CommentActivity extends Activity {
 		}
 	}
 
-	class ReportTask extends AsyncTask<String, Void, JSONObject> {
-
-		protected JSONObject doInBackground(String... params) {
-			AppEngine gae = new AppEngine();
-			Logger.log(Log.INFO, TAG, "Reporting comment " + params[0]);
-			JSONObject response = gae.reportComment(params[0], params[1]);
-			SQL sql = new SQL();
-			sql.flagComment(yonderDb, params[0], videoId);
-			return response;
-		}
-
-		protected void onPostExecute(JSONObject response) {
-			try {
-				if (response != null) {
-					if (response.getString("success").equals("1")) {
-						Toast toast = Toast.makeText(myActivity, "Flagged", Toast.LENGTH_LONG);
-						toast.show();
-					} else {
-						Logger.log(new Exception("Server Side Failure"));
-					}
-				} else {
-
-				}
-			} catch (Exception e) {
-				Logger.log(e);;
-			}
-		}
-	}
 
 	class RateTask extends AsyncTask<String, Void, JSONObject> {
+		Comment myComment;
+		Button myLike;
+		Button myDislike;
+
+		protected RateTask(Comment comment, Button like, Button dislike) {
+			myComment = comment;
+			myLike = like;
+			myDislike = dislike;
+		}
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
 			Logger.log(Log.INFO, TAG, "Rating comment " + params[0]+ " " + params[1]);
-			JSONObject response = gae.rateComment(params[0], params[1], params[2]);
-			SQL sql = new SQL();
-			sql.rateComment(yonderDb, params[0], videoId);
-			SharedPreferences sharedPreferences = myActivity.getSharedPreferences(
-					"yonder.android", Context.MODE_PRIVATE);
-			long lastDbCleanup = sharedPreferences.getLong("last_db_cleanup", 0);
-			long now = System.currentTimeMillis();
-			if (lastDbCleanup == 0 || (now - lastDbCleanup) / 3600000 > 24) {
-				Logger.log(Log.INFO, TAG, "Cleaning up android db");
-				sql.cleanup(yonderDb);
-				sharedPreferences.edit().putLong("last_db_cleanup", now).apply();
-			}
+			JSONObject response = gae.rateComment(myComment.getId(), params[0], params[1]);
 			return response;
 		}
 
@@ -411,16 +300,25 @@ public class CommentActivity extends Activity {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
-						//Toast toast = Toast.makeText(myActivity, "Rated!", Toast.LENGTH_LONG); //Liked? or Disliked?
-						//toast.show();
+						myComment.updateRating();
+						// myLike chane to bold
+						adapter.notifyDataSetChanged();
 					} else {
+						myDislike.setEnabled(true);
+						myLike.setEnabled(true);
 						Logger.log(new Exception("Server Side Failure"));
+						Toast.makeText(myActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
 					}
 				} else {
-
+					myDislike.setEnabled(true);
+					myLike.setEnabled(true);
+					Toast.makeText(myActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
 				}
 			} catch (Exception e) {
 				Logger.log(e);
+				Toast.makeText(myActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+				myDislike.setEnabled(true);
+				myLike.setEnabled(true);
 			}
 		}
 	}

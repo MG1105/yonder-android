@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class Notification {
 	private String id;
 	private String content;
+	String videoId;
+	String channelId;
 	private Boolean loading = false;
 	ArrayList<String> videos = new ArrayList<>();
 
@@ -17,6 +19,11 @@ public class Notification {
 	public Notification(JSONObject object) {
 		try {
 			this.content = object.getString("content");
+			this.videoId = object.getString("video_id");
+			this.channelId = object.getString("channel_id");
+			if (videoId.equals("")) videoId = null;
+			if (channelId.equals("")) channelId = null;
+			this.id = Long.toString(System.currentTimeMillis());
 		} catch (JSONException e) {
 			Logger.log(e);
 		}
@@ -24,6 +31,18 @@ public class Notification {
 
 	public String getId() {
 		return id;
+	}
+
+	public String getVideoId() {
+		return videoId;
+	}
+
+	public String getChannelId() {
+		return channelId;
+	}
+
+	public void setReload() {
+		videos.clear();
 	}
 
 	public String getContent() {
@@ -35,7 +54,7 @@ public class Notification {
 			return false;
 		boolean loaded = true;
 		for (String id : videos) {
-			if (!new File(Video.loadedDir.getAbsolutePath()+"/"+id).isFile()){
+			if (!new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile()){
 				loaded = false;
 				break;
 			}

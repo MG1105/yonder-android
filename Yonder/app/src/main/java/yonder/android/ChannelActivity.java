@@ -1,10 +1,12 @@
 package yonder.android;
 
-import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +16,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,11 +25,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -46,7 +52,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ChannelActivity extends Activity {
+public class ChannelActivity extends AppCompatActivity {
     private final String TAG = "Log." + this.getClass().getSimpleName();
     ArrayList<Channel> channels;
     ChannelAdapter adapter;
@@ -57,7 +63,7 @@ public class ChannelActivity extends Activity {
     Activity mActivity;
     ArrayList<Request> requests;
     ArrayList<Uri> uris = new ArrayList<>();
-    int remaining;
+    int remaining = 0;
     static boolean myVideosOnly;
     String userId, longitude, latitude;
     Timer timer;
@@ -65,9 +71,11 @@ public class ChannelActivity extends Activity {
     String score;
     Switch myVideosOnlySwitch;
     String gaCategory;
+    ActionBar actionBar;
 
     private DownloadManager downloadManager;
-    static HashMap<String, LinkedHashMap<String, JSONObject>> channelInfo = new HashMap<>();;
+    static HashMap<String, LinkedHashMap<String, JSONObject>> channelInfo = new HashMap<>();
+    FloatingActionButton addChannel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,17 +89,19 @@ public class ChannelActivity extends Activity {
         verifyUserTask.execute();
         User.verify(mActivity);
         User.setLocation(mActivity);
-        Video.cleanup(Video.loadedDir, false);
-        Video.cleanup(Video.uploadDir, true);
+        Video.cleanup(Video.loadedDir);
+        Video.cleanup(Video.uploadDir);
 
         spinner = (ProgressBar)findViewById(R.id.progress_channels);
+        addChannel = (FloatingActionButton)findViewById(R.id.button_add_channel);
 
-        final ActionBar actionBar = getActionBar();
+        actionBar = getSupportActionBar();
         // Specify that tabs should be displayed in the action bar.
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         // Create a tab listener that is called when the user changes tabs.
         ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-            public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+            @Override
+            public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
                 spinner.setVisibility(View.VISIBLE);
                 GetChannelsTask getChannelsTask = new GetChannelsTask();
                 if (tab.getText().equals("hot")) {
@@ -101,22 +111,58 @@ public class ChannelActivity extends Activity {
                 } else if (tab.getText().equals("top")) {
                     getChannelsTask.execute(userId, "top");
                 }
+            }
 
-                //adapter.notifyDataSetChanged();
+            @Override
+            public void onTabUnselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
+
             }
-            public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-                // hide the given tab
-            }
-            public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-                // probably ignore this event
+
+            @Override
+            public void onTabReselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
+
             }
         };
         // Add 3 tabs, specifying the tab's text and TabListener
         actionBar.addTab(actionBar.newTab().setText("hot").setTabListener(tabListener));
         actionBar.addTab(actionBar.newTab().setText("new").setTabListener(tabListener));
         actionBar.addTab(actionBar.newTab().setText("top").setTabListener(tabListener));
-        actionBar.setStackedBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primary)));
         //actionBar.setStackedBackgroundDrawable(getResources().getDrawable(R.drawable.));
+
+        addChannel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final AlertDialog alertDialog = new AlertDialog.Builder(mActivity)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .create();
+                alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                alertDialog.setMessage("Create a new channel");
+
+                final EditText input = new EditText(mActivity);
+                input.setHint("#channelname");
+                alertDialog.setView(input);
+
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        Button button = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                String name = input.getText().toString().trim();
+                                if (isValidChannelName(name)) {
+                                    alertDialog.dismiss();
+                                    Toast.makeText(mActivity, "Creating " + name + "...", Toast.LENGTH_LONG).show();
+                                    AddChannelTask addChannelTask = new AddChannelTask();
+                                    addChannelTask.execute(userId, name.substring(1));
+                                }
+                            }
+                        });
+                    }
+                });
+                alertDialog.show();
+            }
+        });
 
     }
 
@@ -125,11 +171,10 @@ public class ChannelActivity extends Activity {
         super.onResume();
         Logger.log(Log.INFO, TAG, "Resuming Activity");
         Logger.fbActivate(this, true);
-
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause() { // obfuscate?
         super.onPause();
         Logger.log(Log.INFO, TAG, "Pausing Activity");
         Logger.fbActivate(this, false);
@@ -188,13 +233,18 @@ public class ChannelActivity extends Activity {
     class ChannelAdapter extends ArrayAdapter<Channel> {
         Channel channel;
         TextView load;
+        TextView rating;
+        TextView reply;
+        TextView unseen;
+        Button likeButton;
+        Button dislikeButton;
 
         public ChannelAdapter(Context context) {
             super(context, android.R.layout.simple_list_item_1, channels);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
 
             channel = getItem(position);
 
@@ -203,40 +253,101 @@ public class ChannelActivity extends Activity {
             }
 
             load = (TextView) convertView.findViewById(R.id.textView_channel_load);
+            likeButton = (Button) convertView.findViewById(R.id.button_channel_like);
+            dislikeButton = (Button) convertView.findViewById(R.id.button_channel_dislike);
+            rating = (TextView) convertView.findViewById(R.id.textView_channel_item_rating);
+            unseen = (TextView) convertView.findViewById(R.id.textView_channel_new);
+            reply = (TextView) convertView.findViewById(R.id.textView_channel_reply);
             if (channel.isLoaded()) {
                 channel.setLoading(false);
                 load.setText("Play");
+                unseen.setText("");
+            }
+            if (channel.getRated() == 1) {
+                dislikeButton.setEnabled(true);
+                likeButton.setEnabled(false);
+            } else if (channel.getRated() == -1) {
+                dislikeButton.setEnabled(false);
+                likeButton.setEnabled(true);
             }
 
             // Lookup view for data population
             TextView name = (TextView) convertView.findViewById(R.id.textView_channel_name);
             name.setText((position+1) + ". #" + channel.getName());
+            rating.setText(channel.getRating());
+            unseen.setText(channel.getUnseen());
 
 
             load.setOnClickListener(new View.OnClickListener() {
                 Channel myChannel = channel;
                 TextView myLoad = load;
-                Boolean loaded = channel.isLoaded();
-                Boolean loading = channel.isLoading();
+                Boolean loaded = myChannel.isLoaded();
+                Boolean loading = myChannel.isLoading();
 
                 @Override
                 public void onClick(View v) {
                     if (loading) {
-
+                        Logger.log(Log.INFO, TAG, "Ignoring click as channel is loading");
                     } else if (loaded) {
                         Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
                         intentFeedStart.putExtra("channelId", myChannel.getId());
                         startActivity(intentFeedStart);
+                        myChannel.setReload();
+                        adapter.notifyDataSetChanged();
+                        myLoad.setText("Load");
                     } else {
-                        channel.setLoading(true);
+                        myChannel.setLoading(true);
                         gaCategory = "Channel";
                         Logger.trackEvent(mActivity, gaCategory, "Load Request");
                         myLoad.setText("Loading...");
+                        Logger.log(Log.INFO, TAG, "Loading channel " + myChannel.getName());
                         downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                        GetFeedTask getFeed = new GetFeedTask(myChannel);
+                        GetFeedTask getFeed = new GetFeedTask(myChannel, myLoad);
                         getFeed.execute();
                     }
 
+                }
+            });
+
+            reply.setOnClickListener(new View.OnClickListener() {
+                String myChannelId = channel.getId();
+
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(mActivity, "Opening your camera...", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(ChannelActivity.this,CameraPreviewActivity.class);
+                    intent.putExtra("channelId", myChannelId);
+                    startActivity(intent);
+                }
+            });
+
+            likeButton.setOnClickListener(new View.OnClickListener() {
+                Channel myChannel = channel;
+                Button myLike = likeButton;
+                Button myDislike = dislikeButton;
+                @Override
+                public void onClick(View v) {
+                    myDislike.setEnabled(false);
+                    myLike.setEnabled(false);
+                    RateChannelTask rateChannelTask = new RateChannelTask(myChannel, myLike, myDislike);
+                    rateChannelTask.execute("1", User.getId(mActivity));
+                    myChannel.setRating(1);
+                    Logger.trackEvent(mActivity, "Channel", "Like Channel");
+                }
+            });
+
+            dislikeButton.setOnClickListener(new View.OnClickListener() {
+                Channel myChannel = channel;
+                Button myLike = likeButton;
+                Button myDislike = dislikeButton;
+                @Override
+                public void onClick(View v) {
+                    myDislike.setEnabled(false);
+                    myLike.setEnabled(false);
+                    RateChannelTask rateChannelTask = new RateChannelTask(myChannel, myLike, myDislike);
+                    rateChannelTask.execute("-1", User.getId(mActivity));
+                    myChannel.setRating(-1);
+                    Logger.trackEvent(mActivity, "Channel", "Dislike Channel");
                 }
             });
 
@@ -250,8 +361,10 @@ public class ChannelActivity extends Activity {
     class GetFeedTask extends AsyncTask<Void, Void, JSONObject> {
 
         Channel channel;
-        protected GetFeedTask(Channel channel) {
+        TextView load;
+        protected GetFeedTask(Channel channel, TextView myLoad) {
             this.channel = channel;
+            load = myLoad;
         }
 
         protected JSONObject doInBackground(Void... params) {
@@ -268,7 +381,7 @@ public class ChannelActivity extends Activity {
                 AppEngine gae = new AppEngine();
                 Logger.log(Log.INFO, TAG, String.format("Getting feed for userId %s longitude %s latitude %s myVideosOnly %s",
                         userId, longitude, latitude, myVideosOnly));
-                JSONObject response = gae.getFeed(userId, longitude, latitude, myVideosOnly, false);
+                JSONObject response = gae.getFeed(userId, channel.getId(), null);
                 return response;
             } catch (Exception e) {
                 Logger.log(e);
@@ -298,7 +411,7 @@ public class ChannelActivity extends Activity {
                         }
 
                         if (videos.length() > 0) {
-                            remaining = uris.size();
+                            remaining += uris.size();
                             channelInfo.put(channel.getId(), videoInfo);
                             setRequests();
                             for (Request request : requests) {
@@ -315,29 +428,27 @@ public class ChannelActivity extends Activity {
                             }
                         } else {
                             channel.setLoading(false);
-                            if (myVideosOnly) {
-                                loadFeedTextView.setText("We did not find any Yondor you uploaded or commented on " +
-                                        "in the past 24 hours");
-                                loadFeedImageView.clearAnimation();
-                                Logger.trackEvent(mActivity, gaCategory, "No Content");
-                            }
+                            load.setText("No videos found");
                         }
 
                     } else {
                         Logger.log(new Exception("Server Side Failure"));
-                        loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
+                        Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
                         channel.setLoading(false);
+                        load.setText("Load");
 
                     }
                 } catch (Exception e) {
                     Logger.log(e);
-                    loadFeedTextView.setText("Could not retrieve new Yondors. Please try again later");
+                    Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
                     channel.setLoading(false);
+                    load.setText("Load");
                 }
             } else {
-                loadFeedTextView.setText("Please check your connectivity and try again later");
+                Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
                 channel.setLoading(false);
                 //reply.setClickable(true);
+                load.setText("Load");
             }
         }
     }
@@ -347,15 +458,7 @@ public class ChannelActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             remaining--;
             Logger.log(Log.INFO, TAG, "Remaining " + remaining);
-            if (remaining >= 0) { // Bug < 0?
-//                loadFeedTextView.setText("Loading... " + remaining);
-            }
-            if (remaining == 0) {
-                Video.obfuscate(true);
-                // channel is ready
-                adapter.notifyDataSetChanged();
-
-            }
+            adapter.notifyDataSetChanged();
         }
     };
 
@@ -371,7 +474,7 @@ public class ChannelActivity extends Activity {
     }
 
     private boolean isLoaded (String id) {
-        boolean loaded = new File(Video.loadedDir.getAbsolutePath()+"/"+id).isFile();
+        boolean loaded = new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile();
         return loaded;
     }
 
@@ -402,6 +505,79 @@ public class ChannelActivity extends Activity {
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
 
+        }
+    }
+
+    class AddChannelTask extends AsyncTask<String, Void, JSONObject> {
+
+        protected JSONObject doInBackground(String... params) {
+            AppEngine gae = new AppEngine();
+            JSONObject response = gae.addChannel(params[0], params[1]);
+            return response;
+        }
+
+        protected void onPostExecute(JSONObject response) {
+            try {
+                if (response != null) {
+                    if (response.getString("success").equals("1")) {
+                        actionBar.selectTab(actionBar.getTabAt(1));
+                        GetChannelsTask getChannelsTask = new GetChannelsTask();
+                        getChannelsTask.execute(userId, "new");
+                    } else {
+                        Logger.log(new Exception("Server Side Failure"));
+                        Toast.makeText(mActivity, "Failed to add channel", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e) {
+                Logger.log(e);;
+            }
+        }
+    }
+
+    class RateChannelTask extends AsyncTask<String, Void, JSONObject> {
+        Channel myChannel;
+        Button myLike;
+        Button myDislike;
+
+        protected RateChannelTask(Channel channel, Button like, Button dislike) {
+            myChannel = channel;
+            myLike = like;
+            myDislike = dislike;
+        }
+
+        protected JSONObject doInBackground(String... params) {
+            AppEngine gae = new AppEngine();
+            Logger.log(Log.INFO, TAG, "Rating channel " + params[0]+ " " + params[1]);
+            JSONObject response = gae.rateChannel(myChannel.getId(), params[0], params[1]);
+            return response;
+        }
+
+        protected void onPostExecute(JSONObject response) {
+            try {
+                if (response != null) {
+                    if (response.getString("success").equals("1")) {
+                        myChannel.updateRating();
+                        // myLike chane to bold
+                        adapter.notifyDataSetChanged();
+                    } else {
+                        myDislike.setEnabled(true);
+                        myLike.setEnabled(true);
+                        Logger.log(new Exception("Server Side Failure"));
+                        Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    myDislike.setEnabled(true);
+                    myLike.setEnabled(true);
+                    Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e) {
+                Logger.log(e);
+                Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                myDislike.setEnabled(true);
+                myLike.setEnabled(true);
+            }
         }
     }
 
@@ -451,6 +627,25 @@ public class ChannelActivity extends Activity {
                 finish();
             }
 
+        }
+    }
+
+    protected Boolean isValidChannelName(String name) {
+        String pattern= "^[a-zA-Z0-9]*$";
+        if (!name.startsWith("#")) {
+            Toast.makeText(mActivity, "Must start with #", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (name.contains(" ")) {
+            Toast.makeText(mActivity, "Cannot contain spaces", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (!name.substring(1).matches(pattern)) {
+            Toast.makeText(mActivity, "Cannot contain special characters", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (name.substring(1).length() > 32) {
+            Toast.makeText(mActivity, "Cannot be longer than 32 letters", Toast.LENGTH_LONG).show();
+            return false;
+        } else {
+            return true;
         }
     }
 

@@ -21,7 +21,7 @@ public class AppEngine {
     String response;
     HttpURLConnection conn = null;
 
-    protected JSONObject uploadVideo(String uploadPath, String videoId, String caption, String userId, String longitude, String latitude) {
+    protected JSONObject uploadVideo(String uploadPath, String videoId, String caption, String userId, String channelId) {
         DataOutputStream dos;
         String lineEnd = "\r\n";
         String twoHyphens = "--";
@@ -33,7 +33,7 @@ public class AppEngine {
         try
         {
             String encodedCaption = URLEncoder.encode(caption, "UTF-8");
-            query = "?caption=" + encodedCaption + "&user=" + userId + "&long=" + longitude + "&lat=" + latitude;
+            query = "?caption=" + encodedCaption + "&user=" + userId + "&channel=" + channelId;
 
             String urlString = "https://subtle-analyzer-90706.appspot.com/videos" + query;
 
@@ -88,16 +88,15 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject getFeed(String userId, String longitude, String latitude, boolean myVideosOnly, boolean count) {
+    protected JSONObject getFeed(String userId, String channelId, String videoId) {
 
         String query = "";
-        query = "?user=" + userId + "&long=" + longitude + "&lat=" + latitude;
-        if (myVideosOnly) {
-            query += "&search=mine";
-        } else  if (count) {
-            query += "&search=count";
-        } else {
-            query += "&search=near";
+        query = "?user=" + userId;
+        if (channelId != null) {
+            query += "&channel=" + channelId;
+        }
+        if (videoId != null) {
+            query += "&video=" + videoId;
         }
         String urlString = "https://subtle-analyzer-90706.appspot.com/videos" + query;
         return get(urlString);
@@ -143,6 +142,14 @@ public class AppEngine {
         return post(urlString, query);
     }
 
+    protected JSONObject addChannel(String userId, String channelName) {
+        String query = "";
+        channelName = encode(channelName);
+        query = "channel=" + channelName + "&user=" + userId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/channels";
+        return post(urlString, query);
+    }
+
     protected JSONObject getComments(String videoId, String userId) {
         String query = "?user=" + userId;
         String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments"+ query;
@@ -173,6 +180,13 @@ public class AppEngine {
         String query = "";
         query = "rating=" + rating + "&user=" + userId;
         String urlString = "https://subtle-analyzer-90706.appspot.com/comments/" + commentId + "/rating";
+        return post(urlString, query);
+    }
+
+    protected JSONObject rateChannel(String channelId, String rating, String userId) {
+        String query = "";
+        query = "rating=" + rating + "&user=" + userId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/channels/" + channelId + "/rating";
         return post(urlString, query);
     }
 

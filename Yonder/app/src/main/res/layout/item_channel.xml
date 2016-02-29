@@ -17,16 +17,35 @@
         android:id="@+id/textView_channel_name" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView_channel_name"
-        android:gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
         android:paddingBottom="7dp"
         android:paddingTop="10dp"
         android:textSize="12dp"
         android:textColor="@color/grey_dark"
         android:text="load"
         android:id="@+id/textView_channel_load" />
+
+    <Space
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView_channel_name"
+        android:layout_toRightOf="@+id/textView_channel_load"
+        android:id="@+id/load_space"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView_channel_name"
+        android:layout_toRightOf="@+id/load_space"
+        android:paddingBottom="7dp"
+        android:paddingTop="10dp"
+        android:textSize="12dp"
+        android:textColor="@color/grey_dark"
+        android:text="reply"
+        android:id="@+id/textView_channel_reply" />
 
     <TextView
         android:layout_width="match_parent"

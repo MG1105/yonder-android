@@ -116,7 +116,7 @@ public class Video {
 		}
 	}
 
-	static void cleanup (File folder, boolean upload) {
+	static void cleanup (File folder) {
 		File [] listFile = folder.listFiles();
 		if (listFile != null) {
 			for (File file :listFile) {
@@ -125,7 +125,7 @@ public class Video {
 				}
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
-				if ((now - last)/3600000 > 24 || (file.getAbsolutePath().endsWith(".mp4") && !upload)) {
+				if ((now - last)/3600000 > 24) {
 					Logger.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
 					file.delete();
 				}

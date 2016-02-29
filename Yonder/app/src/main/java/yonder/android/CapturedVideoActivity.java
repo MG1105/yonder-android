@@ -38,6 +38,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     String userId;
     String longitude;
     String latitude;
+    String channelId;
     PowerManager.WakeLock wakeLock;
     private String originalPath;
     private Timer timer;
@@ -56,6 +57,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         uploadPath = Video.uploadDir.getAbsolutePath();
         videoId = getIntent().getExtras().getString("videoId");
         originalPath = getIntent().getExtras().getString("originalPath");
+        channelId = getIntent().getExtras().getString("channelId");
         final Uri vidUri = Uri.parse(uploadPath + "/" + videoId);
         vidView.setVideoURI(vidUri);
 	    vidView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -130,7 +132,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     class UploadVideoTask extends AsyncTask<Void, Void, JSONObject> {
 
         protected JSONObject doInBackground(Void... params) {
-            if (!User.admin) {
+            if (!User.admin || true) {
                 compressVideo();
             }
             ArrayList<String> location = User.getLocation(myContext);
@@ -145,7 +147,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             AppEngine gae = new AppEngine();
             Logger.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
                     uploadPath, videoId, caption, userId, longitude, latitude));
-            JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, longitude, latitude);
+            JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, channelId);
             return response;
         }
 
@@ -155,9 +157,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                     if (response.getString("success").equals("1")) {
                         Toast.makeText(myContext, "Yondor uploaded", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
-                        if (User.admin) {
-                            new File(originalPath).delete();
-                        }
+//                        if (User.admin) {
+//                            new File(originalPath).delete();
+//                        }
                     } else {
                         Toast.makeText(myContext, "Failed to upload", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
@@ -193,7 +195,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             Logger.log(Log.INFO, TAG, "Pre compression size " + tmp.length());
             // ac audio channels ar audio frequency b bitrate
             String command = "ffmpeg -y -i " + uploadPath + "/tmp"+ videoId +
-                    " -strict experimental -s 1280x720 -r 24 -vcodec mpeg4 -b 1500k -ab 100k -ac 2 -ar 22050 -t 10 " + uploadPath + "/" + videoId;
+                    " -strict experimental -s 568x320 -r 29 -vcodec mpeg4 -b 2500k -t 10 " + uploadPath + "/" + videoId;
             Logger.log(Log.INFO, TAG, command);
             String[] complexCommand = GeneralUtils.utilConvertToComplex(command);
             vk.run(complexCommand, uploadPath, getApplicationContext());
