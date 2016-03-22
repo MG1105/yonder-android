@@ -9,7 +9,7 @@
         android:layout_height="0dp"
         android:layout_weight=".6"
         android:background="@color/primary_light"
-        tools:context="yonder.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
+        tools:context="com.vidici.android.LoadFeedActivity" android:id="@+id/loadFeedLayout">
 
         <TextView
             android:layout_width="wrap_content"

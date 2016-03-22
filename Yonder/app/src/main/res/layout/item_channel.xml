@@ -44,7 +44,7 @@
         android:paddingTop="10dp"
         android:textSize="12dp"
         android:textColor="@color/grey_dark"
-        android:text="reply"
+        android:text="react"
         android:id="@+id/textView_channel_reply" />
 
     <TextView
@@ -55,7 +55,7 @@
         android:paddingTop="10dp"
         android:textSize="12dp"
         android:textColor="@color/grey_dark"
-        android:text="12 new"
+        android:text=""
         android:id="@+id/textView_channel_new" />
 
     <Button

@@ -10,31 +10,31 @@
     <integer name="ga_sessionTimeout">30</integer>
 
     <!-- The screen names that will appear in reports -->
-    <screenName name="yonder.android.CameraPreviewActivity">
+    <screenName name="com.vidici.androidCameraPreviewActivity">
         Camera Preview Activity
     </screenName>
 
-    <screenName name="yonder.android.CapturedVideoActivity">
+    <screenName name="com.vidici.androidCapturedVideoActivity">
         Captured Video Activity
     </screenName>
 
-    <screenName name="yonder.android.CommentActivity">
+    <screenName name="com.vidici.androidCommentActivity">
         Comment Activity
     </screenName>
 
-    <screenName name="yonder.android.FeedActivity">
+    <screenName name="com.vidici.androidFeedActivity">
         Feed Activity
     </screenName>
 
-    <screenName name="yonder.android.LoadFeedActivity">
+    <screenName name="com.vidici.androidLoadFeedActivity">
         Load Feed Activity
     </screenName>
 
-    <screenName name="yonder.android.WelcomeActivity">
+    <screenName name="com.vidici.androidWelcomeActivity">
         Welcome Activity
     </screenName>
 
-    <screenName name="yonder.android.SplashActivity">
+    <screenName name="com.vidici.androidSplashActivity">
         Splash Activity
     </screenName>
 

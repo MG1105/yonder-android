@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Yondor</string>
     <string name="facebook_app_id">844416912346443</string>
-    <string name="title_activity_load_feed">Channels</string>
+    <string name="title_activity_load_feed">Hashtags</string>
     <string name="title_activity_comment">Comments</string>
 
     <string name="welcome_bullet_point_1">Yondor is powered by an ever evolving complex algorithm that replaces the need for a human moderator in order to show you quality videos posted around you</string>
