@@ -1,6 +1,7 @@
 package com.vidici.android;
 
 import android.app.Activity;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,8 +28,7 @@ public class SplashActivity extends Activity {
 		Video.setPaths(mActivity);
 		VerifyUserTask verifyUserTask = new VerifyUserTask();
 		verifyUserTask.execute();
-		User.verify(mActivity);
-		User.setLocation(mActivity);
+//		User.setLocation(mActivity);
 		Video.cleanup(Video.loadedDir);
 		Video.cleanup(Video.uploadDir);
 
@@ -40,16 +40,15 @@ public class SplashActivity extends Activity {
 		Thread timerThread = new Thread(){
 			public void run(){
 				try{
-					sleep(250);
+					sleep(500);
 				}catch(InterruptedException e){
 					e.printStackTrace();
 				}finally{
-					SharedPreferences sharedPreferences = SplashActivity.this.getSharedPreferences(
-							"com.vidici.android", Context.MODE_PRIVATE);
-					String welcome = sharedPreferences.getString("welcome_8", null);
-					if (welcome == null) {
-						Intent intent = new Intent(SplashActivity.this,WelcomeActivity.class);
-						startActivity(intent);
+					Bundle extras = getIntent().getExtras();
+					if (extras != null && extras.getBoolean("notification", false)) {
+						Logger.trackEvent(mActivity, "Notification", "Opened Push Notification");
+						Intent intent = new Intent(SplashActivity.this,NotificationActivity.class);
+						TaskStackBuilder.create(mActivity).addNextIntentWithParentStack(intent).startActivities();
 					} else {
 						Intent intent = new Intent(SplashActivity.this,ChannelActivity.class);
 						startActivity(intent);
@@ -100,22 +99,13 @@ public class SplashActivity extends Activity {
 							"com.vidici.android", Context.MODE_PRIVATE);
 					sharedPreferences.edit().putInt("upgrade", user.getInt("upgrade")).apply();
 					sharedPreferences.edit().putInt("ban", user.getInt("ban")).apply();
-					if (user.getInt("warn") != 0 ) {
-						Alert.showWarning(mActivity);
-					} else if (user.getInt("upgrade") != 0) {
-						Alert.forceUpgrade(mActivity, user.getInt("upgrade"));
-					} else if (user.getInt("ban") != 0) {
-						Alert.ban(mActivity, user.getInt("ban"));
-					}
+					sharedPreferences.edit().putInt("warn", user.getInt("warn")).apply();
 				} catch (JSONException e) {
 					Logger.log(e);;
 				}
 			} else { // could also be server side failure
-				Toast.makeText(mActivity, "Could not connect to the Internet. Please try again later", Toast.LENGTH_LONG).show();
-				finish();
-			}
 
+			}
 		}
 	}
-
 }

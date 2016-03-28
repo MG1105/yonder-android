@@ -24,13 +24,14 @@ class GetFeedTask extends AsyncTask<Void, Void, JSONObject> {
 	TextView load;
 	ArrayList<Uri> uris;
 	Activity mActivity;
-	String userId, loadableId;
+	String userId, loadableId, channelSort;
 	private DownloadManager downloadManager;
 	ArrayAdapter adapter;
 	HashMap<String, LinkedHashMap<String, JSONObject>> info;
 
-	protected GetFeedTask(Activity activity, Loadable loadable, String id, ArrayAdapter adapter, HashMap<String, LinkedHashMap<String, JSONObject>> info , TextView myLoad) {
+	protected GetFeedTask(Activity activity, Loadable loadable, String id, ArrayAdapter adapter, HashMap<String, LinkedHashMap<String, JSONObject>> info , TextView myLoad, String channelSort) {
 		this.loadable = loadable;
+		this.channelSort = channelSort;
 		loadableId = id;
 		this.info = info;
 		load = myLoad;
@@ -46,7 +47,7 @@ class GetFeedTask extends AsyncTask<Void, Void, JSONObject> {
 			AppEngine gae = new AppEngine();
 			Logger.log(Log.INFO, TAG, String.format("Getting feed for userId %s",
 					userId));
-			JSONObject response = gae.getFeed(userId, loadable.getChannelId(), loadable.getVideoId());
+			JSONObject response = gae.getFeed(userId, loadable.getChannelId(), loadable.getVideoId(), channelSort);
 			return response;
 		} catch (Exception e) {
 			Logger.log(e);
@@ -77,6 +78,7 @@ class GetFeedTask extends AsyncTask<Void, Void, JSONObject> {
 
 					if (videos.length() > 0) {
 						info.put(loadableId, videoInfo);
+						loadable.setEmpty(false);
 						ArrayList<DownloadManager.Request> requests = getRequests(uris);
 						for (DownloadManager.Request request : requests) {
 							downloadManager.enqueue(request);
@@ -90,7 +92,8 @@ class GetFeedTask extends AsyncTask<Void, Void, JSONObject> {
 							Logger.log(Log.INFO, TAG, uris.size() + " more videos to download");
 						}
 					} else {
-						load.setText("No videos found");
+						load.setText("no reactions yet");
+						loadable.setEmpty(true);
 						load.setEnabled(true);
 					}
 

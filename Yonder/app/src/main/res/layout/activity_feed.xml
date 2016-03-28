@@ -11,11 +11,18 @@
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:layout_alignParentTop="true"
-        android:id="@+id/space_caption_feed"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:text="bold"
+        android:paddingLeft="5dp"
+        android:paddingTop="5dp"
+        android:textColor="@color/white"
+        android:gravity="center_horizontal"
+        android:id="@+id/textView_channel"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,7 +40,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:scaleType="fitXY"
-        android:background="@drawable/ic_like"
+        android:background="@drawable/ic_up_white"
         android:id="@+id/like_button"
         android:layout_above="@+id/space_like_dislike"
         android:layout_alignParentLeft="true"/>
@@ -43,7 +50,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:scaleType="fitXY"
-        android:background="@drawable/ic_dislike"
+        android:background="@drawable/ic_down_white"
         android:id="@+id/dislike_button"
         android:layout_above="@+id/space_like_dislike"
         android:layout_alignParentRight="true"/>

@@ -53,8 +53,8 @@ public class Logger {
 
 	public static void startSession(Activity activity) {
 		// Obtain the shared Tracker instance.
-		YondorApplication application = (YondorApplication) activity.getApplication();
-		Tracker mTracker = application.getDefaultTracker();
+		VidiciApplication vidiciApplication = (VidiciApplication) activity.getApplication();
+		Tracker mTracker = vidiciApplication.getDefaultTracker();
 		// Set screen name.
 		mTracker.setScreenName("Splash Activity"); // start session with no screen?
 		mTracker.send(new HitBuilders.ScreenViewBuilder()
@@ -64,8 +64,8 @@ public class Logger {
 
 	public static void trackEvent(Activity activity, String category, String action) {
 		// Obtain the shared Tracker instance.
-		YondorApplication application = (YondorApplication) activity.getApplication();
-		Tracker mTracker = application.getDefaultTracker();
+		VidiciApplication vidiciApplication = (VidiciApplication) activity.getApplication();
+		Tracker mTracker = vidiciApplication.getDefaultTracker();
 		// Build and send an Event.
 		mTracker.send(new HitBuilders.EventBuilder()
 				.setCategory(category)
@@ -75,13 +75,24 @@ public class Logger {
 
 	public static void trackEvent(Activity activity, String category, String action, int value) {
 		// Obtain the shared Tracker instance.
-		YondorApplication application = (YondorApplication) activity.getApplication();
-		Tracker mTracker = application.getDefaultTracker();
+		VidiciApplication vidiciApplication = (VidiciApplication) activity.getApplication();
+		Tracker mTracker = vidiciApplication.getDefaultTracker();
 		// Build and send an Event.
 		mTracker.send(new HitBuilders.EventBuilder()
 				.setCategory(category)
 				.setAction(action)
 				.setValue(value)
+				.build());
+	}
+
+	public static void trackEvent(Context context, String category, String action) { // when receiving alarm
+		// Obtain the shared Tracker instance.
+		VidiciApplication vidiciApplication = (VidiciApplication) context;
+		Tracker mTracker = vidiciApplication.getDefaultTracker();
+		// Build and send an Event.
+		mTracker.send(new HitBuilders.EventBuilder()
+				.setCategory(category)
+				.setAction(action)
 				.build());
 	}
 

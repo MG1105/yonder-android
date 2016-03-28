@@ -36,8 +36,6 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     String uploadPath;
     String caption;
     String userId;
-    String longitude;
-    String latitude;
     String channelId;
     PowerManager.WakeLock wakeLock;
     private String originalPath;
@@ -105,8 +103,8 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         public void onClick(View v) {
             uploadButton.setEnabled(false);
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
-            caption = captionText.getText().toString().replace("\n", " ");
-            if (caption.replace(" ", "").length() == 0) {
+            caption = captionText.getText().toString().trim();
+            if (caption.length() == 0) {
                 Toast.makeText(myContext, "Please add a caption first", Toast.LENGTH_LONG).show();
                 uploadButton.setEnabled(true);
             } else {
@@ -132,21 +130,11 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     class UploadVideoTask extends AsyncTask<Void, Void, JSONObject> {
 
         protected JSONObject doInBackground(Void... params) {
-            if (!User.admin || true) {
-                compressVideo();
-            }
-            ArrayList<String> location = User.getLocation(myContext);
-            if (location != null) {
-                longitude = location.get(0);
-                latitude = location.get(1);
-            } else { // Default SJSU
-                longitude = "-121.881072222222";
-                latitude = "37.335187777777";
-            }
+            compressVideo();
             userId = User.getId(myContext);
             AppEngine gae = new AppEngine();
-            Logger.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s longitude %s latitude %s",
-                    uploadPath, videoId, caption, userId, longitude, latitude));
+            Logger.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s",
+                    uploadPath, videoId, caption, userId));
             JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, channelId);
             return response;
         }
@@ -155,11 +143,8 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             try {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
-                        Toast.makeText(myContext, "Yondor uploaded", Toast.LENGTH_LONG).show();
+                        Toast.makeText(myContext, "Reaction uploaded", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
-//                        if (User.admin) {
-//                            new File(originalPath).delete();
-//                        }
                     } else {
                         Toast.makeText(myContext, "Failed to upload", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);

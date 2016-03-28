@@ -20,7 +20,7 @@ public class WelcomeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		Logger.log(Log.INFO, TAG, "Creating Activity");
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_welcome_1);
+//		setContentView(R.layout.activity_welcome_1);
 		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
 	}
@@ -54,7 +54,7 @@ public class WelcomeActivity extends Activity {
 		@Override
 		public boolean onSingleTapUp(MotionEvent event) {
 			if (tap == 0) {
-				setContentView(R.layout.activity_welcome_2);
+//				setContentView(R.layout.activity_welcome_2);
 				tap = 1;
 			} else if (tap == 1) {
 				SharedPreferences sharedPreferences = WelcomeActivity.this.getSharedPreferences(

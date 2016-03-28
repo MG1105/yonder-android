@@ -35,7 +35,7 @@ public class CameraPreviewActivity extends Activity {
 	private Camera mCamera;
 	private CameraPreview mPreview;
 	private MediaRecorder mediaRecorder;
-	private Button capture, switchCamera, feedButton, addVideoButton;
+	private Button switchCamera, addVideoButton;
 	private Activity mActivity;
 	private RelativeLayout cameraPreview;
 	private boolean cameraFront = false;
@@ -44,8 +44,7 @@ public class CameraPreviewActivity extends Activity {
 	TextView counter;
 //	private GestureDetectorCompat mDetector;
     CountDownTimer timer;
-	String videoId;
-	View switchBackground;
+	String videoId, channelId, channelName;
 	int cameraId;
 
 	// Camera Preview
@@ -60,6 +59,10 @@ public class CameraPreviewActivity extends Activity {
 		mActivity = this;
 //		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 		initialize();
+		channelId = getIntent().getExtras().getString("channelId");
+		channelName = getIntent().getExtras().getString("channelName");
+		TextView channel= (TextView)findViewById(R.id.textView_camera_channel);
+		channel.setText("#"+channelName);
 		View v = findViewById(R.id.camera_preview);
 		v.setOnTouchListener(new View.OnTouchListener() {
 			@Override
@@ -73,14 +76,10 @@ public class CameraPreviewActivity extends Activity {
 						return true;
 					}
 					try {
-						capture.setBackgroundResource(R.drawable.ic_stop);
 						mediaRecorder.start();
 						counter = (TextView)findViewById(R.id.recording_counter);
-						switchBackground = findViewById(R.id.background_ChangeCamera);
-						feedButton.setVisibility(View.INVISIBLE);
 						addVideoButton.setVisibility(View.INVISIBLE);
 						switchCamera.setVisibility(View.INVISIBLE);
-						switchBackground.setVisibility(View.INVISIBLE);
 						counter.setVisibility(View.VISIBLE);
 						counter.setText("9");
 						timer = new CountDownTimer(10000, 1000) {
@@ -91,13 +90,10 @@ public class CameraPreviewActivity extends Activity {
 							public void onFinish() {
 								if (recording) {
 									stopRecording();
-									capture.setBackgroundResource(R.drawable.ic_record);
 								}
 								counter.setVisibility(View.INVISIBLE);
-								feedButton.setVisibility(View.VISIBLE);
 								addVideoButton.setVisibility(View.VISIBLE);
 								switchCamera.setVisibility(View.VISIBLE);
-								switchBackground.setVisibility(View.VISIBLE);
 								counter.setText("10");
 							}
 						}.start();
@@ -111,15 +107,12 @@ public class CameraPreviewActivity extends Activity {
 					if (recording) {
 						Logger.log(Log.INFO, TAG, "Stop recording");
 						stopRecording();
-						capture.setBackgroundResource(R.drawable.ic_record);
 						if (timer != null) {
 							timer.cancel();
 							TextView counter = (TextView)findViewById(R.id.recording_counter);
 							counter.setVisibility(View.INVISIBLE);
-							feedButton.setVisibility(View.VISIBLE);
 							addVideoButton.setVisibility(View.VISIBLE);
 							switchCamera.setVisibility(View.VISIBLE);
-							switchBackground.setVisibility(View.VISIBLE);
 							counter.setText("10");
 						}
 					}
@@ -144,7 +137,6 @@ public class CameraPreviewActivity extends Activity {
 		Logger.log(Log.INFO, TAG, "Pausing Activity");
         if (recording) {
             stopRecording();
-	        capture.setBackgroundResource(R.drawable.ic_record);
         }
 		releaseCamera();
 		Logger.fbActivate(this, false);
@@ -157,8 +149,6 @@ public class CameraPreviewActivity extends Activity {
 		mPreview = new CameraPreview(mActivity, cameraId, mCamera);
 		cameraPreview.addView(mPreview);
 
-		capture = (Button) findViewById(R.id.button_capture);
-		capture.setOnTouchListener(recordListener);
 
 		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
 		switchCamera.setOnClickListener(switchCameraListener);
@@ -166,8 +156,6 @@ public class CameraPreviewActivity extends Activity {
 		addVideoButton = (Button) findViewById(R.id.button_add);
 		addVideoButton.setOnClickListener(addVideoListener);
 
-		feedButton = (Button) findViewById(R.id.button_feed);
-		feedButton.setOnClickListener(feedButtonListener);
 	}
 
 	OnClickListener switchCameraListener = new OnClickListener() {
@@ -188,14 +176,6 @@ public class CameraPreviewActivity extends Activity {
 			} else {
 				Toast.makeText(mActivity, "Sorry, cannot switch cameras while recording", Toast.LENGTH_LONG).show();
 			}
-		}
-	};
-
-	OnClickListener feedButtonListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			Intent intent = new Intent(mActivity, LoadFeedActivity.class);
-			startActivity(intent);
 		}
 	};
 
@@ -265,7 +245,6 @@ public class CameraPreviewActivity extends Activity {
 			int backFacingCamId = findBackFacingCamera();
 			if (frontFacingCamId < 0) {
 				switchCamera.setVisibility(View.GONE);
-				switchBackground.setVisibility(View.GONE);
 			}
 			try {
 				mCamera = Camera.open(backFacingCamId);
@@ -332,76 +311,6 @@ public class CameraPreviewActivity extends Activity {
 
 	// Video Recording
 
-	View.OnTouchListener recordListener = new View.OnTouchListener() {
-		@Override
-		public boolean onTouch(View v, MotionEvent event) {
-			if(event.getAction() == MotionEvent.ACTION_DOWN){
-				Logger.log(Log.INFO, TAG, "Start recording");
-				Logger.trackEvent(mActivity, "Upload", "Record Video");
-				if (!prepareMediaRecorder()) {
-					Toast.makeText(CameraPreviewActivity.this, "Unexpected error while recording", Toast.LENGTH_LONG).show();
-					mActivity.finish();
-					return true;
-				}
-				try {
-					capture.setBackgroundResource(R.drawable.ic_stop);
-					mediaRecorder.start();
-					counter = (TextView)findViewById(R.id.recording_counter);
-					switchBackground = findViewById(R.id.background_ChangeCamera);
-					feedButton.setVisibility(View.INVISIBLE);
-					addVideoButton.setVisibility(View.INVISIBLE);
-					switchCamera.setVisibility(View.INVISIBLE);
-					switchBackground.setVisibility(View.INVISIBLE);
-					counter.setVisibility(View.VISIBLE);
-					counter.setText("9");
-					timer = new CountDownTimer(10000, 1000) {
-
-						public void onTick(long millisUntilFinished) {
-							counter.setText("" + millisUntilFinished / 1000);
-						}
-						public void onFinish() {
-							if (recording) {
-								stopRecording();
-								capture.setBackgroundResource(R.drawable.ic_record);
-							}
-							counter.setVisibility(View.INVISIBLE);
-							feedButton.setVisibility(View.VISIBLE);
-							addVideoButton.setVisibility(View.VISIBLE);
-							switchCamera.setVisibility(View.VISIBLE);
-							switchBackground.setVisibility(View.VISIBLE);
-							counter.setText("10");
-						}
-					}.start();
-				} catch (Exception e) {
-					Toast.makeText(CameraPreviewActivity.this, "Failed recording", Toast.LENGTH_LONG).show();
-					Logger.log(new Exception("Failed Recording"));
-					mActivity.finish();
-				}
-				return true;
-			}
-			else if(event.getAction() == MotionEvent.ACTION_UP){
-				if (recording) {
-					Logger.log(Log.INFO, TAG, "Stop recording");
-					stopRecording();
-					capture.setBackgroundResource(R.drawable.ic_record);
-					if (timer != null) {
-						timer.cancel();
-						TextView counter = (TextView)findViewById(R.id.recording_counter);
-						counter.setVisibility(View.INVISIBLE);
-						feedButton.setVisibility(View.VISIBLE);
-						addVideoButton.setVisibility(View.VISIBLE);
-						switchCamera.setVisibility(View.VISIBLE);
-						switchBackground.setVisibility(View.VISIBLE);
-						counter.setText("10");
-					}
-				}
-				return true;
-			}
-			else
-				return false;
-		}
-	};
-
     protected void stopRecording() { // Exception
         // stop recording and release camera
 
@@ -415,11 +324,9 @@ public class CameraPreviewActivity extends Activity {
 		    return;
 	    }
 	    releaseMediaRecorder(); // release the MediaRecorder object
-        Toast.makeText(CameraPreviewActivity.this, "Yondor Captured", Toast.LENGTH_LONG).show();
         recording = false;
 	    Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
 	    intent.putExtra("videoId", videoId);
-	    String channelId = getIntent().getExtras().getString("channelId");
 	    intent.putExtra("channelId", channelId);
 	    startActivity(intent);
     }

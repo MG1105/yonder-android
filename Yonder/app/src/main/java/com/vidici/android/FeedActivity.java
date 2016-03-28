@@ -36,14 +36,14 @@ public class FeedActivity extends Activity {
     Button dislikeButton;
     Button commentButton;
     Button ratingButton;
-    TextView caption;
+    TextView caption, channel;
     int myRating = 0;
     int rating;
     int rated;
     private Activity myContext;
     LinkedHashMap<String, JSONObject> videoInfo;
     int percentageWatched;
-    String gaCategory; // not set
+    String gaCategory;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +54,10 @@ public class FeedActivity extends Activity {
         myContext = this;
         if (getIntent().getExtras().containsKey("channelId")) {
             videoInfo = ChannelActivity.channelInfo.get(getIntent().getExtras().getString("channelId"));
+            gaCategory = "Channel Feed";
         } else {
             videoInfo = NotificationActivity.notificationInfo.get(getIntent().getExtras().getString("notificationId"));
+            gaCategory = "Notification Feed";
         }
 
 	    uris = getContent();
@@ -65,6 +67,7 @@ public class FeedActivity extends Activity {
         commentButton = (Button) findViewById(R.id.comment_button);
         ratingButton = (Button) findViewById(R.id.rating);
         caption = (TextView) findViewById(R.id.textView_caption);
+        channel = (TextView) findViewById(R.id.textView_channel);
 
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
@@ -106,7 +109,11 @@ public class FeedActivity extends Activity {
 		currentVideo.start();
         showCaption();
 		if (CommentActivity.comments != null && CommentActivity.updateTotal) {
-			commentButton.setText(CommentActivity.comments.size() + " Comments");
+            if (CommentActivity.comments.size() == 1) {
+                commentButton.setText(CommentActivity.comments.size() + " Comment");
+            } else {
+                commentButton.setText(CommentActivity.comments.size() + " Comments");
+            }
             CommentActivity.updateTotal = false;
 		}
         Logger.fbActivate(this, true);
@@ -153,8 +160,17 @@ public class FeedActivity extends Activity {
             if (rated == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
+                likeButton.setBackgroundResource(R.drawable.ic_up_dark);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             } else if (rated == -1) {
                 dislikeButton.setEnabled(false);
+                likeButton.setEnabled(true);
+                likeButton.setBackgroundResource(R.drawable.ic_up_white);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_dark);
+            }
+
+            if (User.admin) {
+                dislikeButton.setEnabled(true);
                 likeButton.setEnabled(true);
             }
 
@@ -182,8 +198,17 @@ public class FeedActivity extends Activity {
             if (myRating == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
+                likeButton.setBackgroundResource(R.drawable.ic_up_dark);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             } else if (myRating == -1) {
                 dislikeButton.setEnabled(false);
+                likeButton.setEnabled(true);
+                likeButton.setBackgroundResource(R.drawable.ic_up_white);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_dark);
+            }
+
+            if (User.admin) {
+                dislikeButton.setEnabled(true);
                 likeButton.setEnabled(true);
             }
 
@@ -327,6 +352,8 @@ public class FeedActivity extends Activity {
         try {
             String captionContent = videoInfo.get(currentVideoId).getString("caption");
             caption.setText(captionContent);
+            String channelName = videoInfo.get(currentVideoId).getString("channel_name");
+            channel.setText("#"+channelName);
         } catch (JSONException e) {
             Logger.log(e);;
         }

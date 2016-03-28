@@ -1,13 +1,7 @@
 <resources>
-    <string name="app_name">Yondor</string>
+    <string name="app_name">Vidici</string>
     <string name="facebook_app_id">844416912346443</string>
-    <string name="title_activity_load_feed">Hashtags</string>
+    <string name="title_activity_load_feed">Vidici</string>
     <string name="title_activity_comment">Comments</string>
-
-    <string name="welcome_bullet_point_1">Yondor is powered by an ever evolving complex algorithm that replaces the need for a human moderator in order to show you quality videos posted around you</string>
-    <string name="welcome_bullet_point_2">In order to weed out unwanted and boring content, the algorithm initially shows recently uploaded videos to a limited number of users. The more positive feedback the video gets, the more other users get to view it later on.</string>
-    <string name="welcome_bullet_point_3">If the video feed is empty, please come back later. It is likely new videos were posted around you but they need more positive feedback from the initial advanced screening group before you can see them </string>
-    <string name="welcome_bullet_point_4">The more coins you collect, the further around you and more videos you can see.
-You gain a coin for every like you get on all videos and comments you post. You lose a coin for every dislike</string>
 
 </resources>

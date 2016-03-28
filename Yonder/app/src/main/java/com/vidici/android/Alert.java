@@ -13,9 +13,9 @@ public class Alert {
 	public static void showWarning (Activity activity) {
 		AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 		alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		alertDialog.setMessage("Many users found the content you have posted offensive.\n" +
-				"If more users flag your content, you will be automatically banned from Yondor.\n" +
-				"The Yondor Team would hate to see you go. Please help us build a positively fun community.");
+		alertDialog.setMessage("You have received many downvotes. " +
+				"If users keep downvoting you, you will be automatically banned from Vidici. " +
+				"We would hate to see you go. Please help us build a positive and fun community.");
 		alertDialog.setCancelable(false);
 		alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
@@ -30,13 +30,13 @@ public class Alert {
 		alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		String message = "";
 		if (level == 1) {
-			message = "Many users found the content you have posted offensive and flagged it.\n" +
-					"You were automatically banned from Yondor for a week.\n" +
-					"The Yondor Team hates to see you go. Please help us build a positively fun community when you come back.";
+			message = "You have received too many downvotes. " +
+					"You were automatically banned from Vidici for a week. " +
+					"We hate to see you go. Please come back and help us build a positive and fun community";
 		} else if (level == 2) {
-			message = "Many users found the content you have posted offensive and flagged it.\n" +
-					"You were automatically banned from Yondor for a month.\n" +
-					"The Yondor Team hates to see you go. Please help us build a positively fun community when you come back.";
+			message = "You have received too many downvotes. " +
+					"You were automatically banned from Vidici for a month. " +
+					"We hate to see you go. Please come back and help us build a positive and fun community";
 		}
 		alertDialog.setMessage(message);
 		alertDialog.setCancelable(false);
@@ -56,9 +56,8 @@ public class Alert {
 		if (rule == null ) {
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 			alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-			alertDialog.setMessage("Please help us keep Yondor a positively fun community and refrain " +
-					"from posting anything offensive.\nUsers who get flagged repeatedly" +
-					" are automatically banned from Yondor.");
+			alertDialog.setMessage("Please refrain from posting anything offensive. " +
+					"Users who get downvoted repeatedly are automatically banned.");
 			alertDialog.setCancelable(false);
 			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -79,9 +78,8 @@ public class Alert {
 		if (rule == null) {
 			AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 			alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-			alertDialog.setMessage("Please help us keep Yondor a positively fun community by flagging" +
-					" comments and videos you find offensive.\nUsers who get flagged repeatedly" +
-					" are automatically banned from Yondor.");
+			alertDialog.setMessage("Vidici is a bully free community. Please downvote abusive content. "+
+					"Users who get downvoted repeatedly are automatically banned.");
 			alertDialog.setCancelable(false);
 			alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -95,12 +93,12 @@ public class Alert {
 		}
 	}
 
-	public static void forceUpgrade (final Activity activity, final int level) { // non closing option
+	public static void forceUpgrade (final Activity activity, final int level) {
 
 		AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
 		alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		alertDialog.setMessage("Our servers have undergone a major revamp in order to increase performance and security.\n" +
-				"Please upgrade to the newest version of Yondor on Google Play as this version is no longer supported.\n");
+		alertDialog.setMessage("Our servers have undergone a major revamp in order to increase performance and security. " +
+				"Please upgrade to the newest version of Vidici on Google Play as this version is no longer supported.");
 		alertDialog.setCancelable(false);
 		alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {

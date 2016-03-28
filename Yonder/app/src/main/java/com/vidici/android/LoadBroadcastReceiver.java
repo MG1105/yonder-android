@@ -38,6 +38,7 @@ public class LoadBroadcastReceiver extends BroadcastReceiver {
 				if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)){
 					file.renameTo(out);
 					file.delete(); // make sure it is gone
+					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "Downloaded " + uri);
 				}else if (DownloadManager.STATUS_FAILED == c.getInt(columnIndex)){
 					//retry? infinite loop?
 					Logger.log(Log.ERROR, "Log.LoadBroadcastReceiver", "Failed downloading video " + uri);

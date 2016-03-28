@@ -13,9 +13,8 @@ public class Channel extends Loadable{
 	private String rating;
 	private int myRating;
 	private String name;
-	private Boolean loading = false;
 	private int rated = 0;
-	private String unseen;
+	private String unseen, videos;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Channel(JSONObject object) {
@@ -25,6 +24,7 @@ public class Channel extends Loadable{
 			this.name = object.getString("name");
 			this.rating = object.getString("rating");
 			this.unseen = object.getString("unseen");
+			this.videos = object.getString("videos");
 			rated = object.getInt("rated");
 		} catch (JSONException e) {
 			Logger.log(e);

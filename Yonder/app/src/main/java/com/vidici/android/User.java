@@ -16,16 +16,12 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class User {
-	static boolean admin = true;
+	static boolean admin = false;
 	static String androidId;
 
 	public static String getId(Context context) {
 		if (admin) {
-			SharedPreferences sharedPreferences = context.getSharedPreferences(
-					"com.vidici.android", Context.MODE_PRIVATE);
-			String user = sharedPreferences.getString("user", "");
-			return user;
-			//return "897d1e5hb8u47u56jh6";
+			return "897d1e5hb8u47u56jh6";
 		}
 		if (androidId != null) {
 			return androidId;
@@ -37,12 +33,6 @@ public class User {
 			androidId += "xxx" + (Build.PRODUCT.length() % 10) + (Build.BOARD.length() % 10) + (Build.BRAND.length() % 10) + (Build.CPU_ABI.length() % 10) + (Build.DEVICE.length() % 10) + (Build.MANUFACTURER.length() % 10) + (Build.MODEL.length() % 10);
 		}
 		return androidId;
-	}
-
-	public static void setId(Context context, String user) {
-		SharedPreferences sharedPreferences = context.getSharedPreferences(
-				"com.vidici.android", Context.MODE_PRIVATE);
-		sharedPreferences.edit().putString("user", user).apply();
 	}
 
 	public static void setLocation(Context context) {
@@ -64,35 +54,20 @@ public class User {
 		return null; // default location?
 	}
 
-	public static String getNickname (Activity activity) {
-		SharedPreferences sharedPreferences = activity.getSharedPreferences(
-				"com.vidici.android", Context.MODE_PRIVATE);
-		String nickname = sharedPreferences.getString("nickname", null);
-		if (nickname == null || admin) {
-			String AB = "abcdefghijklmnopqrstuvwxyz";
-			Random rnd = new Random();
-			StringBuilder sb = new StringBuilder(4);
-			for( int i = 0; i < 4; i++ )
-				sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
-			nickname = sb.toString();
-			sharedPreferences.edit().putString("nickname", nickname).apply();
-		}
-		return nickname;
-	}
-
 	public static void verify(Activity activity) {
 		SharedPreferences sharedPreferences = activity.getSharedPreferences(
 				"com.vidici.android", Context.MODE_PRIVATE);
 		int upgrade = sharedPreferences.getInt("upgrade", 0);
 		int ban = sharedPreferences.getInt("ban", 0);
-		if (upgrade != 0) { // if just upgraded after being blocked, this should not happen
+		int warn = sharedPreferences.getInt("warn", 0);
+		if (warn == 1) { // -1 already warned, 0 no warning
+			Alert.showWarning(activity);
+		} else if (upgrade != 0) { // if just upgraded after being blocked, this should not happen
 			Alert.forceUpgrade(activity, upgrade);
 		} else if (ban != 0) {
 			Alert.ban(activity, ban);
 		}
 	}
-
-
 
 	// Check if user is root
 

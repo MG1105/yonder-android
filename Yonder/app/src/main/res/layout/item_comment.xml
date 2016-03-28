@@ -1,17 +1,50 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:paddingTop="5dp"
+              android:paddingBottom="5dp"
+    android:orientation="horizontal">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:paddingRight="20dp"
+                  android:paddingLeft="5dp"
+                  android:orientation="vertical"
+                  android:layout_gravity="center"
+                  android:gravity="center">
+
+        <Button
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/ic_up"
+            android:id="@+id/button_comment_item_like" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
+            android:text="200"
+            android:id="@+id/textView_comment_item_rating" />
+
+        <Button
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/ic_down"
+            android:id="@+id/button_comment_item_dislike" />
+
+    </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="match_parent"
         android:layout_height="wrap_content"
+                  android:layout_gravity="center"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="15dp"
+            android:textSize="12dp"
             android:textStyle="bold"
             android:text="Large Text"
             android:id="@+id/textView_nickname" />
@@ -19,45 +52,11 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20dp"
+            android:textSize="12dp"
             android:paddingBottom="5dp"
             android:text="Large Text"
             android:id="@+id/textView_comment" />
 
     </LinearLayout>
-
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentLeft="true"
-            android:background="@drawable/ic_like"
-            android:id="@+id/button_comment_item_like" />
-
-        <Space
-            android:id="@+id/space_like"
-            android:layout_toRightOf="@+id/button_comment_item_like"
-            android:layout_width="10dp"
-            android:layout_height="wrap_content"/>
-
-        <Button
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_toRightOf="@+id/textView_comment_item_rating"
-            android:background="@drawable/ic_dislike"
-            android:id="@+id/button_comment_item_dislike" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/space_like"
-            android:textSize="20dp"
-            android:text="20"
-            android:id="@+id/textView_comment_item_rating" />
-
-    </RelativeLayout>
 
 </LinearLayout>

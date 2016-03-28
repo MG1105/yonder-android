@@ -12,27 +12,40 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No Comments Yet"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:paddingTop="10dp"
+        android:textColor="@color/grey_dark"
+        android:id="@+id/textView_no_comments"
+        android:layout_below="@+id/image_no_comments"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/image_no_comments"
+        android:background="@drawable/ic_comment"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:visibility="gone"
+        android:layout_centerInParent="true"/>
+
+
     <RelativeLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingTop="10dp"
-            android:text="No Comments Yet"
-            android:id="@+id/textView_no_comments"
-            android:visibility="gone"/>
-
         <ListView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingLeft="10dp"
             android:layout_above="@+id/layout_comment"
             android:layout_alignParentTop="true"
+            android:divider="@android:color/transparent"
             android:id="@+id/listView_comments"/>
 
 
@@ -50,14 +63,14 @@
                 android:id="@+id/add_comment_text"
                 android:textColor="@color/black"
                 android:text=""
-                android:maxLength="180"
+                android:maxLength="256"
                 android:hint="Add a comment" />
 
             <Button
                 android:id="@+id/add_comment_button"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:background="@drawable/ic_send" />
+                android:background="@drawable/ic_send_grey" />
 
         </LinearLayout>
     </RelativeLayout>

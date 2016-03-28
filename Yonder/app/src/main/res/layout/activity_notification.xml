@@ -9,15 +9,20 @@
         android:layout_height="match_parent"
         android:paddingLeft="5dp"
         android:listSelector="@android:color/transparent"
+        android:divider="@android:color/transparent"
         android:id="@+id/listView_notifications"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:text="No new notifcations"
-        android:textColor="@color/primary_dark"
+        android:text="No Notifications Yet"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:paddingTop="10dp"
+        android:textColor="@color/grey_dark"
         android:id="@+id/textView_no_notifications"
+        android:layout_below="@+id/image_no_notifications"
+        android:layout_centerHorizontal="true"
         android:visibility="gone"/>
 
     <ProgressBar
@@ -27,5 +32,13 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:paddingLeft="@dimen/activity_horizontal_margin"/>
+
+    <ImageView
+        android:id="@+id/image_no_notifications"
+        android:background="@drawable/ic_notification"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:visibility="gone"
+        android:layout_centerInParent="true"/>
 
 </RelativeLayout>

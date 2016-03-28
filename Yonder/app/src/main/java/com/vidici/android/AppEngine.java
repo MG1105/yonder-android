@@ -88,12 +88,11 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject getFeed(String userId, String channelId, String videoId) {
-
+    protected JSONObject getFeed(String userId, String channelId, String videoId, String channelSort) {
         String query = "";
         query = "?user=" + userId;
         if (channelId.length() > 0) {
-            query += "&channel=" + channelId;
+            query += "&channel=" + channelId + "&channel_sort=" + channelSort;
         }
         if (videoId.length() > 0) {
             query += "&video=" + videoId;
@@ -103,13 +102,12 @@ public class AppEngine {
     }
 
     protected JSONObject getFeedInfo(String ids, String userId) {
-
         String query = "";
         String encodedIds = null;
         encodedIds = encode(ids);
-        query = "?ids=" + encodedIds + "&user=" + userId;
-        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/info" + query;
-        return get(urlString);
+        query = "ids=" + encodedIds + "&user=" + userId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/info";
+        return post(urlString, query);
     }
 
     protected JSONObject getMyFeedInfo(String user) {
@@ -150,10 +148,11 @@ public class AppEngine {
         return post(urlString, query);
     }
 
-    protected JSONObject contactUs(String userId, String message) {
+    protected JSONObject contactUs(String userId, String message, String reply) {
         String query = "";
         message = encode(message);
-        query = "message=" + message + "&user=" + userId;
+        reply = encode(reply);
+        query = "message=" + message + "&user=" + userId + "&reply_to=" + reply;
         String urlString = "https://subtle-analyzer-90706.appspot.com/contact";
         return post(urlString, query);
     }

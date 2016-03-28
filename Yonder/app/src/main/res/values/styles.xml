@@ -1,17 +1,32 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light">
-
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
-
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
-
     </style>
 
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/primary</item>
+        <item name="background">@color/primary</item>
+        <!--<item name="titleTextStyle">@style/MyTitleTextStyle</item>-->
+        <item name="android:textColorSecondary">@color/white</item>
+        <!--<item name="android:actionBarTabTextStyle">@style/MyBarTextStyle</item>-->
+    </style>
+
+    <!--<style name="MyTitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">-->
+        <!--<item name="android:textColor">@color/white</item>-->
+        <!--<item name="android:textStyle">bold</item>-->
+    <!--</style>-->
+
+    <!--<style name="MyBarTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">-->
+        <!--<item name="android:textColor">@color/white</item>-->
+    <!--</style>-->
 
 </resources>

@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Timer;
 
-public class NotificationActivity extends Activity {
+public class NotificationActivity extends AppCompatActivity {
     private final String TAG = "Log." + this.getClass().getSimpleName();
     ArrayList notifications;
     static NotificationAdapter adapter;
@@ -62,8 +63,7 @@ public class NotificationActivity extends Activity {
         super.onResume();
         Logger.log(Log.INFO, TAG, "Resuming Activity");
         Logger.fbActivate(this, true);
-        AlarmReceiver alarmReceiver = new AlarmReceiver();
-        alarmReceiver.setNotificationAlarm(this);
+        active = true;
     }
 
     @Override
@@ -96,7 +96,8 @@ public class NotificationActivity extends Activity {
 
         protected void onPostExecute(JSONObject response) {
             try {
-                TextView noNotfications = (TextView)findViewById(R.id.textView_no_notifications);
+                TextView noNotifications = (TextView)findViewById(R.id.textView_no_notifications);
+                ImageView noNotificationsImage = (ImageView) findViewById(R.id.image_no_notifications);
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
 
@@ -108,18 +109,22 @@ public class NotificationActivity extends Activity {
                             adapter = new NotificationAdapter(mActivity);
                             // Attach the adapter to a ListView
                             listView.setAdapter(adapter);
-                            noNotfications.setVisibility(View.GONE);
+                            noNotifications.setVisibility(View.GONE);
+                            noNotificationsImage.setVisibility(View.GONE);
                             listView.setVisibility(View.VISIBLE);
                         } else {
-                            noNotfications.setVisibility(View.VISIBLE);
+                            noNotifications.setVisibility(View.VISIBLE);
+                            noNotificationsImage.setVisibility(View.VISIBLE);
                             listView.setVisibility(View.GONE);
                         }
                     } else {
                         Logger.log(new Exception("Server Side Failure"));
-                        noNotfications.setVisibility(View.VISIBLE);
+                        noNotifications.setVisibility(View.VISIBLE);
+                        noNotificationsImage.setVisibility(View.VISIBLE);
                     }
                 } else { // no internet
-                    noNotfications.setVisibility(View.VISIBLE);
+                    noNotifications.setVisibility(View.VISIBLE);
+                    noNotificationsImage.setVisibility(View.VISIBLE);
                     Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
                 }
                 spinner = (ProgressBar)findViewById(R.id.progress_notifications);
@@ -147,25 +152,30 @@ public class NotificationActivity extends Activity {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_notification, parent, false);
             }
 
-            // Lookup view for data population
             TextView notificationBody = (TextView) convertView.findViewById(R.id.textView_notification_body);
+            load = (TextView) convertView.findViewById(R.id.textView_notification_load);
+
             notificationBody.setText(notification.getContent());
 
-            load = (TextView) convertView.findViewById(R.id.textView_notification_load);
             if (notification.getChannelId().equals("") && notification.getVideoId().equals("")) {
-                load.setVisibility(View.INVISIBLE);
+                load.setVisibility(View.GONE);
             } else {
                 load.setVisibility(View.VISIBLE);
             }
 
-            int toLoad = notification.getRemaining();
-            if (toLoad == 0) {
+            if (notification.getRemaining() == 0) {
                 load.setText("play");
                 load.setEnabled(true);
-            } else if (toLoad > 0) {
-                load.setText("loading... " + toLoad);
+            } else if (notification.getRemaining() > 0) {
+                load.setText("loading... " + notification.getRemaining());
+                load.setEnabled(false);
+            } else if (notification.getRemaining() == -1) {
+                load.setText("load");
+                load.setEnabled(true);
+            } else if (notification.getRemaining() == -2) {
+                load.setText("no reactions yet");
+                load.setEnabled(true);
             }
-
 
             load.setOnClickListener(new View.OnClickListener() {
                 Notification myNotification = notification;
@@ -177,6 +187,8 @@ public class NotificationActivity extends Activity {
                     if (remaining == 0) {
                         Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
                         intentFeedStart.putExtra("notificationId", myNotification.getId());
+                        Logger.log(Log.INFO, TAG, notificationInfo.toString());
+                        Logger.log(Log.INFO, TAG, myNotification.getId());
                         startActivity(intentFeedStart);
                         myNotification.setReload();
                         adapter.notifyDataSetChanged();
@@ -186,18 +198,14 @@ public class NotificationActivity extends Activity {
                         gaCategory = "Notification";
                         Logger.trackEvent(mActivity, gaCategory, "Load Request");
                         myLoad.setText("loading...");
-                        GetFeedTask getFeed = new GetFeedTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, myLoad);
+                        GetFeedTask getFeed = new GetFeedTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, myLoad, "notification");
                         getFeed.execute();
                     }
 
                 }
             });
-
             // Return the completed view to render on screen
             return convertView;
-
         }
-
     }
-
 }

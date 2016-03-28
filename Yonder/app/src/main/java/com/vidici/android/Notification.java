@@ -17,7 +17,7 @@ public class Notification extends  Loadable{
 			this.content = object.getString("content");
 			this.videoId = object.getString("video_id");
 			this.channelId = object.getString("channel_id");
-			this.id = Long.toString(System.currentTimeMillis());
+			this.id = Long.toString((int)(Math.random() * 1000000 + 1));
 		} catch (JSONException e) {
 			Logger.log(e);
 		}

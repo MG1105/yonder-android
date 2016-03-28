@@ -1,5 +1,6 @@
 package com.vidici.android;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -105,9 +106,11 @@ public class AlarmReceiver extends BroadcastReceiver
 
 		protected void onPostExecute(JSONObject response) {
 			try {
-				if (response != null) {
+				Logger.log(Log.INFO, TAG, "Received push notification");
+				SharedPreferences sharedPreferences = myContext.getSharedPreferences(
+						"com.vidici.android", Context.MODE_PRIVATE);
+				if (response != null && sharedPreferences.getString("push_notification", "on").equals("on")) {
 					if (response.getString("success").equals("1")) {
-
 						JSONArray notificationsArray = response.getJSONArray("notifications");
 						int count = notificationsArray.length();
 						if (count > 0) {
@@ -115,10 +118,19 @@ public class AlarmReceiver extends BroadcastReceiver
 							notificationManager = (NotificationManager)myContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
 							// The PendingIntent to launch our activity if the user selects this notification
-							PendingIntent contentIntent = PendingIntent.getActivity(myContext, 0, new Intent(myContext, NotificationActivity.class), 0);
+							Intent intent = new Intent(myContext, SplashActivity.class);
+							intent.putExtra("notification", true);
+							PendingIntent contentIntent = PendingIntent.getActivity(myContext, 0, intent, 0);
+
+							String title;
+							if (count == 1) {
+								title = count + " New Notification";
+							} else {
+								title = count + " New Notifications";
+							}
 
 							Notification notification  = new Notification.Builder(myContext)
-									.setContentTitle(count + " New Notifications")
+									.setContentTitle(title)
 									.setContentText("Tap to read")
 									.setSmallIcon(R.mipmap.ic_launcher)
 									.setContentIntent(contentIntent)
@@ -127,7 +139,8 @@ public class AlarmReceiver extends BroadcastReceiver
 							// Send the notification.
 							// We use a layout id because it is a unique number. We use it later to cancel.
 							notificationManager.notify(R.mipmap.ic_launcher, notification);
-							cancelNotificationAlarm(myContext);
+							Logger.log(Log.INFO, TAG, "Showing push notification");
+							Logger.trackEvent(myContext, "Notification", "Received Push Notification");
 						}
 					}
 				}

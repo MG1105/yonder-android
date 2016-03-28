@@ -9,6 +9,7 @@ class Loadable {
 	protected String id;
 	String videoId = "";
 	String channelId = "";
+	Boolean empty = false;
 
 	public String getId() {
 		return id;
@@ -24,6 +25,8 @@ class Loadable {
 
 	public int getRemaining() {
 		int count = 0;
+		if (empty)
+			return -2;
 		if (videos.isEmpty())
 			return -1;
 		for (String id : videos) {
@@ -34,8 +37,12 @@ class Loadable {
 		return count;
 	}
 
+	public void setEmpty (boolean empty) {
+		this.empty = empty;
+	}
+
 	public void setReload() {
-		videos.clear();
+//		videos.clear();
 	}
 
 	public void addVideo(String video) {
