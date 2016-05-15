@@ -9,7 +9,7 @@ import com.google.android.gms.analytics.GoogleAnalytics;
  * This is a subclass of {@link android.app.Application} used to provide shared objects for this app, such as
  * the {@link Tracker}.
  */
-public class VidiciApplication extends android.app.Application {
+public class VidiciApplication extends Application {
 	private Tracker mTracker;
 
 	/**

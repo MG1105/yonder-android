@@ -170,8 +170,13 @@ public class NotificationActivity extends AppCompatActivity {
                 load.setText("loading... " + notification.getRemaining());
                 load.setEnabled(false);
             } else if (notification.getRemaining() == -1) {
-                load.setText("load");
-                load.setEnabled(true);
+                if (notification.isFetchingVideos()) {
+                    load.setText("loading...");
+                    load.setEnabled(false);
+                } else {
+                    load.setText("load");
+                    load.setEnabled(true);
+                }
             } else if (notification.getRemaining() == -2) {
                 load.setText("no reactions yet");
                 load.setEnabled(true);
@@ -195,6 +200,7 @@ public class NotificationActivity extends AppCompatActivity {
                         myLoad.setText("load");
                     } else {
                         myLoad.setEnabled(false);
+                        myNotification.setFetchingVideos(true);
                         gaCategory = "Notification";
                         Logger.trackEvent(mActivity, gaCategory, "Load Request");
                         myLoad.setText("loading...");

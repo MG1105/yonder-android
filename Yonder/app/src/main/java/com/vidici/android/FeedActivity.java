@@ -50,7 +50,6 @@ public class FeedActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_feed);
         Logger.log(Log.INFO, TAG, "Creating Activity");
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         myContext = this;
         if (getIntent().getExtras().containsKey("channelId")) {
             videoInfo = ChannelActivity.channelInfo.get(getIntent().getExtras().getString("channelId"));
@@ -160,13 +159,18 @@ public class FeedActivity extends Activity {
             if (rated == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
-                likeButton.setBackgroundResource(R.drawable.ic_up_dark);
+                likeButton.setBackgroundResource(R.drawable.ic_up_green);
                 dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             } else if (rated == -1) {
                 dislikeButton.setEnabled(false);
                 likeButton.setEnabled(true);
                 likeButton.setBackgroundResource(R.drawable.ic_up_white);
-                dislikeButton.setBackgroundResource(R.drawable.ic_down_dark);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_red);
+            } else {
+                dislikeButton.setEnabled(true);
+                likeButton.setEnabled(true);
+                likeButton.setBackgroundResource(R.drawable.ic_up_white);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             }
 
             if (User.admin) {
@@ -198,13 +202,13 @@ public class FeedActivity extends Activity {
             if (myRating == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
-                likeButton.setBackgroundResource(R.drawable.ic_up_dark);
+                likeButton.setBackgroundResource(R.drawable.ic_up_green);
                 dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             } else if (myRating == -1) {
                 dislikeButton.setEnabled(false);
                 likeButton.setEnabled(true);
                 likeButton.setBackgroundResource(R.drawable.ic_up_white);
-                dislikeButton.setBackgroundResource(R.drawable.ic_down_dark);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_red);
             }
 
             if (User.admin) {
@@ -220,6 +224,9 @@ public class FeedActivity extends Activity {
                 unit = "Likes";
             }
             ratingButton.setText(rating + " " + unit);
+
+            videoInfo.get(currentVideoId).put("rated", myRating);
+            videoInfo.get(currentVideoId).put("rating", Integer.toString(rating));
         } catch (Exception e) {
             Logger.log(e);;
         }
@@ -332,8 +339,6 @@ public class FeedActivity extends Activity {
             showCaption();
             showCommentsTotal();
             showLikesTotal();
-            likeButton.setEnabled(true);
-            dislikeButton.setEnabled(true);
         } else {
             setPercentageWatched();
             if (percentageWatched != 0) {

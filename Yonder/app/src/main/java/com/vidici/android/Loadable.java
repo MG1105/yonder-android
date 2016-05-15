@@ -10,6 +10,7 @@ class Loadable {
 	String videoId = "";
 	String channelId = "";
 	Boolean empty = false;
+	boolean fetchingVideos = false;
 
 	public String getId() {
 		return id;
@@ -39,6 +40,14 @@ class Loadable {
 
 	public void setEmpty (boolean empty) {
 		this.empty = empty;
+	}
+
+	public void setFetchingVideos (boolean fetching) {
+		fetchingVideos = fetching;
+	}
+
+	public boolean isFetchingVideos() {
+		return fetchingVideos;
 	}
 
 	public void setReload() {

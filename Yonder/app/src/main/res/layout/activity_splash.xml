@@ -4,15 +4,10 @@
                 android:layout_height="match_parent"
     android:background="@color/primary">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/black"
-        android:text="Vidici"
-        android:textSize="60dp"
-        android:textStyle="bold"
-        android:paddingTop="20dp"
+    <ImageView
+        android:layout_width="88dp"
+        android:layout_height="112dp"
+        android:background="@drawable/ic_pirate"
         android:layout_centerInParent="true"/>
 
 </RelativeLayout>

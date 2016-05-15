@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.app.Activity;
 import android.app.DownloadManager;
@@ -19,6 +20,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +38,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,6 +61,7 @@ public class ChannelActivity extends AppCompatActivity {
     static boolean active = false;
     static HashMap<String, LinkedHashMap<String, JSONObject>> channelInfo = new HashMap<>();
     FloatingActionButton addChannel;
+    private ShareActionProvider mShareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,23 +78,25 @@ public class ChannelActivity extends AppCompatActivity {
         actionBar = getSupportActionBar();
         // Specify that tabs should be displayed in the action bar.
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+//        actionBar.setDisplayShowTitleEnabled(false);
+//        actionBar.setDisplayShowHomeEnabled(false);
         // Create a tab listener that is called when the user changes tabs.
         ActionBar.TabListener tabListener = new ActionBar.TabListener() {
             @Override
             public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
                 spinner.setVisibility(View.VISIBLE);
                 GetChannelsTask getChannelsTask = new GetChannelsTask();
-                if (tab.getText().equals("hot")) {
+                if (tab.getPosition() == 0) {
                     getChannelsTask.execute(userId, "hot");
                     channelSort = "hot";
                     Logger.trackEvent(mActivity, "Channel", "View Hot");
                     Logger.log(Log.INFO, TAG, "Hot channel view");
-                } else if (tab.getText().equals("new")) {
+                } else if (tab.getPosition() == 1) {
                     getChannelsTask.execute(userId, "new");
                     channelSort = "new";
                     Logger.trackEvent(mActivity, "Channel", "View New");
                     Logger.log(Log.INFO, TAG, "New channel view");
-                } else if (tab.getText().equals("top")) {
+                } else if (tab.getPosition() == 2) {
                     getChannelsTask.execute(userId, "top");
                     channelSort = "top";
                     Logger.trackEvent(mActivity, "Channel", "View Top");
@@ -107,11 +114,15 @@ public class ChannelActivity extends AppCompatActivity {
 
             }
         };
+
         // Add 3 tabs, specifying the tab's text and TabListener
-        actionBar.addTab(actionBar.newTab().setText("hot").setTabListener(tabListener));
-        actionBar.addTab(actionBar.newTab().setText("new").setTabListener(tabListener));
-        actionBar.addTab(actionBar.newTab().setText("top").setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon1)).setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon2)).setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon3)).setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon4)).setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon5)).setTabListener(tabListener));
         actionBar.setStackedBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primary)));
+
 
         addChannel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -267,8 +278,13 @@ public class ChannelActivity extends AppCompatActivity {
                 load.setText("loading " + channel.getRemaining());
                 load.setEnabled(false);
             } else if (channel.getRemaining() == -1) {
-                load.setText("load");
-                load.setEnabled(true);
+                if (channel.isFetchingVideos()) {
+                    load.setText("loading...");
+                    load.setEnabled(false);
+                } else {
+                    load.setText("load");
+                    load.setEnabled(true);
+                }
             } else if (channel.getRemaining() == -2) {
                 load.setText("no reactions yet");
                 load.setEnabled(true);
@@ -322,6 +338,7 @@ public class ChannelActivity extends AppCompatActivity {
                         myLoad.setText("load");
                     } else {
                         myLoad.setEnabled(false);
+                        myChannel.setFetchingVideos(true);
                         Logger.trackEvent(mActivity, "Channel", "Load Request");
                         myLoad.setText("loading...");
                         Logger.log(Log.INFO, TAG, "Loading channel " + myChannel.getName());
@@ -393,7 +410,25 @@ public class ChannelActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_channel, menu);
+
+        // Locate MenuItem with ShareActionProvider
+        MenuItem item = menu.findItem(R.id.menu_item_share);
+        // Fetch and store ShareActionProvider
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
+        setShareIntent();
+
         return true;
+    }
+
+    // Call to update the share intent
+    private void setShareIntent() {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "You should download this app!\n\nhttps://play.google.com/store/apps/details?id=com.vidici.android&referrer=utm_source%3Dshareapp");
+        sendIntent.setType("text/plain");
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(sendIntent);
+        }
     }
 
     @Override

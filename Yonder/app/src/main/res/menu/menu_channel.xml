@@ -2,19 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- "Mark Favorite", should appear as action button if possible -->
     <item
         android:id="@+id/action_notification"
-        android:icon="@drawable/ic_notifications_black"
+        android:icon="@drawable/ic_notification_white"
         android:title="Notifications"
         app:showAsAction="always"/>
 
-    <!-- Settings, should always be in the overflow -->
     <item android:id="@+id/action_push_notifications"
           android:title="Push Notifications"
           app:showAsAction="never"/>
+
     <item android:id="@+id/action_contact"
           android:title="Contact Us"
           app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_item_share"
+        app:showAsAction="never"
+        android:title="Tell a Friend"
+        app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>
 
 </menu>

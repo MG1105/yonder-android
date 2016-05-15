@@ -2,7 +2,7 @@
 <resources>
 
     <!-- The apps Analytics Tracking Id -->
-    <string name="ga_trackingId">UA-68587108-1</string>
+    <string name="ga_trackingId">UA-68587108-2</string>
 
     <!-- Enable automatic Activity measurement -->
     <bool name="ga_autoActivityTracking">true</bool>
@@ -10,31 +10,31 @@
     <integer name="ga_sessionTimeout">30</integer>
 
     <!-- The screen names that will appear in reports -->
-    <screenName name="com.vidici.androidCameraPreviewActivity">
+    <screenName name="com.vidici.android.CameraPreviewActivity">
         Camera Preview Activity
     </screenName>
 
-    <screenName name="com.vidici.androidCapturedVideoActivity">
+    <screenName name="com.vidici.android.CapturedVideoActivity">
         Captured Video Activity
     </screenName>
 
-    <screenName name="com.vidici.androidCommentActivity">
+    <screenName name="com.vidici.android.CommentActivity">
         Comment Activity
     </screenName>
 
-    <screenName name="com.vidici.androidFeedActivity">
+    <screenName name="com.vidici.android.FeedActivity">
         Feed Activity
     </screenName>
 
-    <screenName name="com.vidici.androidLoadFeedActivity">
-        Load Feed Activity
+    <screenName name="com.vidici.android.ChannelActivity">
+        Channel Activity
     </screenName>
 
-    <screenName name="com.vidici.androidWelcomeActivity">
-        Welcome Activity
+    <screenName name="com.vidici.android.NotificationActivity">
+        Notification Activity
     </screenName>
 
-    <screenName name="com.vidici.androidSplashActivity">
+    <screenName name="com.vidici.android.SplashActivity">
         Splash Activity
     </screenName>
 

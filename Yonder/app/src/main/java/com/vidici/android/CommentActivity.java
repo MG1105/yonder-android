@@ -39,7 +39,7 @@ public class CommentActivity extends Activity {
 	EditText commentText;
 	String comment;
 	CommentsAdapter adapter;
-	String commentId, nickname;
+	String nickname;
 	static SQLiteDatabase yonderDb;
 	static boolean updateTotal;
 	ListView commentList;
@@ -118,6 +118,7 @@ public class CommentActivity extends Activity {
 									alertDialog.dismiss();
 									SharedPreferences sharedPreferences = myActivity.getSharedPreferences(
 											"com.vidici.android", Context.MODE_PRIVATE);
+									name = name.toLowerCase();
 									sharedPreferences.edit().putString("nickname", name).apply();
 									Logger.trackEvent(myActivity, "Settings", "Add Nickname");
 									nickname = name;
@@ -136,14 +137,13 @@ public class CommentActivity extends Activity {
 
 		void sendComment() {
 			sendButton.setEnabled(false);
-			commentId = Long.toString(System.currentTimeMillis());
 			String userId = User.getId(myActivity);
-			Logger.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s commentId %s " +
+			Logger.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s " +
 							"commentText %s",
-					nickname, userId, videoId, commentId, comment));
+					nickname, userId, videoId, comment));
 			Logger.trackEvent(myActivity, "Comment", "Add Comment");
 			AddCommentTask addComment = new AddCommentTask();
-			addComment.execute(nickname, userId, videoId, commentId, comment);
+			addComment.execute(nickname, userId, videoId, comment);
 		}
 	};
 
@@ -299,7 +299,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			JSONObject response = gae.addComment(params[0], params[1], params[2], params[3], params[4]);
+			JSONObject response = gae.addComment(params[0], params[1], params[2], params[3]);
 			return response;
 		}
 
@@ -313,7 +313,7 @@ public class CommentActivity extends Activity {
 							noComments.setVisibility(View.GONE);
 							noCommentsImage.setVisibility(View.GONE);
 						}
-						comments.add(new Comment(commentId, comment, nickname));
+						comments.add(new Comment(response.getString("comment_id"), comment, nickname));
 						adapter.notifyDataSetChanged();
 						if (commentText != null) {
 							commentText.setText("");

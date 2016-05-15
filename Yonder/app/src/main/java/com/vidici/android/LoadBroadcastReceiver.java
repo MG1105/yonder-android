@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,20 +30,26 @@ public class LoadBroadcastReceiver extends BroadcastReceiver {
 				if (!uri.contains("yander"))
 					return;
 
-				String downloadedPackageUriString =
-						c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
-				File file = new File(downloadedPackageUriString);
-				File out = new File(downloadedPackageUriString.replace(".tmp",""));
+//				String downloadedPackageUriString =
+//						c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+				try {
+					String downloadedPackageUriString = Uri.parse(c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).getPath();
+					File file = new File(downloadedPackageUriString);
+					File out = new File(downloadedPackageUriString.replace(".tmp",""));
 
-				//if completed successfully
-				if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)){
-					file.renameTo(out);
-					file.delete(); // make sure it is gone
-					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "Downloaded " + uri);
-				}else if (DownloadManager.STATUS_FAILED == c.getInt(columnIndex)){
-					//retry? infinite loop?
-					Logger.log(Log.ERROR, "Log.LoadBroadcastReceiver", "Failed downloading video " + uri);
-					file.delete();
+					//if completed successfully
+					if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)){
+						file.renameTo(out);
+						file.delete(); // make sure it is gone
+						Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "Downloaded " + uri);
+					}else if (DownloadManager.STATUS_FAILED == c.getInt(columnIndex)){
+						//retry? infinite loop?
+						Logger.log(Log.ERROR, "Log.LoadBroadcastReceiver", "Failed downloading video " + uri);
+						file.delete();
+					}
+				} catch (NullPointerException e) {
+					Logger.log(Log.ERROR, "Log.LoadBroadcastReceiver", "Failed downloading " + uri);
+					Logger.log(e);
 				}
 			}
 			if (ChannelActivity.active) {

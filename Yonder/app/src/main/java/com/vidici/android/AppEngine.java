@@ -132,10 +132,10 @@ public class AppEngine {
         return get(urlString);
     }
 
-    protected JSONObject addComment(String nickname, String userId, String videoId, String commentId, String comment) {
+    protected JSONObject addComment(String nickname, String userId, String videoId, String comment) {
         String query = "";
         String encodedComment = encode(comment);
-        query = "comment=" + encodedComment + "&user=" + userId + "&id=" + commentId + "&nickname=" + nickname;
+        query = "comment=" + encodedComment + "&user=" + userId + "&nickname=" + nickname;
         String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
         return post(urlString, query);
     }

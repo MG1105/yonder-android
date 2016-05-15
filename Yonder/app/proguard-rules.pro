@@ -18,3 +18,4 @@
 -keepattributes SourceFile,LineNumberTable
 -keep public class com.google.android.gms.* { public *; }
 -dontwarn com.google.android.gms.**
+-keep class android.support.v7.widget.ShareActionProvider { *; }

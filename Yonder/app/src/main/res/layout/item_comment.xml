@@ -23,7 +23,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12dp"
+            android:textSize="14dp"
             android:text="200"
             android:id="@+id/textView_comment_item_rating" />
 
@@ -52,7 +52,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="12dp"
+            android:textSize="14dp"
             android:paddingBottom="5dp"
             android:text="Large Text"
             android:id="@+id/textView_comment" />

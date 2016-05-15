@@ -11,6 +11,7 @@
         android:paddingLeft="5dp"
         android:listSelector="@android:color/transparent"
         android:divider="@android:color/transparent"
+        android:background="@color/grey"
         android:id="@+id/listView_channels"/>
 
     <TextView
@@ -49,10 +50,41 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:clickable="true"
-        android:src="@drawable/ic_plus_black"
+        android:src="@drawable/ic_plus"
         app:backgroundTint="@color/primary"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         />
+
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/tab_icon">
+        <ImageView
+            android:id="@+id/tab_icon1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_fire"/>
+        <ImageView
+            android:id="@+id/tab_icon2"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_clock"/>
+        <ImageView
+            android:id="@+id/tab_icon3"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_heart"/>
+        <ImageView
+            android:id="@+id/tab_icon4"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_home"/>
+        <ImageView
+            android:id="@+id/tab_icon5"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_user"/>
+        </LinearLayout>
 
 </RelativeLayout>

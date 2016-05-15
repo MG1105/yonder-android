@@ -49,8 +49,12 @@ public class AlarmReceiver extends BroadcastReceiver
 			intent.putExtra("code", 1);
 			PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, intent, 0);
 			long initial = 1000 * 60 * 60; // Millisec * Second * Minute * Hour
-			long delta = 1000 * 60 * 60; // Millisec * Second * Minute * Hour
-			alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + initial, pendingIntent);
+			long delta = 1000 * 60 * 60 * 24; // Millisec * Second * Minute * Hour
+			if (User.admin) {
+				initial = 1000 * 60 * 5; // Millisec * Second * Minute * Hour
+				delta = 1000 * 60 * 15; // Millisec * Second * Minute * Hour
+			}
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + initial, delta, pendingIntent);
 		}
 	}
 
@@ -141,6 +145,7 @@ public class AlarmReceiver extends BroadcastReceiver
 							notificationManager.notify(R.mipmap.ic_launcher, notification);
 							Logger.log(Log.INFO, TAG, "Showing push notification");
 							Logger.trackEvent(myContext, "Notification", "Received Push Notification");
+							cancelNotificationAlarm(myContext);
 						}
 					}
 				}
