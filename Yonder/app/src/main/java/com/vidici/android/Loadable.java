@@ -9,8 +9,10 @@ class Loadable {
 	protected String id;
 	String videoId = "";
 	String channelId = "";
+	String thumbnailId = "";
 	Boolean empty = false;
 	boolean fetchingVideos = false;
+	int loaded = 0;
 
 	public String getId() {
 		return id;
@@ -24,6 +26,10 @@ class Loadable {
 		return channelId;
 	}
 
+	public String getThumbnailId() {
+		return thumbnailId;
+	}
+
 	public int getRemaining() {
 		int count = 0;
 		if (empty)
@@ -33,9 +39,18 @@ class Loadable {
 		for (String id : videos) {
 			if (!new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile()){
 				count++;
+			} else {
+				loaded++;
 			}
 		}
 		return count;
+	}
+
+	public boolean canPlay() {
+		if (loaded > 0) {
+			return true;
+		}
+		return false;
 	}
 
 	public void setEmpty (boolean empty) {

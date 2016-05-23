@@ -52,11 +52,19 @@ public class LoadBroadcastReceiver extends BroadcastReceiver {
 					Logger.log(e);
 				}
 			}
-			if (ChannelActivity.active) {
-				if (ChannelActivity.adapter != null) {
-					ChannelActivity.adapter.notifyDataSetChanged();
+			if (ChannelActivity.channelsActive) {
+				if (ChannelActivity.channelAdapter != null) {
+					ChannelActivity.channelAdapter.notifyDataSetChanged();
+					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "notified channel active and video received");
 				}
 			}
+			if (ChannelActivity.feedActive) {
+				if (ChannelActivity.feedAdapter != null) {
+					ChannelActivity.feedAdapter.notifyDataSetChanged();
+					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "notified feed active and video received");
+				}
+			}
+
 			if (NotificationActivity.active) {
 				if (NotificationActivity.adapter != null) {
 					NotificationActivity.adapter.notifyDataSetChanged();

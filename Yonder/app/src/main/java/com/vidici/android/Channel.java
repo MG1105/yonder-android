@@ -21,6 +21,7 @@ public class Channel extends Loadable{
 		try {
 			this.id = object.getString("id");
 			this.channelId = object.getString("id");
+			this.thumbnailId = object.getString("thumbnail_id");
 			this.name = object.getString("name");
 			this.rating = object.getString("rating");
 			this.unseen = object.getString("unseen");

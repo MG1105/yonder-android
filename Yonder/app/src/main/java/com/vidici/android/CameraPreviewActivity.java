@@ -78,8 +78,8 @@ public class CameraPreviewActivity extends Activity {
 					try {
 						mediaRecorder.start();
 						counter = (TextView)findViewById(R.id.recording_counter);
-						addVideoButton.setVisibility(View.INVISIBLE);
-						switchCamera.setVisibility(View.INVISIBLE);
+//						addVideoButton.setVisibility(View.INVISIBLE);
+//						switchCamera.setVisibility(View.INVISIBLE);
 						counter.setVisibility(View.VISIBLE);
 						counter.setText("9");
 						timer = new CountDownTimer(10000, 1000) {
@@ -92,8 +92,8 @@ public class CameraPreviewActivity extends Activity {
 									stopRecording();
 								}
 								counter.setVisibility(View.INVISIBLE);
-								addVideoButton.setVisibility(View.VISIBLE);
-								switchCamera.setVisibility(View.VISIBLE);
+//								addVideoButton.setVisibility(View.VISIBLE);
+//								switchCamera.setVisibility(View.VISIBLE);
 								counter.setText("10");
 							}
 						}.start();
@@ -111,8 +111,8 @@ public class CameraPreviewActivity extends Activity {
 							timer.cancel();
 							TextView counter = (TextView)findViewById(R.id.recording_counter);
 							counter.setVisibility(View.INVISIBLE);
-							addVideoButton.setVisibility(View.VISIBLE);
-							switchCamera.setVisibility(View.VISIBLE);
+//							addVideoButton.setVisibility(View.VISIBLE);
+//							switchCamera.setVisibility(View.VISIBLE);
 							counter.setText("10");
 						}
 					}
@@ -150,11 +150,11 @@ public class CameraPreviewActivity extends Activity {
 		cameraPreview.addView(mPreview);
 
 
-		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
-		switchCamera.setOnClickListener(switchCameraListener);
+//		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
+//		switchCamera.setOnClickListener(switchCameraListener);
 
-		addVideoButton = (Button) findViewById(R.id.button_add);
-		addVideoButton.setOnClickListener(addVideoListener);
+//		addVideoButton = (Button) findViewById(R.id.button_add);
+//		addVideoButton.setOnClickListener(addVideoListener);
 
 	}
 
@@ -245,18 +245,31 @@ public class CameraPreviewActivity extends Activity {
 			int backFacingCamId = findBackFacingCamera();
 			if (frontFacingCamId < 0) {
 				switchCamera.setVisibility(View.GONE);
-			}
-			try {
-				mCamera = Camera.open(backFacingCamId);
-			}
-			catch (RuntimeException e) {
-				Logger.log(e);
-				Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
-				mActivity.finish();
-			}
+				try {
+					mCamera = Camera.open(backFacingCamId);
+				}
+				catch (RuntimeException e) {
+					Logger.log(e);
+					Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
+					mActivity.finish();
+				}
 
-			cameraId = backFacingCamId;
-			cameraFront = false;
+				cameraId = backFacingCamId;
+				cameraFront = false;
+			} else {
+				try {
+					mCamera = Camera.open(frontFacingCamId);
+				}
+				catch (RuntimeException e) {
+					Logger.log(e);
+					Toast.makeText(mActivity, "Could not access your camera", Toast.LENGTH_LONG).show();
+					mActivity.finish();
+				}
+
+				cameraId = frontFacingCamId;
+				cameraFront = true;
+
+			}
 		}
 	}
 
@@ -328,6 +341,7 @@ public class CameraPreviewActivity extends Activity {
 	    Intent intent = new Intent(mActivity, CapturedVideoActivity.class);
 	    intent.putExtra("videoId", videoId);
 	    intent.putExtra("channelId", channelId);
+	    intent.putExtra("cameraFront", cameraFront);
 	    startActivity(intent);
     }
 

@@ -18,7 +18,8 @@
 		<TextView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:textSize="16dp"
+			android:textSize="20dp"
+			android:textStyle="bold"
 			android:text="bold"
 			android:paddingLeft="5dp"
 			android:paddingTop="5dp"
@@ -27,23 +28,23 @@
 			android:layout_alignParentLeft="true"
 			android:layout_alignParentTop="true"/>
 
-		<Button
-			android:id="@+id/button_ChangeCamera"
-			android:layout_width="50dp"
-			android:layout_height="50dp"
-			android:layout_alignParentTop="true"
-			android:layout_alignParentRight="true"
-			android:scaleType="fitXY"
-			android:background="@drawable/ic_switch" />
+		<!--<Button-->
+			<!--android:id="@+id/button_ChangeCamera"-->
+			<!--android:layout_width="50dp"-->
+			<!--android:layout_height="50dp"-->
+			<!--android:layout_alignParentTop="true"-->
+			<!--android:layout_alignParentRight="true"-->
+			<!--android:scaleType="fitXY"-->
+			<!--android:background="@drawable/ic_switch" />-->
 
-		<Button
-			android:id="@+id/button_add"
-			android:layout_width="50dp"
-			android:layout_height="50dp"
-			android:layout_below="@id/button_ChangeCamera"
-			android:layout_alignParentRight="true"
-			android:scaleType="fitXY"
-			android:background="@drawable/ic_plus"/>
+		<!--<Button-->
+			<!--android:id="@+id/button_add"-->
+			<!--android:layout_width="50dp"-->
+			<!--android:layout_height="50dp"-->
+			<!--android:layout_below="@id/button_ChangeCamera"-->
+			<!--android:layout_alignParentRight="true"-->
+			<!--android:scaleType="fitXY"-->
+			<!--android:background="@drawable/ic_plus"/>-->
 
         <TextView
             android:layout_width="wrap_content"

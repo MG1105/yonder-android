@@ -64,7 +64,7 @@
                  android:exported="false" />
 
         <activity
-            android:name="com.vidici.android.FeedActivity"
+            android:name=".StoryActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait" >

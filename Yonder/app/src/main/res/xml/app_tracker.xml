@@ -22,8 +22,8 @@
         Comment Activity
     </screenName>
 
-    <screenName name="com.vidici.android.FeedActivity">
-        Feed Activity
+    <screenName name="com.vidici.android.StoryActivity">
+        Story Activity
     </screenName>
 
     <screenName name="com.vidici.android.ChannelActivity">

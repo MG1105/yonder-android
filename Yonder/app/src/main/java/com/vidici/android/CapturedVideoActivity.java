@@ -2,6 +2,9 @@ package com.vidici.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,6 +45,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     private String originalPath;
     private Timer timer;
     private Activity myActivity;
+    Boolean cameraFront;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +61,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         videoId = getIntent().getExtras().getString("videoId");
         originalPath = getIntent().getExtras().getString("originalPath");
         channelId = getIntent().getExtras().getString("channelId");
+        cameraFront = getIntent().getExtras().getBoolean("cameraFront");
         final Uri vidUri = Uri.parse(uploadPath + "/" + videoId);
         vidView.setVideoURI(vidUri);
 	    vidView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -180,13 +186,42 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             Logger.log(Log.INFO, TAG, "Pre compression size " + tmp.length());
             // ac audio channels ar audio frequency b bitrate
             String command = "ffmpeg -y -i " + uploadPath + "/tmp"+ videoId +
-                    " -strict experimental -s 568x320 -r 29 -vcodec libx264 -b 568k -t 10 " + uploadPath + "/" + videoId;
+                    " -strict experimental -s 568x320 -vcodec libx264 -crf 23 -t 12 " + uploadPath + "/" + videoId;
             Logger.log(Log.INFO, TAG, command);
             String[] complexCommand = GeneralUtils.utilConvertToComplex(command);
             vk.run(complexCommand, uploadPath, getApplicationContext());
             Logger.log(Log.INFO, TAG, "Post compression size " + new File(uploadPath + "/" + videoId).length());
+
+            String thumbnailCommand = "ffmpeg -y -i " + uploadPath + "/"+ videoId + " -strict experimental -an -ss 00:00:00.000 -t 00:00:03 "
+                    + uploadPath + "/" + videoId + ".jpg";
+            Logger.log(Log.INFO, TAG, thumbnailCommand);
+            complexCommand = GeneralUtils.utilConvertToComplex(thumbnailCommand);
+            vk.run(complexCommand, uploadPath, getApplicationContext());
+            if (cameraFront) {
+                rotateImage(uploadPath + "/" + videoId + ".jpg", 270);
+            } else {
+                rotateImage(uploadPath + "/" + videoId + ".jpg", 90);
+            }
             tmp.delete();
+            new File(uploadPath + "/" + videoId + ".jpg").delete();
         } catch (Throwable e) {
+            Logger.log(e);
+        }
+    }
+
+    private void rotateImage(String path, float degrees) {
+        try{
+            Bitmap myImg = BitmapFactory.decodeFile(path);
+            Matrix matrix = new Matrix();
+            matrix.postRotate(degrees);
+            Bitmap rotated = Bitmap.createBitmap(myImg, 0, 0, myImg.getWidth(), myImg.getHeight(),
+                    matrix, true);
+            File file = new File(path.replace(".mp4", ""));
+            FileOutputStream fOut = new FileOutputStream(file);
+            rotated.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            fOut.flush();
+            fOut.close();}
+        catch (Exception e) {
             Logger.log(e);
         }
     }

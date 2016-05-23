@@ -37,7 +37,6 @@ public class AppEngine {
 
             String urlString = "https://subtle-analyzer-90706.appspot.com/videos" + query;
 
-            FileInputStream fileInputStream = new FileInputStream(new File(uploadPath+"/"+videoId) );
             URL url = new URL(urlString);
             conn = (HttpURLConnection) url.openConnection();
             conn.setDoInput(true);
@@ -53,8 +52,39 @@ public class AppEngine {
                 Logger.log(Log.ERROR, TAG, "Failed to connect");
                 return null;
             }
+
+            FileInputStream fileInputStream = new FileInputStream(new File(uploadPath+"/"+videoId) );
             dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=uploadedfile;filename=" + videoId + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=videofile;filename=" + videoId + lineEnd);
+            dos.writeBytes(lineEnd);
+
+            // create a buffer of maximum size
+            bytesAvailable = fileInputStream.available();
+            bufferSize = Math.min(bytesAvailable, maxBufferSize);
+            buffer = new byte[bufferSize];
+
+            // read file and write it into form...
+            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            while (bytesRead > 0)
+            {
+                dos.write(buffer, 0, bufferSize);
+                bytesAvailable = fileInputStream.available();
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            }
+            // send multipart form data necesssary after file data...
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+
+            Logger.log(Log.INFO, TAG, "Video written");
+
+            // close streams
+            fileInputStream.close();
+
+            // 2nd file
+
+            fileInputStream = new FileInputStream(new File(uploadPath+"/"+videoId.replace(".mp4", ".jpg")));
+            dos.writeBytes("Content-Disposition: form-data; name=videothumbnail;filename=" + videoId.replace(".mp4", ".jpg") + lineEnd);
             dos.writeBytes(lineEnd);
 
             // create a buffer of maximum size
@@ -75,10 +105,11 @@ public class AppEngine {
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
-            Logger.log(Log.INFO, TAG, "File written");
+            Logger.log(Log.INFO, TAG, "Thumbnail written");
 
             // close streams
             fileInputStream.close();
+
             dos.flush();
             dos.close();
         } catch (Exception e) {
@@ -88,7 +119,7 @@ public class AppEngine {
         return getResponse();
     }
 
-    protected JSONObject getFeed(String userId, String channelId, String videoId, String channelSort) {
+    protected JSONObject getVideos(String userId, String channelId, String videoId, String channelSort) {
         String query = "";
         query = "?user=" + userId;
         if (channelId.length() > 0) {
@@ -101,20 +132,9 @@ public class AppEngine {
         return get(urlString);
     }
 
-    protected JSONObject getFeedInfo(String ids, String userId) {
-        String query = "";
-        String encodedIds = null;
-        encodedIds = encode(ids);
-        query = "ids=" + encodedIds + "&user=" + userId;
-        String urlString = "https://subtle-analyzer-90706.appspot.com/videos/info";
-        return post(urlString, query);
-    }
-
-    protected JSONObject getMyFeedInfo(String user) {
-
-        String query = "";
-        query = "?user=" + user;
-        String urlString = "https://subtle-analyzer-90706.appspot.com/myvideos/info" + query;
+    protected JSONObject getFeed(String userId) {
+        String query = "?user=" + userId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/feed" + query;
         return get(urlString);
     }
 

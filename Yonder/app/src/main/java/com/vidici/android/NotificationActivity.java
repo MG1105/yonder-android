@@ -1,14 +1,8 @@
 package com.vidici.android;
 
 import android.app.Activity;
-import android.app.DownloadManager;
-import android.app.DownloadManager.Request;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,23 +10,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Timer;
 
 public class NotificationActivity extends AppCompatActivity {
     private final String TAG = "Log." + this.getClass().getSimpleName();
@@ -163,7 +153,7 @@ public class NotificationActivity extends AppCompatActivity {
                 load.setVisibility(View.VISIBLE);
             }
 
-            if (notification.getRemaining() == 0) {
+            if (notification.getRemaining() == 0 || notification.canPlay()) {
                 load.setText("play");
                 load.setEnabled(true);
             } else if (notification.getRemaining() > 0) {
@@ -189,8 +179,8 @@ public class NotificationActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View v) {
-                    if (remaining == 0) {
-                        Intent intentFeedStart = new Intent(mActivity, FeedActivity.class);
+                    if (remaining == 0 || notification.canPlay()) {
+                        Intent intentFeedStart = new Intent(mActivity, StoryActivity.class);
                         intentFeedStart.putExtra("notificationId", myNotification.getId());
                         Logger.log(Log.INFO, TAG, notificationInfo.toString());
                         Logger.log(Log.INFO, TAG, myNotification.getId());
@@ -204,7 +194,7 @@ public class NotificationActivity extends AppCompatActivity {
                         gaCategory = "Notification";
                         Logger.trackEvent(mActivity, gaCategory, "Load Request");
                         myLoad.setText("loading...");
-                        GetFeedTask getFeed = new GetFeedTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, myLoad, "notification");
+                        GetVideosTask getFeed = new GetVideosTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, myLoad, "notification");
                         getFeed.execute();
                     }
 
