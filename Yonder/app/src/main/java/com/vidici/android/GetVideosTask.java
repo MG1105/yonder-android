@@ -2,6 +2,7 @@ package com.vidici.android;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -21,24 +22,22 @@ class GetVideosTask extends AsyncTask<Void, Void, JSONObject> {
 
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 	Loadable loadable;
-	TextView load;
-	ArrayList<Uri> uris;
+	ArrayList<String> uris;
 	Activity mActivity;
 	String userId, loadableId, channelSort;
-	private DownloadManager downloadManager;
 	ArrayAdapter adapter;
 	HashMap<String, LinkedHashMap<String, JSONObject>> info;
+	static boolean loading = false;
 
-	protected GetVideosTask(Activity activity, Loadable loadable, String id, ArrayAdapter adapter, HashMap<String, LinkedHashMap<String, JSONObject>> info , TextView myLoad, String channelSort) {
+	protected GetVideosTask(Activity activity, Loadable loadable, String id, ArrayAdapter adapter, HashMap<String, LinkedHashMap<String, JSONObject>> info ,
+	                        String channelSort) {
 		this.loadable = loadable;
 		this.channelSort = channelSort;
 		loadableId = id;
 		this.info = info;
-		load = myLoad;
 		this.adapter = adapter;
 		mActivity = activity;
 		userId = User.getId(mActivity);
-		downloadManager = (DownloadManager) mActivity.getSystemService(Activity.DOWNLOAD_SERVICE);
 	}
 
 	protected JSONObject doInBackground(Void... params) {
@@ -73,64 +72,88 @@ class GetVideosTask extends AsyncTask<Void, Void, JSONObject> {
 							continue;
 						}
 						String url = "http://storage.googleapis.com/yander/" + id + ".mp4";
-						uris.add(Uri.parse(url));
+						uris.add(url);
 					}
 
 					if (videos.length() > 0) {
 						info.put(loadableId, videoInfo);
 						loadable.setEmpty(false);
-						ArrayList<DownloadManager.Request> requests = getRequests(uris);
-						for (DownloadManager.Request request : requests) {
-							downloadManager.enqueue(request); // takes a few secs to start, not good
-						}
+
 						if (uris.size() == 0) {
 							Logger.log(Log.INFO, TAG, "All videos in cache");
-							// channel is ready
-							adapter.notifyDataSetChanged();
-							Logger.log(Log.INFO, TAG, "Channel modified");
+							playVideos();
 						} else {
 							Logger.log(Log.INFO, TAG, uris.size() + " more videos to download");
+							DownloadVideos downloadVideos = new DownloadVideos(loadable);
+							downloadVideos.execute(uris.get(0));
 						}
 					} else {
-						load.setText("no reactions yet");
+						loadable.setDownloading(false);
 						loadable.setEmpty(true);
-						load.setEnabled(true);
+						loading = false;
+						adapter.notifyDataSetChanged();
+						Toast.makeText(mActivity, "No new broadcasts", Toast.LENGTH_LONG).show();
 					}
 
 				} else {
 					Logger.log(new Exception("Server Side Failure"));
 					Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
-					load.setText("load");
-					load.setEnabled(true);
+					loadable.setDownloading(false);
+					loading = false;
+					adapter.notifyDataSetChanged();
 
 				}
 			} catch (Exception e) {
 				Logger.log(e);
 				Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
-				load.setText("load");
-				load.setEnabled(true);
+				loadable.setDownloading(false);
+				loading = false;
+				adapter.notifyDataSetChanged();
 			}
 		} else {
 			Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
-			load.setText("load");
-			load.setEnabled(true);
+			loadable.setDownloading(false);
+			loading = false;
+			adapter.notifyDataSetChanged();
 		}
-	}
-
-	private ArrayList<DownloadManager.Request> getRequests(ArrayList<Uri> uris) {
-		ArrayList<DownloadManager.Request> requests = new ArrayList<>();
-		for (Uri uri : uris) {
-			DownloadManager.Request request = new DownloadManager.Request(uri);
-			request.setVisibleInDownloadsUi(false);
-			request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
-			request.setDestinationUri(Uri.fromFile(new File(Video.loadedDir.getAbsolutePath() + "/" + uri.getLastPathSegment()+".tmp")));
-			requests.add(request);
-		}
-		return requests;
 	}
 
 	private boolean isLoaded (String id) {
 		boolean loaded = new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile();
 		return loaded;
 	}
+
+	class DownloadVideos extends DownloadTask {
+		Loadable loadable;
+		DownloadVideos (Loadable loadable) {
+			super(mActivity);
+			this.loadable = loadable;
+		}
+
+		@Override
+		protected void onPostExecute(Integer error) {
+			super.onPostExecute(error);
+			playVideos();
+		}
+	}
+
+	protected void playVideos() {
+		loadable.setDownloading(false);
+		loadable.setPlayable();
+		Intent intentFeedStart = new Intent(mActivity, StoryActivity.class);
+		String loadableId = "";
+		if (loadable instanceof Channel) {
+			loadableId = "channelId";
+		} else if (loadable instanceof Notification) {
+			loadableId = "notificationId";
+		} else if (loadable instanceof FeedItem) {
+			loadableId = "feedItemId";
+		}
+		intentFeedStart.putExtra(loadableId, loadable.getId());
+		mActivity.startActivity(intentFeedStart);
+		loadable.setReload();
+		loading = false;
+		adapter.notifyDataSetChanged();
+	}
+
 }

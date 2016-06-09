@@ -11,8 +11,8 @@ class Loadable {
 	String channelId = "";
 	String thumbnailId = "";
 	Boolean empty = false;
-	boolean fetchingVideos = false;
-	int loaded = 0;
+	boolean downloading = false;
+	boolean canPlay = false;
 
 	public String getId() {
 		return id;
@@ -30,39 +30,32 @@ class Loadable {
 		return thumbnailId;
 	}
 
-	public int getRemaining() {
-		int count = 0;
-		if (empty)
-			return -2;
-		if (videos.isEmpty())
-			return -1;
-		for (String id : videos) {
-			if (!new File(Video.loadedDir.getAbsolutePath()+"/"+id+".mp4").isFile()){
-				count++;
-			} else {
-				loaded++;
-			}
-		}
-		return count;
+	public void setPlayable() {
+		canPlay = true;
 	}
 
-	public boolean canPlay() {
-		if (loaded > 0) {
-			return true;
-		}
-		return false;
+	public boolean isPlayable() {
+		return canPlay;
 	}
 
 	public void setEmpty (boolean empty) {
 		this.empty = empty;
 	}
 
-	public void setFetchingVideos (boolean fetching) {
-		fetchingVideos = fetching;
+	public boolean isEmpty () {
+		return empty;
 	}
 
-	public boolean isFetchingVideos() {
-		return fetchingVideos;
+	public boolean isVideosEmpty () {
+		return videos.isEmpty();
+	}
+
+	public void setDownloading (boolean downloading) {
+		this.downloading = downloading;
+	}
+
+	public boolean isDownloading() {
+		return downloading;
 	}
 
 	public void setReload() {

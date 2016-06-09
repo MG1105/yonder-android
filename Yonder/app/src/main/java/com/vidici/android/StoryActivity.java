@@ -48,7 +48,6 @@ public class StoryActivity extends Activity {
     int percentageWatched;
     String gaCategory;
     ProgressBar spinner;
-    ImageView bufferingImage;
     Boolean buffering = false;
 
     @Override
@@ -58,13 +57,13 @@ public class StoryActivity extends Activity {
         Logger.log(Log.INFO, TAG, "Creating Activity");
         myContext = this;
         if (getIntent().getExtras().containsKey("channelId")) {
-            videoInfo = ChannelActivity.channelInfo.get(getIntent().getExtras().getString("channelId"));
+            videoInfo = ChannelFragment.channelInfo.get(getIntent().getExtras().getString("channelId"));
             gaCategory = "Channel Story";
         } else if (getIntent().getExtras().containsKey("notificationId")) {
             videoInfo = NotificationActivity.notificationInfo.get(getIntent().getExtras().getString("notificationId"));
             gaCategory = "Notification Story";
         } else if (getIntent().getExtras().containsKey("feedItemId")) {
-            videoInfo = ChannelActivity.feedInfo.get(getIntent().getExtras().getString("feedItemId"));
+            videoInfo = FeedFragment.feedInfo.get(getIntent().getExtras().getString("feedItemId"));
             gaCategory = "Feed Story";
         }
 
@@ -77,7 +76,6 @@ public class StoryActivity extends Activity {
         caption = (TextView) findViewById(R.id.textView_caption);
         channel = (TextView) findViewById(R.id.textView_channel);
         spinner = (ProgressBar)findViewById(R.id.progress_videoview);
-        bufferingImage = (ImageView) findViewById(R.id.imageview_buffering);
 
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
@@ -110,6 +108,11 @@ public class StoryActivity extends Activity {
 
         showCommentsTotal();
         showLikesTotal();
+
+        if (uris.size() > 1) {
+            DownloadVideos downloadVideos = new DownloadVideos();
+            downloadVideos.execute("http://storage.googleapis.com/yander/" + uris.get(1).getLastPathSegment());
+        }
     }
 
 	@Override
@@ -317,15 +320,20 @@ public class StoryActivity extends Activity {
             if (buffering) {
                 return;
             }
+
             if (!new File(uris.get(tap+1).getPath()).exists()) {
                 currentVideo.stopPlayback();
                 Logger.log(Log.INFO, TAG, "Buffering");
                 buffering = true;
                 spinner.setVisibility(View.VISIBLE);
-                bufferingImage.setVisibility(View.VISIBLE);
                 BufferingTask bufferingTask = new BufferingTask();
                 bufferingTask.execute();
                 return;
+            }
+
+            if (uris.size() > tap+2) {
+                DownloadVideos downloadVideos = new DownloadVideos();
+                downloadVideos.execute("http://storage.googleapis.com/yander/" + uris.get(tap+2).getLastPathSegment());
             }
 
             tap++;
@@ -424,7 +432,6 @@ public class StoryActivity extends Activity {
                     buffering = false;
                     playNextVideo();
                     spinner.setVisibility(View.GONE);
-                    bufferingImage.setVisibility(View.GONE);
                 } else {
                     finish();
                     Logger.log(new Exception("Failed to buffer video"));
@@ -433,6 +440,18 @@ public class StoryActivity extends Activity {
                 Logger.log(e);
                 finish();
             }
+        }
+    }
+
+    class DownloadVideos extends DownloadTask {
+        Loadable loadable;
+        DownloadVideos () {
+            super(myContext);
+        }
+
+        @Override
+        protected void onPostExecute(Integer error) {
+            super.onPostExecute(error);
         }
     }
 

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 
@@ -15,6 +14,7 @@ public class LoadBroadcastReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
+		String uri = "";
 		String action = intent.getAction();
 		if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
 			long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
@@ -25,9 +25,9 @@ public class LoadBroadcastReceiver extends BroadcastReceiver {
 			if (c.moveToFirst()) {
 				int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
 
-				String uri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_URI));
+				uri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_URI));
 				//check if this is your download uri
-				if (!uri.contains("yander"))
+				if (!uri.contains("yander") && !uri.contains("graph"))
 					return;
 
 //				String downloadedPackageUriString =
@@ -52,24 +52,30 @@ public class LoadBroadcastReceiver extends BroadcastReceiver {
 					Logger.log(e);
 				}
 			}
-			if (ChannelActivity.channelsActive) {
-				if (ChannelActivity.channelAdapter != null) {
-					ChannelActivity.channelAdapter.notifyDataSetChanged();
-					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "notified channel active and video received");
-				}
-			}
-			if (ChannelActivity.feedActive) {
-				if (ChannelActivity.feedAdapter != null) {
-					ChannelActivity.feedAdapter.notifyDataSetChanged();
-					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "notified feed active and video received");
-				}
-			}
 
-			if (NotificationActivity.active) {
-				if (NotificationActivity.adapter != null) {
-					NotificationActivity.adapter.notifyDataSetChanged();
-				}
-			}
+//			if (uri.contains("graph")) {
+//
+//				return;
+//			}
+//
+//			if (MainActivity.channelsActive) {
+//				if (ChannelFragment.channelAdapter != null) {
+//					ChannelFragment.channelAdapter.notifyDataSetChanged();
+//					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "notified channel active and video received");
+//				}
+//			}
+//			if (MainActivity.feedActive) {
+//				if (FeedFragment.feedAdapter != null) {
+//					FeedFragment.feedAdapter.notifyDataSetChanged();
+//					Logger.log(Log.INFO, "Log.LoadBroadcastReceiver", "notified feed active and video received");
+//				}
+//			}
+//
+//			if (NotificationActivity.active) {
+//				if (NotificationActivity.adapter != null) {
+//					NotificationActivity.adapter.notifyDataSetChanged();
+//				}
+//			}
 		}
 	}
 }

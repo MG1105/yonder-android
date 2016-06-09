@@ -1,112 +1,90 @@
-<android.support.v7.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/card_view"
-    android:layout_gravity="center"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="5dp"
-    card_view:cardCornerRadius="2dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:paddingTop="10dp"
+              android:paddingBottom="10dp"
+              android:orientation="horizontal">
 
-    <LinearLayout   android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="55dp"
+        android:layout_gravity="center">
 
-        <FrameLayout
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center">
+        <ImageView
+            android:id="@+id/imageView_feed_item"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"/>
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:scaleType="centerCrop"
-                android:id="@+id/imageView_feed_item"/>
+        <ProgressBar
+            android:id="@+id/progress_feed_thumbnail"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:scaleType="centerCrop"
-                android:background="#33FF5722"
-                android:id="@+id/imageView_feed_item_overlay"/>
+        <ProgressBar
+            android:id="@+id/progress_feed_loading"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
 
-            <ProgressBar
-                android:id="@+id/progress_feed_thumbnail"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"/>
+    </FrameLayout>
 
-            <ProgressBar
-                android:id="@+id/progress_feed_loading"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="10dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14dp"
-                android:text="#test"
-                android:textColor="@color/white"
-                android:id="@+id/textView_feed_item_username" />
+        <TextView
+            android:id="@+id/textView_feed_item_channel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="channel"
+            android:textSize="12dp"
+            android:textColor="@color/secondary_text"
+            android:textStyle="bold"/>
 
+        <TextView
+            android:id="@+id/textView_feed_item_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView_feed_item_channel"
+            android:text="caption"
+            android:textColor="@color/primary_text"
+            android:textSize="14dp"/>
 
-        </FrameLayout>
+        <TextView
+            android:id="@+id/textView_feed_item_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="20dp"
+            android:layout_below="@+id/textView_feed_item_caption"
+            android:textColor="@color/secondary_text"
+            android:text="user"
+            android:textSize="12dp"/>
 
-        <LinearLayout   android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:paddingLeft="15dp"
-                        android:orientation="vertical">
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_toLeftOf="@+id/textView_feed_item_time"
+            android:id="@+id/item_feed_image_time"
+            android:background="@drawable/ic_time"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18dp"
-                android:textColor="@color/black"
-                android:text="100"
-                android:id="@+id/textView_feed_item_caption" />
+        <TextView
+            android:id="@+id/textView_feed_item_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:paddingLeft="3dp"
+            android:text="4h"
+            android:textColor="@color/divider_color"
+            android:textSize="12dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14dp"
-                android:text="100"
-                android:id="@+id/textView_feed_item_channel" />
+    </RelativeLayout>
 
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14dp"
-                android:text="100"
-                android:id="@+id/textView_feed_item_comments" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14dp"
-                android:text="load"
-                android:visibility="gone"
-                android:id="@+id/textView_feed_item_load" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14dp"
-                android:text="100"
-                android:id="@+id/textView_feed_item_rating" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="bottom"
-                android:background="@drawable/ic_heart"/>
-
-        </LinearLayout>
-
-        </LinearLayout>
-
-    </android.support.v7.widget.CardView>
+</LinearLayout>

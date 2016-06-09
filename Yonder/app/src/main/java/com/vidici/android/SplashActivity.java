@@ -8,10 +8,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,7 +49,7 @@ public class SplashActivity extends Activity {
 						Intent intent = new Intent(SplashActivity.this,NotificationActivity.class);
 						TaskStackBuilder.create(mActivity).addNextIntentWithParentStack(intent).startActivities();
 					} else {
-						Intent intent = new Intent(SplashActivity.this,ChannelActivity.class);
+						Intent intent = new Intent(SplashActivity.this,MainActivity.class);
 						startActivity(intent);
 					}
 				}
@@ -79,6 +76,7 @@ public class SplashActivity extends Activity {
 				String userId = User.getId(mActivity);
 				Logger.log(Log.INFO, TAG, "Verifying user id " + userId);
 				JSONObject response = gae.verifyUser(userId);
+
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
 						JSONObject userObject = response.getJSONObject("user");

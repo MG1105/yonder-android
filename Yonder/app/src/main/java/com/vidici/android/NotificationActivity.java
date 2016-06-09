@@ -32,7 +32,6 @@ public class NotificationActivity extends AppCompatActivity {
     Activity mActivity;
     String userId;
     String gaCategory;
-    static boolean active = false;
 
     static HashMap<String, LinkedHashMap<String, JSONObject>> notificationInfo = new HashMap<>();
 
@@ -53,7 +52,6 @@ public class NotificationActivity extends AppCompatActivity {
         super.onResume();
         Logger.log(Log.INFO, TAG, "Resuming Activity");
         Logger.fbActivate(this, true);
-        active = true;
     }
 
     @Override
@@ -67,7 +65,6 @@ public class NotificationActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Logger.log(Log.INFO, TAG, "Stopping Activity");
-        active = false;
     }
 
 
@@ -153,21 +150,15 @@ public class NotificationActivity extends AppCompatActivity {
                 load.setVisibility(View.VISIBLE);
             }
 
-            if (notification.getRemaining() == 0 || notification.canPlay()) {
+            if (notification.isPlayable()) {
                 load.setText("play");
                 load.setEnabled(true);
-            } else if (notification.getRemaining() > 0) {
-                load.setText("loading... " + notification.getRemaining());
+            } else if (notification.isDownloading()) {
                 load.setEnabled(false);
-            } else if (notification.getRemaining() == -1) {
-                if (notification.isFetchingVideos()) {
-                    load.setText("loading...");
-                    load.setEnabled(false);
-                } else {
-                    load.setText("load");
-                    load.setEnabled(true);
-                }
-            } else if (notification.getRemaining() == -2) {
+            } else if (notification.isVideosEmpty()) {
+                load.setText("load");
+                load.setEnabled(true);
+            } else if (notification.isEmpty()) {
                 load.setText("no reactions yet");
                 load.setEnabled(true);
             }
@@ -175,11 +166,10 @@ public class NotificationActivity extends AppCompatActivity {
             load.setOnClickListener(new View.OnClickListener() {
                 Notification myNotification = notification;
                 TextView myLoad = load;
-                int remaining = myNotification.getRemaining();
 
                 @Override
                 public void onClick(View v) {
-                    if (remaining == 0 || notification.canPlay()) {
+                    if (notification.isPlayable() && !GetVideosTask.loading) {
                         Intent intentFeedStart = new Intent(mActivity, StoryActivity.class);
                         intentFeedStart.putExtra("notificationId", myNotification.getId());
                         Logger.log(Log.INFO, TAG, notificationInfo.toString());
@@ -188,13 +178,14 @@ public class NotificationActivity extends AppCompatActivity {
                         myNotification.setReload();
                         adapter.notifyDataSetChanged();
                         myLoad.setText("load");
-                    } else {
+                    } else if (!GetVideosTask.loading) {
+                        GetVideosTask.loading = true;
                         myLoad.setEnabled(false);
-                        myNotification.setFetchingVideos(true);
+                        myNotification.setDownloading(true);
                         gaCategory = "Notification";
                         Logger.trackEvent(mActivity, gaCategory, "Load Request");
                         myLoad.setText("loading...");
-                        GetVideosTask getFeed = new GetVideosTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, myLoad, "notification");
+                        GetVideosTask getFeed = new GetVideosTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, "notification");
                         getFeed.execute();
                     }
 

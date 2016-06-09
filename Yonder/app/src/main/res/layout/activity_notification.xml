@@ -19,7 +19,7 @@
         android:textStyle="bold"
         android:textSize="20dp"
         android:paddingTop="10dp"
-        android:textColor="@color/grey_dark"
+        android:textColor="@color/secondary_text"
         android:id="@+id/textView_no_notifications"
         android:layout_below="@+id/image_no_notifications"
         android:layout_centerHorizontal="true"
