@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 
 import com.crashlytics.android.Crashlytics;
+import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -14,6 +15,7 @@ import io.fabric.sdk.android.Fabric;
 public class Logger {
 
 	public static void init (Context myContext) {
+		FacebookSdk.sdkInitialize(myContext);
 		if (User.admin) {
 			return;
 		}

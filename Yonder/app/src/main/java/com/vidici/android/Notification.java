@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 public class Notification extends  Loadable{
 	private String content;
+	private int notificationId;
+	boolean loadable = true;
 
 
 	// Constructor to convert JSON object into a Java class instance
@@ -17,10 +19,23 @@ public class Notification extends  Loadable{
 			this.content = object.getString("content");
 			this.videoId = object.getString("video_id");
 			this.channelId = object.getString("channel_id");
+			this.notificationId = object.getInt("notification_id");
 			this.id = Long.toString((int)(Math.random() * 1000000 + 1));
+			if (this.channelId.equals("") && this.videoId.equals("")) {
+				loadable = false;
+			}
+			this.thumbnailId = object.getString("thumbnail_id");
 		} catch (JSONException e) {
 			Logger.log(e);
 		}
+	}
+
+	public boolean isLoadable() {
+		return loadable;
+	}
+
+	public int getNotificationId() {
+		return notificationId;
 	}
 
 	public String getContent() {

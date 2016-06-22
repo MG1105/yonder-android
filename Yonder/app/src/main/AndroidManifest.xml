@@ -100,13 +100,6 @@
             android:windowSoftInputMode="adjustNothing">
         </activity>
         <activity
-            android:name="com.vidici.android.LoadFeedActivity"
-            android:configChanges="orientation"
-            android:theme="@style/AppTheme"
-            android:label="@string/title_activity_load_feed"
-            android:screenOrientation="portrait" >
-        </activity>
-        <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
             android:theme="@style/AppTheme"
@@ -129,6 +122,18 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             android:label="@string/title_activity_comment">
         </activity>
+        <activity
+            android:name="com.vidici.android.ProfileActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
+        </activity>
+        <activity android:name="com.facebook.FacebookActivity"
+                  android:configChanges=
+                      "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:label="@string/app_name" />
 
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
         <meta-data

@@ -48,7 +48,7 @@
         android:layout_gravity="bottom"
         android:clickable="true"
         android:src="@drawable/ic_plus"
-        app:backgroundTint="@color/accent_color"
+        app:backgroundTint="@color/primary_color"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         />

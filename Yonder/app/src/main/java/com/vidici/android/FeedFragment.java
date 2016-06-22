@@ -4,10 +4,15 @@ import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,12 +40,14 @@ public class FeedFragment extends Fragment {
 	static HashMap<String, LinkedHashMap<String, JSONObject>> feedInfo = new HashMap<>();
 	View view;
 	private ProgressBar progressBar;
+	Resources resources;
 
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		view = inflater.inflate(R.layout.fragment_feed, container, false);
 		mActivity = getActivity();
+		resources = getResources();
 
 		return view;
 	}
@@ -143,13 +150,17 @@ public class FeedFragment extends Fragment {
 			channel = (TextView) convertView.findViewById(R.id.textView_feed_item_channel);
 			username = (TextView) convertView.findViewById(R.id.textView_feed_item_username);
 
-			File thumbnailFile = new File(Video.loadedDir.getPath()+"/"+item.getThumbnailId()+".jpg");
+			String path = Video.loadedDir.getAbsolutePath(); // NPE
+			File thumbnailFile = new File(path+"/"+item.getThumbnailId()+".jpg");
 			if (thumbnailFile.exists()) {
+				Bitmap src = BitmapFactory.decodeFile(thumbnailFile.getPath());
+				RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(resources, src);
+				dr.setCircular(true);
+				thumbnail.setImageDrawable(dr);
 				progressThumbnail.setVisibility(View.INVISIBLE);
-				thumbnail.setImageURI(Uri.fromFile(thumbnailFile));
-			} else {
+			} else if (!item.downloadFailed) {
 				progressThumbnail.setVisibility(View.VISIBLE);
-				DownloadThumbnail downloadTask = new DownloadThumbnail();
+				DownloadThumbnail downloadTask = new DownloadThumbnail(item, progressThumbnail);
 				downloadTask.execute("http://storage.googleapis.com/yander/" + item.getThumbnailId() + ".jpg");
 			}
 
@@ -199,13 +210,21 @@ public class FeedFragment extends Fragment {
 	}
 
 	class DownloadThumbnail extends DownloadTask {
-		DownloadThumbnail () {
+		FeedItem item;
+		ProgressBar progressThumbnail;
+		DownloadThumbnail (FeedItem item, ProgressBar progressThumbnail) {
 			super(mActivity);
+			this.item = item;
+			this.progressThumbnail = progressThumbnail;
 		}
 
 		@Override
 		protected void onPostExecute(Integer error) {
 			super.onPostExecute(error);
+			if (error > 0) {
+				item.setDownloadFailed();
+				progressThumbnail.setVisibility(View.INVISIBLE);
+			}
 			feedAdapter.notifyDataSetChanged();
 		}
 	}

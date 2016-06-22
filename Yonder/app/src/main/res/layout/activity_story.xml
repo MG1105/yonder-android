@@ -9,20 +9,34 @@
 		android:id="@+id/currentVideo"
         android:layout_centerInParent="true"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent" />
+		android:layout_height="fill_parent"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20dp"
-        android:text="bold"
+        android:textSize="16dp"
+        android:text="#channel"
         android:paddingLeft="5dp"
         android:paddingTop="5dp"
+        android:textStyle="bold"
         android:textColor="@color/white"
-        android:gravity="center_horizontal"
         android:id="@+id/textView_channel"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16dp"
+        android:text="\@medi"
+        android:textStyle="bold"
+        android:paddingLeft="5dp"
+        android:textColor="@color/white"
+        android:gravity="center_horizontal"
+        android:id="@+id/textview_story_username"
+        android:layout_alignParentLeft="true"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/textView_channel"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,33 +47,8 @@
         android:gravity="center_horizontal"
         android:id="@+id/textView_caption"
         android:layout_centerHorizontal="true"
+        android:textStyle="bold"
         android:layout_centerInParent="true"/>
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:scaleType="fitXY"
-        android:background="@drawable/ic_up_white"
-        android:id="@+id/like_button"
-        android:layout_above="@+id/space_like_dislike"
-        android:layout_alignParentLeft="true"/>
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:scaleType="fitXY"
-        android:background="@drawable/ic_down_white"
-        android:id="@+id/dislike_button"
-        android:layout_above="@+id/space_like_dislike"
-        android:layout_alignParentRight="true"/>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/space_like_dislike"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -67,6 +56,7 @@
         android:text="0 Comments"
         android:textSize="20dp"
         android:paddingLeft="5dp"
+        android:textStyle="bold"
         android:textColor="@color/white"
         android:background="@android:color/transparent"
         android:id="@+id/comment_button"
@@ -74,17 +64,45 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"/>
 
-    <Button
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:textSize="20dp"
-        android:paddingRight="5dp"
-        android:textColor="@color/white"
-        android:text="0 Likes"
-        android:id="@+id/rating"
+        android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"/>
+        android:gravity="center"
+        android:paddingRight="5dp"
+        android:orientation="vertical">
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitXY"
+            android:background="@drawable/ic_up_white"
+            android:id="@+id/like_button"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textSize="20dp"
+            android:textColor="@color/primary_color"
+            android:textStyle="bold"
+            android:text="0"
+            android:id="@+id/rating"/>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitXY"
+            android:background="@drawable/ic_down_white"
+            android:id="@+id/dislike_button"/>
+
+    </LinearLayout>
+
+
 
     <ProgressBar
         android:id="@+id/progress_videoview"
@@ -93,5 +111,44 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         android:layout_centerInParent="true"/>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
+        android:id="@+id/frame_story_gold"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:id="@+id/imageView_story_gold_background"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:background="@drawable/oval_white"/>
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/imageview_gold"
+            android:layout_gravity="center"
+            android:background="@drawable/ic_black_award"/>
+
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textColor="@color/white"
+        android:layout_below="@+id/frame_story_gold"
+        android:textStyle="bold"
+        android:layout_alignParentRight="true"
+        android:paddingRight="10dp"
+        android:id="@+id/textview_story_gold"
+        android:text="x 0"/>
+
+
 
 </RelativeLayout>

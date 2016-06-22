@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toLeftOf="@+id/item_channel_vote_layout"
-        android:layout_toRightOf="@+id/item_channel_thumbnail"
+        android:layout_toRightOf="@+id/frame_ranking"
         android:paddingLeft="10dp"
         android:gravity="center">
 
@@ -20,49 +20,72 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="#dormlife"
-            android:paddingBottom="10dp"
             android:textStyle="bold"
             android:textColor="@color/primary_text"
             android:textSize="14dp"/>
 
         <TextView
-            android:id="@+id/textView_channel_time"
-            android:layout_width="wrap_content"
+            android:id="@+id/textView_channel_username"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="\@medigouta"
+            android:textColor="@color/secondary_text"
+            android:paddingBottom="3dp"
             android:layout_below="@+id/textView_channel_name"
-            android:layout_toRightOf="@+id/item_channel_image_time"
-            android:paddingLeft="3dp"
-            android:paddingRight="15dp"
-            android:textColor="@color/divider_color"
-            android:text="4h"
             android:textSize="12dp"/>
 
-        <ImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:id="@+id/item_channel_image_time"
-            android:layout_below="@+id/textView_channel_name"
-            android:background="@drawable/ic_time"/>
+        <!--<TextView-->
+            <!--android:id="@+id/textView_channel_time"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/textView_channel_username"-->
+            <!--android:layout_toRightOf="@+id/item_channel_image_time"-->
+            <!--android:paddingLeft="3dp"-->
+            <!--android:paddingRight="10dp"-->
+            <!--android:textColor="@color/divider_color"-->
+            <!--android:text="4h"-->
+            <!--android:textSize="12dp"/>-->
+
+        <!--<ImageView-->
+            <!--android:layout_width="13dp"-->
+            <!--android:layout_height="13dp"-->
+            <!--android:id="@+id/item_channel_image_time"-->
+            <!--android:layout_below="@+id/textView_channel_username"-->
+            <!--android:background="@drawable/ic_time"/>-->
 
 
         <TextView
             android:id="@+id/textView_channel_new"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView_channel_name"
+            android:layout_below="@+id/textView_channel_username"
             android:layout_toRightOf="@+id/item_channel_image_new"
             android:textColor="@color/divider_color"
             android:paddingLeft="3dp"
             android:text="2"
             android:textSize="12dp"/>
 
-        <ImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_toRightOf="@+id/textView_channel_time"
-            android:layout_below="@+id/textView_channel_name"
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/textView_channel_new"
             android:id="@+id/item_channel_image_new"
-            android:background="@drawable/ic_play_grey"/>
+            android:layout_below="@+id/textView_channel_username">
+            <ImageView
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_play_grey"/>
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:background="@drawable/stroke"
+                android:layout_gravity="center"
+                />
+
+        </FrameLayout>
 
     </RelativeLayout>
 
@@ -98,44 +121,34 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView_channel_item_ranking"
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:text="100"
-        android:paddingRight="10dp"
-        android:textSize="14dp"
-        android:textColor="@color/secondary_text"
-        android:textStyle="bold"/>
-
-    <FrameLayout
-        android:id="@+id/item_channel_thumbnail"
-        android:layout_width="40dp"
-        android:layout_height="55dp"
-        android:layout_toRightOf="@+id/textView_channel_item_ranking"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center">
+        android:id="@+id/frame_ranking"
+        android:paddingRight="5dp"
+        android:layout_centerVertical="true">
 
         <ImageView
-            android:id="@+id/imageView_channel_item"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
+            android:id="@+id/imageView_item_channel_thumbnail_background"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/oval"/>
 
-        <ProgressBar
-            android:id="@+id/progress_channel_thumbnail"
-            style="?android:attr/progressBarStyleLarge"
+        <TextView
+            android:id="@+id/textView_channel_item_ranking"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
+            android:text="10"
+            android:textSize="14dp"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:textStyle="bold"/>
 
         <ProgressBar
             android:id="@+id/progress_channel_loading"
             style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="center"/>
 
     </FrameLayout>

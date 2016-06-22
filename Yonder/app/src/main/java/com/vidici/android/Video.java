@@ -125,7 +125,7 @@ public class Video {
 				}
 				long last = file.lastModified();
 				long now = System.currentTimeMillis();
-				if ((now - last)/3600000 > 24){
+				if ((now - last)/3600000 > 0.25){
 					Logger.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
 					file.delete();
 				}

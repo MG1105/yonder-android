@@ -12,6 +12,7 @@ class Loadable {
 	String thumbnailId = "";
 	Boolean empty = false;
 	boolean downloading = false;
+	boolean downloadFailed = false;
 	boolean canPlay = false;
 
 	public String getId() {
@@ -56,6 +57,14 @@ class Loadable {
 
 	public boolean isDownloading() {
 		return downloading;
+	}
+
+	public void setDownloadFailed () {
+		this.downloadFailed = true;
+	}
+
+	public boolean downloadFailed() {
+		return downloadFailed;
 	}
 
 	public void setReload() {

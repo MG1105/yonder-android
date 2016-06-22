@@ -1,13 +1,16 @@
 package com.vidici.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -33,22 +36,24 @@ public class StoryActivity extends Activity {
 	private int tap = 0;
 	private GestureDetectorCompat mDetector;
     VideoView currentVideo;
-    String currentVideoId;
+    String currentVideoId, profileId;
     ArrayList<Uri> uris;
     Button likeButton;
     Button dislikeButton;
     Button commentButton;
-    Button ratingButton;
-    TextView caption, channel;
+    TextView ratingText;
+    TextView caption, channel, username;
     int myRating = 0;
     int rating;
-    int rated;
+    int rated, gold;
     private Activity myContext;
     LinkedHashMap<String, JSONObject> videoInfo;
     int percentageWatched;
     String gaCategory;
     ProgressBar spinner;
     Boolean buffering = false;
+    TextView textGold;
+    ImageView backgroundGold;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,14 +77,30 @@ public class StoryActivity extends Activity {
         likeButton = (Button) findViewById(R.id.like_button);
         dislikeButton = (Button) findViewById(R.id.dislike_button);
         commentButton = (Button) findViewById(R.id.comment_button);
-        ratingButton = (Button) findViewById(R.id.rating);
+        ratingText = (TextView) findViewById(R.id.rating);
         caption = (TextView) findViewById(R.id.textView_caption);
+        username = (TextView) findViewById(R.id.textview_story_username);
         channel = (TextView) findViewById(R.id.textView_channel);
         spinner = (ProgressBar)findViewById(R.id.progress_videoview);
+        textGold = (TextView) myContext.findViewById(R.id.textview_story_gold);
+        backgroundGold = (ImageView) myContext.findViewById(R.id.imageView_story_gold_background);
 
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
 	    commentButton.setOnClickListener(commentListener);
+	    username.setOnClickListener(profileListener);
+
+        backgroundGold.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (!User.loggedIn(myContext)) {
+                    return;
+                }
+                GiveGoldTask giveGoldTask = new GiveGoldTask();
+                giveGoldTask.execute(User.getId(myContext), profileId, currentVideoId);
+            }
+        });
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
         currentVideo = (VideoView) findViewById(R.id.currentVideo);
@@ -170,6 +191,8 @@ public class StoryActivity extends Activity {
             myRating = 0;
             rated = videoInfo.get(currentVideoId).getInt("rated");
             rating = Integer.valueOf(videoInfo.get(currentVideoId).getString("rating"));
+            gold = videoInfo.get(currentVideoId).getInt("gold");
+
             if (rated == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
@@ -187,7 +210,7 @@ public class StoryActivity extends Activity {
                 dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             }
 
-            if (User.admin) {
+            if (!User.admin) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(true);
             }
@@ -198,7 +221,16 @@ public class StoryActivity extends Activity {
             } else {
                 unit = "Likes";
             }
-            ratingButton.setText(rating + " " + unit);
+            ratingText.setText(""+rating);
+
+            if (gold > 0) {
+                backgroundGold.setBackgroundResource(R.drawable.oval);
+                textGold.setText("x " + gold);
+            } else {
+                backgroundGold.setBackgroundResource(R.drawable.oval_white);
+                textGold.setText("");
+            }
+
         } catch (Exception e) {
             Logger.log(e);
         }
@@ -237,7 +269,7 @@ public class StoryActivity extends Activity {
             } else {
                 unit = "Likes";
             }
-            ratingButton.setText(rating + " " + unit);
+            ratingText.setText("" + rating);
 
             videoInfo.get(currentVideoId).put("rated", myRating);
             videoInfo.get(currentVideoId).put("rating", Integer.toString(rating));
@@ -250,6 +282,9 @@ public class StoryActivity extends Activity {
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!User.loggedIn(myContext)) {
+                return;
+            }
             likeButton.setEnabled(false);
             dislikeButton.setEnabled(false);
             RateTask rate = new RateTask(1); // spinner and disappear buttons
@@ -262,6 +297,9 @@ public class StoryActivity extends Activity {
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!User.loggedIn(myContext)) {
+                return;
+            }
             likeButton.setEnabled(false);
             dislikeButton.setEnabled(false);
             RateTask rate = new RateTask(-1);
@@ -271,15 +309,25 @@ public class StoryActivity extends Activity {
         }
     };
 
-	View.OnClickListener commentListener = new View.OnClickListener() {
+	View.OnClickListener profileListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			Intent intent = new Intent(myContext, CommentActivity.class);
-			intent.putExtra("videoId", currentVideoId);
-			startActivity(intent);
-            Logger.trackEvent(myContext, gaCategory, "Open Comments");
+            Intent intent = new Intent(myContext, ProfileActivity.class);
+            intent.putExtra("profileId", profileId);
+            startActivity(intent);
+            Logger.trackEvent(myContext, gaCategory, "Open Profile");
 		}
 	};
+
+    View.OnClickListener commentListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(myContext, CommentActivity.class);
+            intent.putExtra("videoId", currentVideoId);
+            startActivity(intent);
+            Logger.trackEvent(myContext, gaCategory, "Open Comments");
+        }
+    };
 
 
 	class RateTask extends AsyncTask<String, Void, JSONObject> {
@@ -386,14 +434,17 @@ public class StoryActivity extends Activity {
     }
 
 
-    public void showCaption () {
+    public void showCaption() {
         try {
             String captionContent = videoInfo.get(currentVideoId).getString("caption");
             caption.setText(captionContent);
             String channelName = videoInfo.get(currentVideoId).getString("channel_name");
             channel.setText("#"+channelName);
+            username.setText("@"+videoInfo.get(currentVideoId).getString("username"));
+            username.setText("@princess94");
+            profileId = videoInfo.get(currentVideoId).getString("user_id");
         } catch (JSONException e) {
-            Logger.log(e);;
+            Logger.log(e);
         }
     }
 
@@ -444,7 +495,6 @@ public class StoryActivity extends Activity {
     }
 
     class DownloadVideos extends DownloadTask {
-        Loadable loadable;
         DownloadVideos () {
             super(myContext);
         }
@@ -452,6 +502,42 @@ public class StoryActivity extends Activity {
         @Override
         protected void onPostExecute(Integer error) {
             super.onPostExecute(error);
+        }
+    }
+
+    class GiveGoldTask extends AsyncTask<String, Void, JSONObject> {
+
+        protected JSONObject doInBackground(String... params) {
+            AppEngine gae = new AppEngine();
+            Logger.log(Log.INFO, TAG, "Giving gold to " + params[1]);
+            JSONObject response = gae.giveGold(params[0], params[1], params[2]);
+            return response;
+        }
+
+        protected void onPostExecute(JSONObject response) {
+            try {
+                if (response != null) {
+                    if (response.getString("success").equals("1")) {
+                        if (response.getString("gold").equals("1")) {
+                            backgroundGold.setBackgroundResource(R.drawable.oval);
+                            gold++;
+                            videoInfo.get(currentVideoId).put("gold", gold);
+                            textGold.setText("x " + gold);
+                            Toast.makeText(myContext, "@"+videoInfo.get(currentVideoId).getString("username") + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(myContext, "You ran out of tokens", Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        Logger.log(new Exception("Server Side Failure"));
+                        Toast.makeText(myContext, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(myContext, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e) {
+                Logger.log(e);
+                Toast.makeText(myContext, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
+            }
         }
     }
 

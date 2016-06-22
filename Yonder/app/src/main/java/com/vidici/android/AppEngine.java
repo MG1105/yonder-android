@@ -145,6 +145,21 @@ public class AppEngine {
         return get(urlString);
     }
 
+    protected JSONObject getProfile(String profileId , String userId) {
+        String query = "";
+        query = "?user_id=" + userId + "&profile_id=" + profileId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/profile" + query;
+        return get(urlString);
+    }
+
+    protected JSONObject addProfile(String androidId, String accountId, String firstName, String lastName, String email, String username) {
+        String query = "";
+        query = "android_id=" + androidId + "&account_id=" + accountId + "&first_name=" + firstName + "&last_name=" + lastName + "&email=" + email
+                + "&username=" + username;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/profile";
+        return post(urlString, query);
+    }
+
     protected JSONObject getNotifications(String user, String seen) {
         String query = "";
         query = "?user=" + user + "&seen=" + seen;
@@ -214,6 +229,20 @@ public class AppEngine {
         String query = "";
         query = "rating=" + rating + "&user=" + userId;
         String urlString = "https://subtle-analyzer-90706.appspot.com/channels/" + channelId + "/rating";
+        return post(urlString, query);
+    }
+
+    protected JSONObject setFollow(String userId, String following, int follow) {
+        String query = "";
+        query = "following=" + following + "&follow=" + follow + "&user=" + userId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/follow";
+        return post(urlString, query);
+    }
+
+    protected JSONObject giveGold(String userId, String to, String videoId) {
+        String query = "";
+        query = "to=" + to + "&user=" + userId + "&video_id=" + videoId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/gold";
         return post(urlString, query);
     }
 

@@ -7,6 +7,7 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -77,6 +78,9 @@ public class ChannelFragment extends Fragment {
 						button.setOnClickListener(new View.OnClickListener() {
 							@Override
 							public void onClick(View view) {
+								if (!User.loggedIn(mActivity)) {
+									return;
+								}
 								String name = input.getText().toString().trim();
 								if (isValidChannelName(name)) {
 									alertDialog.dismiss();
@@ -159,8 +163,7 @@ public class ChannelFragment extends Fragment {
 		TextView name;
 		Button likeButton;
 		Button dislikeButton;
-		ProgressBar progressThumbnail, progressLoading;
-		ImageView thumbnail, unseenImage;
+		ProgressBar progressLoading;
 
 		public ChannelAdapter(Context context) {
 			super(context, android.R.layout.simple_list_item_1, channels);
@@ -181,33 +184,16 @@ public class ChannelFragment extends Fragment {
 			unseen = (TextView) convertView.findViewById(R.id.textView_channel_new);
 			name = (TextView) convertView.findViewById(R.id.textView_channel_name);
 			ranking = (TextView) convertView.findViewById(R.id.textView_channel_item_ranking);
-			thumbnail = (ImageView) convertView.findViewById(R.id.imageView_channel_item);
-			progressThumbnail = (ProgressBar) convertView.findViewById(R.id.progress_channel_thumbnail);
 			progressLoading = (ProgressBar) convertView.findViewById(R.id.progress_channel_loading);
 
-
-			File thumbnailFile = new File(Video.loadedDir.getPath()+"/"+channel.getThumbnailId()+".jpg");
-			if (thumbnailFile.exists()) {
-				progressThumbnail.setVisibility(View.INVISIBLE);
-				thumbnail.setImageURI(Uri.fromFile(thumbnailFile));
-			} else {
-				progressThumbnail.setVisibility(View.VISIBLE);
-				DownloadThumbnail downloadTask = new DownloadThumbnail();
-				downloadTask.execute("http://storage.googleapis.com/yander/" + channel.getThumbnailId() + ".jpg");
-			}
-
 			if (channel.isPlayable()) {
-				Logger.log(Log.INFO, TAG, channel.getName() + " is playable");
 				unseen.setText("");
 				progressLoading.setVisibility(View.INVISIBLE);
 			} else if (channel.isDownloading()) {
-				Logger.log(Log.INFO, TAG, channel.getName() + " is downloading");
 				progressLoading.setVisibility(View.VISIBLE);
 			} else if (channel.isVideosEmpty()) {
-				Logger.log(Log.INFO, TAG, channel.getName() + " not clicked");
 				progressLoading.setVisibility(View.INVISIBLE);
 			} else if (channel.isEmpty()) {
-				Logger.log(Log.INFO, TAG, channel.getName() + " is empty");
 				progressLoading.setVisibility(View.INVISIBLE);
 			}
 
@@ -284,6 +270,9 @@ public class ChannelFragment extends Fragment {
 				Button myDislike = dislikeButton;
 				@Override
 				public void onClick(View v) {
+					if (!User.loggedIn(mActivity)) {
+						return;
+					}
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
 					RateChannelTask rateChannelTask = new RateChannelTask(myChannel, myLike, myDislike);
@@ -300,6 +289,9 @@ public class ChannelFragment extends Fragment {
 				Button myDislike = dislikeButton;
 				@Override
 				public void onClick(View v) {
+					if (!User.loggedIn(mActivity)) {
+						return;
+					}
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
 					RateChannelTask rateChannelTask = new RateChannelTask(myChannel, myLike, myDislike);
@@ -359,18 +351,6 @@ public class ChannelFragment extends Fragment {
 				myDislike.setEnabled(true);
 				myLike.setEnabled(true);
 			}
-		}
-	}
-
-	class DownloadThumbnail extends DownloadTask {
-		DownloadThumbnail () {
-			super(mActivity);
-		}
-
-		@Override
-		protected void onPostExecute(Integer error) {
-			super.onPostExecute(error);
-			channelAdapter.notifyDataSetChanged();
 		}
 	}
 

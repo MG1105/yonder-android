@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -82,6 +83,9 @@ public class CommentActivity extends Activity {
 	View.OnClickListener sendListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
+			if (!User.loggedIn(myActivity)) {
+				return;
+			}
 			sendButton.setEnabled(false);
 			commentText = (EditText) findViewById(R.id.add_comment_text);
 			comment = commentText.getText().toString().replace("\n", " ").trim();
@@ -90,49 +94,7 @@ public class CommentActivity extends Activity {
 				sendButton.setEnabled(true);
 				return;
 			}
-			SharedPreferences sharedPreferences = myActivity.getSharedPreferences(
-					"com.vidici.android", Context.MODE_PRIVATE);
-			nickname = sharedPreferences.getString("nickname", null);
-			if (nickname == null || User.admin) {
-				final AlertDialog alertDialog = new AlertDialog.Builder(myActivity)
-						.setPositiveButton(android.R.string.ok, null)
-						.create();
-				alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-				alertDialog.setMessage("Choose your nickname");
-				Logger.trackEvent(myActivity, "Settings", "Choose Nickname");
-				Logger.log(Log.INFO, TAG, "Choosing nickname");
-
-				final EditText input = new EditText(myActivity);
-				input.setHint("nickname");
-				alertDialog.setView(input);
-
-				alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-					@Override
-					public void onShow(DialogInterface dialog) {
-						Button button = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-						button.setOnClickListener(new View.OnClickListener() {
-							@Override
-							public void onClick(View view) {
-								String name = input.getText().toString().trim();
-								if (isValidNickname(name)) {
-									alertDialog.dismiss();
-									SharedPreferences sharedPreferences = myActivity.getSharedPreferences(
-											"com.vidici.android", Context.MODE_PRIVATE);
-									name = name.toLowerCase();
-									sharedPreferences.edit().putString("nickname", name).apply();
-									Logger.trackEvent(myActivity, "Settings", "Add Nickname");
-									nickname = name;
-									sendComment();
-								}
-							}
-						});
-					}
-				});
-				alertDialog.show();
-				sendButton.setEnabled(true);
-			}	else {
-				sendComment();
-			}
+			sendComment();
 		}
 
 		void sendComment() {
@@ -211,6 +173,9 @@ public class CommentActivity extends Activity {
 				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
+					if (!User.loggedIn(myActivity)) {
+						return;
+					}
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
 					RateTask rateComment = new RateTask(myComment, myLike, myDislike);
@@ -226,6 +191,9 @@ public class CommentActivity extends Activity {
 				Comment myComment = comment;
 				@Override
 				public void onClick(View v) {
+					if (!User.loggedIn(myActivity)) {
+						return;
+					}
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
 					RateTask rateComment = new RateTask(myComment, myLike, myDislike);
@@ -383,24 +351,5 @@ public class CommentActivity extends Activity {
 			}
 		}
 	}
-
-
-	protected Boolean isValidNickname(String name) {
-		String pattern= "^[a-zA-Z0-9_]*$";
-		if (name.contains(" ")) {
-			Toast.makeText(myActivity, "Cannot contain spaces", Toast.LENGTH_LONG).show();
-			return false;
-		} else if (!name.matches(pattern)) {
-			Toast.makeText(myActivity, "Cannot contain special characters", Toast.LENGTH_LONG).show();
-			return false;
-		} else if (name.length() > 16) {
-			Toast.makeText(myActivity, "Cannot be longer than 16 characters", Toast.LENGTH_LONG).show();
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-
 
 }

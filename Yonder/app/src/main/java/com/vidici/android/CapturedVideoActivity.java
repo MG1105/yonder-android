@@ -2,6 +2,8 @@ package com.vidici.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -107,6 +109,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     View.OnClickListener uploadListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!User.loggedIn(myContext)) {
+                return;
+            }
             uploadButton.setEnabled(false);
             EditText captionText = (EditText) findViewById(R.id.editText_caption);
             caption = captionText.getText().toString().trim();
@@ -192,11 +197,18 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             vk.run(complexCommand, uploadPath, getApplicationContext());
             Logger.log(Log.INFO, TAG, "Post compression size " + new File(uploadPath + "/" + videoId).length());
 
-            String thumbnailCommand = "ffmpeg -y -i " + uploadPath + "/"+ videoId + " -strict experimental -an -ss 00:00:00.000 -t 00:00:03 "
+            String thumbnailCommand = "ffmpeg -y -i " + uploadPath + "/"+ videoId + " -vf scale=178:100 -ss 00:00:00.000 -t 00:00:03 "
                     + uploadPath + "/" + videoId + ".jpg";
             Logger.log(Log.INFO, TAG, thumbnailCommand);
             complexCommand = GeneralUtils.utilConvertToComplex(thumbnailCommand);
             vk.run(complexCommand, uploadPath, getApplicationContext());
+
+            String thumbnailCropCommand = "ffmpeg -y -i " + uploadPath + "/" + videoId + ".jpg" + " -vf crop=100:100 "
+                    + uploadPath + "/" + videoId + ".jpg";
+            Logger.log(Log.INFO, TAG, thumbnailCropCommand);
+            complexCommand = GeneralUtils.utilConvertToComplex(thumbnailCropCommand);
+            vk.run(complexCommand, uploadPath, getApplicationContext());
+
             if (cameraFront) {
                 rotateImage(uploadPath + "/" + videoId + ".jpg", 270);
             } else {
@@ -225,5 +237,8 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             Logger.log(e);
         }
     }
+
+
+
 
 }

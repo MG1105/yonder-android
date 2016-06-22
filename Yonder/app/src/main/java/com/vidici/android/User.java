@@ -3,6 +3,7 @@ package com.vidici.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.provider.Settings;
@@ -16,13 +17,22 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class User {
-	static boolean admin = true;
+	static boolean admin = false;
 	static String androidId;
 
 	public static String getId(Context context) {
+
+		SharedPreferences sharedPreferences = context.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+		if (sharedPreferences.getBoolean("logged_in", false)) {
+			return sharedPreferences.getString("facebook_id", "");
+		}
 		if (admin) {
 			return "897d1e5hb8u47u56jh6";
 		}
+		return getAndroidId(context);
+	}
+
+	public static String getAndroidId(Context context) {
 		if (androidId != null) {
 			return androidId;
 		}
@@ -33,6 +43,18 @@ public class User {
 			androidId += "xxx" + (Build.PRODUCT.length() % 10) + (Build.BOARD.length() % 10) + (Build.BRAND.length() % 10) + (Build.CPU_ABI.length() % 10) + (Build.DEVICE.length() % 10) + (Build.MANUFACTURER.length() % 10) + (Build.MODEL.length() % 10);
 		}
 		return androidId;
+	}
+
+	static boolean loggedIn(Context context) {
+		SharedPreferences sharedPreferences = context.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+		if (!sharedPreferences.getBoolean("logged_in", false)) {
+			Intent intent = new Intent(context, ProfileActivity.class);
+//			intent.putExtra("profileId", profileId);
+			context.startActivity(intent);
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	public static void setLocation(Context context) {

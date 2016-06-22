@@ -3,8 +3,13 @@ package com.vidici.android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +25,7 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,7 +37,7 @@ public class NotificationActivity extends AppCompatActivity {
     private ProgressBar spinner;
     Activity mActivity;
     String userId;
-    String gaCategory;
+    Resources resources;
 
     static HashMap<String, LinkedHashMap<String, JSONObject>> notificationInfo = new HashMap<>();
 
@@ -42,6 +48,7 @@ public class NotificationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notification);
         Logger.log(Log.INFO, TAG, "Creating Activity");
         userId = User.getId(this);
+        resources = getResources();
         spinner = (ProgressBar)findViewById(R.id.progress_notifications);
         GetNotificationsTask getNotificationTask = new GetNotificationsTask();
         getNotificationTask.execute(userId, "1");
@@ -123,8 +130,9 @@ public class NotificationActivity extends AppCompatActivity {
     }
 
     class NotificationAdapter extends ArrayAdapter<Notification> {
-        Notification notification;
-        TextView load;
+        Notification item;
+        ProgressBar progressThumbnail, progressLoading;
+        ImageView thumbnail, bullet;
 
         public NotificationAdapter(Context context) {
             super(context, android.R.layout.simple_list_item_1, notifications);
@@ -133,66 +141,111 @@ public class NotificationActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            notification = getItem(position);
+            item = getItem(position);
 
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_notification, parent, false);
             }
 
             TextView notificationBody = (TextView) convertView.findViewById(R.id.textView_notification_body);
-            load = (TextView) convertView.findViewById(R.id.textView_notification_load);
+            thumbnail = (ImageView) convertView.findViewById(R.id.imageView_notification_item);
+            bullet = (ImageView) convertView.findViewById(R.id.imageView_item_notification_bullet);
+            progressThumbnail = (ProgressBar) convertView.findViewById(R.id.progress_notification_thumbnail);
+            progressLoading = (ProgressBar) convertView.findViewById(R.id.progress_notification_loading);
 
-            notificationBody.setText(notification.getContent());
+            notificationBody.setText(item.getContent());
 
-            if (notification.getChannelId().equals("") && notification.getVideoId().equals("")) {
-                load.setVisibility(View.GONE);
+            int notificationId = item.getNotificationId();
+            if (notificationId == 1) {
+                bullet.setBackgroundResource(R.drawable.oval_gold);
+            } else if (notificationId == 2) {
+                bullet.setBackgroundResource(R.drawable.oval_purple);
+            } else if (notificationId < 6) {
+                bullet.setBackgroundResource(R.drawable.oval_blue);
+            } else if (notificationId == 6) {
+                bullet.setBackgroundResource(R.drawable.oval_green);
+            } else if (notificationId == 7) {
+                bullet.setBackgroundResource(R.drawable.oval_dark_green);
+            } else if (notificationId < 11) {
+                bullet.setBackgroundResource(R.drawable.oval_red);
+            } else if (notificationId == 11) {
+                bullet.setBackgroundResource(R.drawable.oval_grey);
+            }
+
+            if (item.getThumbnailId().length() > 0 && !item.downloadFailed()) {
+                String path = Video.loadedDir.getAbsolutePath(); // NPE
+                File thumbnailFile = new File(path+"/"+item.getThumbnailId()+".jpg");
+                if (thumbnailFile.exists()) {
+                    Bitmap src = BitmapFactory.decodeFile(thumbnailFile.getPath());
+                    RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(resources, src);
+                    dr.setCircular(true);
+                    thumbnail.setVisibility(View.VISIBLE);
+                    thumbnail.setImageDrawable(dr);
+                    progressThumbnail.setVisibility(View.INVISIBLE);
+                } else {
+                    thumbnail.setVisibility(View.INVISIBLE);
+                    progressThumbnail.setVisibility(View.VISIBLE);
+                    DownloadThumbnail downloadTask = new DownloadThumbnail(item, progressThumbnail);
+                    downloadTask.execute("http://storage.googleapis.com/yander/" + item.getThumbnailId() + ".jpg");
+                }
             } else {
-                load.setVisibility(View.VISIBLE);
+                thumbnail.setVisibility(View.INVISIBLE);
+                progressThumbnail.setVisibility(View.INVISIBLE);
             }
 
-            if (notification.isPlayable()) {
-                load.setText("play");
-                load.setEnabled(true);
-            } else if (notification.isDownloading()) {
-                load.setEnabled(false);
-            } else if (notification.isVideosEmpty()) {
-                load.setText("load");
-                load.setEnabled(true);
-            } else if (notification.isEmpty()) {
-                load.setText("no reactions yet");
-                load.setEnabled(true);
+            if (item.isPlayable()) {
+                progressLoading.setVisibility(View.INVISIBLE);
+            } else if (item.isDownloading()) {
+                progressLoading.setVisibility(View.VISIBLE);
+            } else if (item.isVideosEmpty()) {
+                progressLoading.setVisibility(View.INVISIBLE);
+            } else if (item.isEmpty()) {
+                progressLoading.setVisibility(View.INVISIBLE);
             }
 
-            load.setOnClickListener(new View.OnClickListener() {
-                Notification myNotification = notification;
-                TextView myLoad = load;
+            convertView.setOnClickListener(new View.OnClickListener() {
+                Notification myItem = item;
+                ProgressBar myProgressLoading = progressLoading;
 
                 @Override
                 public void onClick(View v) {
-                    if (notification.isPlayable() && !GetVideosTask.loading) {
+                    if (item.isPlayable() && !GetVideosTask.loading) {
                         Intent intentFeedStart = new Intent(mActivity, StoryActivity.class);
-                        intentFeedStart.putExtra("notificationId", myNotification.getId());
-                        Logger.log(Log.INFO, TAG, notificationInfo.toString());
-                        Logger.log(Log.INFO, TAG, myNotification.getId());
+                        intentFeedStart.putExtra("notificationId", myItem.getId());
                         startActivity(intentFeedStart);
-                        myNotification.setReload();
-                        adapter.notifyDataSetChanged();
-                        myLoad.setText("load");
-                    } else if (!GetVideosTask.loading) {
+                    } else if (!GetVideosTask.loading && myItem.isLoadable()) {
                         GetVideosTask.loading = true;
-                        myLoad.setEnabled(false);
-                        myNotification.setDownloading(true);
-                        gaCategory = "Notification";
-                        Logger.trackEvent(mActivity, gaCategory, "Load Request");
-                        myLoad.setText("loading...");
-                        GetVideosTask getFeed = new GetVideosTask(mActivity, myNotification, myNotification.getId(), adapter, notificationInfo, "notification");
+                        myItem.setDownloading(true);
+                        myProgressLoading.setVisibility(View.VISIBLE);
+                        Logger.trackEvent(mActivity, "Notification", "Load Request");
+                        GetVideosTask getFeed = new GetVideosTask(mActivity, myItem, myItem.getId(), adapter, notificationInfo, "notification");
                         getFeed.execute();
                     }
-
                 }
             });
             // Return the completed view to render on screen
             return convertView;
+        }
+    }
+
+    class DownloadThumbnail extends DownloadTask {
+        ProgressBar progressThumbnail;
+        Notification item;
+
+        DownloadThumbnail (Notification item, ProgressBar progressThumbnail) {
+            super(mActivity);
+            this.item = item;
+            this.progressThumbnail = progressThumbnail;
+        }
+
+        @Override
+        protected void onPostExecute(Integer error) {
+            super.onPostExecute(error);
+            if (error > 0) {
+                item.setDownloadFailed();
+                progressThumbnail.setVisibility(View.INVISIBLE);
+            }
+            adapter.notifyDataSetChanged();
         }
     }
 }

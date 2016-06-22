@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        mainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
+        mainPagerAdapter = new MainPagerAdapter(fragmentManager);
         mViewPager.setAdapter(mainPagerAdapter);
 
         ActionBar.TabListener tabListener = new ActionBar.TabListener() {
@@ -128,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
         Logger.log(Log.INFO, TAG, "Stopping Activity");
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Logger.log(Log.INFO, TAG, "Destroying Activity");
+        Video.cleanup(Video.loadedDir);
+        Video.cleanup(Video.uploadDir);
+    }
 
     public class MainPagerAdapter extends FragmentPagerAdapter {
         public MainPagerAdapter(FragmentManager fm) {
@@ -169,10 +176,21 @@ public class MainActivity extends AppCompatActivity {
                 fragment.setArguments(bundle);
                 return fragment;
             } else if (i == 4) {
-                Logger.trackEvent(mActivity, "Profile", "View");
-                Logger.log(Log.INFO, TAG, "Viewing Profile");
-                ProfileFragment fragment = new ProfileFragment();
-                return fragment;
+                SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+                if (!sharedPreferences.getBoolean("logged_in", false)) {
+                    Logger.trackEvent(mActivity, "Profile", "Login View");
+                    Logger.log(Log.INFO, TAG, "Viewing Login fragment");
+                    LoginFragment fragment = new LoginFragment();
+                    return fragment;
+                } else {
+                    Logger.trackEvent(mActivity, "Profile", "View");
+                    Logger.log(Log.INFO, TAG, "Viewing Profile");
+                    ProfileFragment fragment = new ProfileFragment();
+                    Bundle bundle = new Bundle(1);
+                    bundle.putString("user_id", sharedPreferences.getString("facebook_id", ""));
+                    fragment.setArguments(bundle);
+                    return fragment;
+                }
             }
 
             return null;

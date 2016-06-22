@@ -9,7 +9,6 @@
         android:layout_height="match_parent"
         android:paddingLeft="5dp"
         android:listSelector="@android:color/transparent"
-        android:divider="@android:color/transparent"
         android:id="@+id/listView_notifications"/>
 
     <TextView

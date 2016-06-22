@@ -19,13 +19,23 @@ class DownloadTask extends AsyncTask<String, Integer, Integer> {
 	private Context context;
 	private PowerManager.WakeLock mWakeLock;
 	private final String TAG = "Log." + this.getClass().getSimpleName();
+	String outputId = "";
 
 	public DownloadTask(Context context) {
 		this.context = context;
 	}
 
+	void setOutputId (String output) {
+		outputId = output;
+	}
+
 	@Override
 	protected Integer doInBackground(String... urls) {
+		if (Video.loadedDir.getFreeSpace() < 20000000) {
+			Logger.log(Log.ERROR, TAG, "Running out of space");
+			Toast.makeText(context, "Your phone is running out of space. Please increase your free memory and try again", Toast.LENGTH_LONG).show();
+			return 1;
+		}
 		for (String url : urls) {
 			if (new File(Video.loadedDir + "/" + url.substring(url.lastIndexOf('/') + 1)).exists()) {
 				continue;
@@ -41,6 +51,7 @@ class DownloadTask extends AsyncTask<String, Integer, Integer> {
 		InputStream input = null;
 		OutputStream output = null;
 		HttpURLConnection connection = null;
+		String outputPath;
 		try {
 			URL url = new URL(path);
 			connection = (HttpURLConnection) url.openConnection();
@@ -54,9 +65,15 @@ class DownloadTask extends AsyncTask<String, Integer, Integer> {
 				return 1;
 			}
 
+			if (outputId.length() > 0) {
+				outputPath = Video.loadedDir + "/" + outputId + ".tmp";
+			} else {
+				outputPath = Video.loadedDir + "/" + path.substring(path.lastIndexOf('/') + 1) + ".tmp";
+			}
+
 			// download the file
 			input = connection.getInputStream();
-			output = new FileOutputStream(Video.loadedDir + "/" + path.substring(path.lastIndexOf('/') + 1) + ".tmp");
+			output = new FileOutputStream(outputPath);
 
 			byte data[] = new byte[4096];
 			int count;
@@ -77,8 +94,8 @@ class DownloadTask extends AsyncTask<String, Integer, Integer> {
 			if (connection != null)
 				connection.disconnect();
 		}
-		File file = new File(Video.loadedDir + "/" + path.substring(path.lastIndexOf('/') + 1) + ".tmp");
-		File out = new File(Video.loadedDir + "/" + path.substring(path.lastIndexOf('/') + 1));
+		File file = new File(outputPath);
+		File out = new File(outputPath.replace(".tmp", ""));
 		file.renameTo(out);
 		file.delete(); // make sure it is gone
 		return 0;
