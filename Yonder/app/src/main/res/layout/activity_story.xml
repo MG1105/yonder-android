@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:textSize="20dp"
-            android:textColor="@color/primary_color"
+            android:textColor="@color/gold"
             android:textStyle="bold"
             android:text="0"
             android:id="@+id/rating"/>
@@ -113,13 +113,38 @@
         android:layout_centerInParent="true"/>
 
     <FrameLayout
+        android:id="@+id/frame_story_profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingRight="5dp"
-        android:paddingTop="5dp"
-        android:id="@+id/frame_story_gold"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true">
+        android:layout_alignParentTop="true"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/background_story_profile"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/oval_blue"/>
+
+        <ImageView
+            android:id="@+id/background_story_profile1"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:background="@drawable/ic_user"/>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_below="@+id/frame_story_profile"
+        android:layout_alignParentRight="true"
+        android:id="@+id/frame_story_gold">
 
         <ImageView
             android:id="@+id/imageView_story_gold_background"
@@ -129,8 +154,8 @@
             android:background="@drawable/oval_white"/>
 
         <ImageView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:id="@+id/imageview_gold"
             android:layout_gravity="center"
             android:background="@drawable/ic_black_award"/>

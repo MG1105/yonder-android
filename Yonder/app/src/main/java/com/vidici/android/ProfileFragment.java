@@ -103,6 +103,10 @@ public class ProfileFragment extends Fragment {
 		getProfileTask.execute();
 
 		Fragment feedFragment = new FeedFragment();
+		Bundle bundle = new Bundle(2);
+		bundle.putBoolean("home", false);
+		bundle.putString("user_id", profileId);
+		feedFragment.setArguments(bundle);
 		FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
 		transaction.replace(R.id.profile_feed_fragment, feedFragment).commit();
 
@@ -150,8 +154,8 @@ public class ProfileFragment extends Fragment {
 							imageFollow.setBackgroundResource(R.drawable.ic_followed);
 						}
 
-						if (followed != -1) {
-							followFrame.setVisibility(View.VISIBLE);
+						if (profileId.equals(User.getId(mActivity))) {
+							followFrame.setVisibility(View.INVISIBLE);
 						}
 
 					} else {
@@ -177,7 +181,13 @@ public class ProfileFragment extends Fragment {
 			super.onPostExecute(error);
 			if (profilePictureFile.exists()) {
 				progressProfilePicture.setVisibility(View.INVISIBLE);
-				profilePicture.setImageURI(Uri.fromFile(profilePictureFile));
+				Resources res = getResources();
+				Bitmap src = BitmapFactory.decodeFile(profilePictureFile.getPath());
+				RoundedBitmapDrawable dr = RoundedBitmapDrawableFactory.create(res, src);
+				dr.setCircular(true);
+				profilePicture.setImageDrawable(dr);
+			} else {
+				progressProfilePicture.setVisibility(View.INVISIBLE);
 			}
 		}
 	}
@@ -216,7 +226,7 @@ public class ProfileFragment extends Fragment {
 							Toast.makeText(mActivity, "Unfollowed", Toast.LENGTH_LONG).show();
 							ImageView imageFollow = (ImageView) mActivity.findViewById(R.id.image_follow);
 							ImageView imageCircleFollow = (ImageView) mActivity.findViewById(R.id.image_circle_follow);
-							imageCircleFollow.setBackgroundResource(R.drawable.oval);
+							imageCircleFollow.setBackgroundResource(R.drawable.oval_blue);
 							imageFollow.setBackgroundResource(R.drawable.ic_follow);
 							followed = 0;
 						}

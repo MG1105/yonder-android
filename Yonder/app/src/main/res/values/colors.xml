@@ -3,11 +3,14 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="red">#ff0000</color>
+    <color name="gold">#FFAA00</color>
+    <color name="green">#32CD32</color>
 
-    <color name="dark_primary_color">#D32F2F</color>
-    <color name="primary_color">#FFAA00</color>
+    <color name="dark_primary_color">#651FFF</color>
+    <!--<color name="primary_color">#1E90FF</color>-->
+    <color name="primary_color">#1E90FF</color>
     <color name="light_primary_color">#FFCCBC</color>
-    <color name="accent_color">#FCC200</color>
+    <color name="accent_color">#7C4DFF</color>
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#727272</color>
     <color name="divider_color">#B6B6B6</color>

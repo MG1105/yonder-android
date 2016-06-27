@@ -51,19 +51,19 @@ public class AlarmReceiver extends BroadcastReceiver
 			long initial = 1000 * 60 * 60; // Millisec * Second * Minute * Hour
 			long delta = 1000 * 60 * 60 * 24; // Millisec * Second * Minute * Hour
 			if (User.admin) {
-				initial = 1000 * 60 * 5; // Millisec * Second * Minute * Hour
+				initial = 1000 * 60 * 15; // Millisec * Second * Minute * Hour
 				delta = 1000 * 60 * 15; // Millisec * Second * Minute * Hour
 			}
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + initial, delta, pendingIntent);
 		}
 	}
 
-	public void setPingAlarm(Context context, boolean boot) {
+	public void setPingAlarm(Context context, boolean boot) { // ping and notification should be same task
 		AlarmManager alarmManager =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		intent.putExtra("code", 2);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 2, intent, 0);
-		long delta = 1000 * 60 * 60 * 6; // Millisec * Second * Minute * Hour
+		long delta = 1000 * 60 * 60 * 24; // Millisec * Second * Minute * Hour
 		long triggerDelta;
 		if (boot) {
 			triggerDelta = 30000;

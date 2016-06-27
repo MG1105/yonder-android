@@ -132,7 +132,7 @@
             android:id="@+id/imageView_item_channel_thumbnail_background"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:background="@drawable/oval"/>
+            android:background="@drawable/oval_gold"/>
 
         <TextView
             android:id="@+id/textView_channel_item_ranking"

@@ -32,14 +32,6 @@
             </intent-filter>
         </receiver>
 
-        <receiver
-            android:name=".LoadBroadcastReceiver"
-            android:enabled="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-        </receiver>
-
         <!-- Optionally, register AnalyticsReceiver and AnalyticsService to support background
         dispatching on non-Google Play devices -->
         <receiver android:name="com.google.android.gms.analytics.AnalyticsReceiver"

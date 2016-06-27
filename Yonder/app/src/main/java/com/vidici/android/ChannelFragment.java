@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
@@ -24,6 +25,7 @@ import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -33,7 +35,6 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -63,11 +64,12 @@ public class ChannelFragment extends Fragment {
 						.setPositiveButton(android.R.string.ok, null)
 						.create();
 				alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-				alertDialog.setMessage("Create a new hashtag");
 
-				final EditText input = new EditText(mActivity);
-				input.setHint("#howhighcanyourankit");
-				alertDialog.setView(input);
+				LayoutInflater inflater = mActivity.getLayoutInflater();
+				FrameLayout f1 = (FrameLayout) mActivity.findViewById(android.R.id.custom);
+				final View layout = inflater.inflate(R.layout.add_channel_form, f1);
+				alertDialog.setView(layout);
+
 				Logger.trackEvent(mActivity, "Channel", "Click Add");
 				Logger.log(Log.INFO, TAG, "Open add channel dialog");
 
@@ -81,6 +83,7 @@ public class ChannelFragment extends Fragment {
 								if (!User.loggedIn(mActivity)) {
 									return;
 								}
+								EditText input = (EditText) layout.findViewById(R.id.add_channel_name);
 								String name = input.getText().toString().trim();
 								if (isValidChannelName(name)) {
 									alertDialog.dismiss();
@@ -132,11 +135,9 @@ public class ChannelFragment extends Fragment {
 							listView.setAdapter(channelAdapter);
 							noChannels.setVisibility(View.GONE);
 							noChannelsImage.setVisibility(View.GONE);
-							listView.setVisibility(View.VISIBLE);
 						} else {
 							noChannels.setVisibility(View.VISIBLE);
 							noChannelsImage.setVisibility(View.VISIBLE);
-							listView.setVisibility(View.GONE);
 						}
 					} else {
 						Logger.log(new Exception("Server Side Failure"));
@@ -158,12 +159,13 @@ public class ChannelFragment extends Fragment {
 
 	class ChannelAdapter extends ArrayAdapter<Channel> {
 		Channel channel;
-		TextView rating, ranking;
+		TextView rating, ranking, username;
 		TextView unseen;
 		TextView name;
 		Button likeButton;
 		Button dislikeButton;
 		ProgressBar progressLoading;
+		ImageView rankingBackground;
 
 		public ChannelAdapter(Context context) {
 			super(context, android.R.layout.simple_list_item_1, channels);
@@ -184,6 +186,8 @@ public class ChannelFragment extends Fragment {
 			unseen = (TextView) convertView.findViewById(R.id.textView_channel_new);
 			name = (TextView) convertView.findViewById(R.id.textView_channel_name);
 			ranking = (TextView) convertView.findViewById(R.id.textView_channel_item_ranking);
+			rankingBackground = (ImageView) convertView.findViewById(R.id.imageView_item_channel_thumbnail_background);
+			username = (TextView) convertView.findViewById(R.id.textView_channel_username);
 			progressLoading = (ProgressBar) convertView.findViewById(R.id.progress_channel_loading);
 
 			if (channel.isPlayable()) {
@@ -195,6 +199,14 @@ public class ChannelFragment extends Fragment {
 				progressLoading.setVisibility(View.INVISIBLE);
 			} else if (channel.isEmpty()) {
 				progressLoading.setVisibility(View.INVISIBLE);
+			}
+
+			if (channelSort.equals("hot")) {
+				rankingBackground.setBackgroundResource(R.drawable.oval_orange);
+			} else if (channelSort.equals("new")) {
+				rankingBackground.setBackgroundResource(R.drawable.oval_green);
+			} else if (channelSort.equals("top")) {
+				rankingBackground.setBackgroundResource(R.drawable.oval_gold);
 			}
 
 			if (channel.getRated() == 1) {
@@ -219,16 +231,42 @@ public class ChannelFragment extends Fragment {
 				likeButton.setEnabled(true);
 			}
 
+//			if (position == 0) {
+//				username.setText("@jenny");
+//			} else if (position == 1) {
+//				username.setText("@breadpitt");
+//			} else if (position == 2) {
+//				username.setText("@princess94");
+//			} else if (position == 3) {
+//				username.setText("@crossfitjesus");
+//			} else if (position == 4) {
+//				username.setText("@grammarjew");
+//			} else if (position == 5) {
+//				username.setText("@tacobelle");
+//			} else if (position == 6) {
+//				username.setText("@suddenlykitties");
+//			} else if (position == 7) {
+//				username.setText("@googlewasmyidea");
+//			} else if (position == 8) {
+//				username.setText("@lucidstreaming");
+//			} else if (position == 9) {
+//				username.setText("@wrecktangle");
+//			} else if (position == 10) {
+//				username.setText("@pokemonandpizza");
+//			} else if (position == 11) {
+//				username.setText("@ibiza92");
+//			}
+
 			unseen.setText(channel.getUnseen());
 			name.setText("#" + channel.getName());
 			ranking.setText(""+ (position+1));
 			rating.setText(channel.getRating());
-//            total.setText(channel.getCount()+ " reactions");
 
 			convertView.setOnClickListener(new View.OnClickListener() {
 				Channel myChannel = channel;
 				ProgressBar myProgressLoading = progressLoading;
-
+//				TextView u = unseen;
+//				TextView r = rating;
 
 				@Override
 				public void onClick(View v) {
@@ -239,11 +277,22 @@ public class ChannelFragment extends Fragment {
 					} else if (!GetVideosTask.loading) {
 						GetVideosTask.loading = true;
 						myChannel.setDownloading(true);
-						Logger.trackEvent(mActivity, "Channel", "Load Request");
+						Logger.trackEvent(mActivity, "Channel", "Load Request - " + channelSort);
 						myProgressLoading.setVisibility(View.VISIBLE);
 						Logger.log(Log.INFO, TAG, "Loading channel " + myChannel.getName());
 						GetVideosTask getFeed = new GetVideosTask(mActivity, myChannel, myChannel.getId(), channelAdapter, channelInfo, channelSort);
 						getFeed.execute();
+//						new CountDownTimer(4000, 300) {
+//							int counter = 0;
+//							public void onTick(long millisUntilFinished) {
+//								counter++;
+//								r.setText("" + (counter*3 + 6));
+//								u.setText("" + counter);
+//								u.setTextColor(getResources().getColor(R.color.primary_color));
+//							}
+//							public void onFinish() {
+//							}
+//						}.start();
 					}
 				}
 			});
@@ -259,7 +308,7 @@ public class ChannelFragment extends Fragment {
 					intent.putExtra("channelId", myChannelId);
 					intent.putExtra("channelName", myChannelName);
 					startActivity(intent);
-					Logger.trackEvent(mActivity, "Channel", "Reply");
+					Logger.trackEvent(mActivity, "Channel", "Open Camera");
 					return true;
 				}
 			});
@@ -366,10 +415,12 @@ public class ChannelFragment extends Fragment {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
-//                        actionBar.selectTab(actionBar.getTabAt(1));
-//                        GetChannelsTask getChannelsTask = new GetChannelsTask();
-//                        getChannelsTask.execute(userId, "new");
+						MainActivity.mViewPager.setAdapter(MainActivity.mainPagerAdapter); // shouldnt reload all fragments
+						MainActivity.mViewPager.setCurrentItem(2);
 						Logger.trackEvent(mActivity, "Channel", "Added Channel");
+						SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+						long now = System.currentTimeMillis();
+						sharedPreferences.edit().putLong("channel_added", now).apply();
 					} else {
 						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(mActivity, "Failed to add channel", Toast.LENGTH_LONG).show();
@@ -385,7 +436,14 @@ public class ChannelFragment extends Fragment {
 
 	protected Boolean isValidChannelName(String name) {
 		String pattern= "^[a-zA-Z0-9_]*$";
-		if (!name.startsWith("#")) {
+		SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+		long lastChannelAdded = sharedPreferences.getLong("channel_added", 0);
+		long delta = System.currentTimeMillis() - lastChannelAdded;
+		if (delta < (1000 * 60 * 60 * 24)) {
+			Toast.makeText(mActivity, "You already added a hashtag in the past 24 hours. Try again later", Toast.LENGTH_LONG).show();
+			Logger.trackEvent(mActivity, "Channel", "Limit Reached");
+			return false;
+		} else if (!name.startsWith("#")) {
 			Toast.makeText(mActivity, "Must start with #", Toast.LENGTH_LONG).show();
 			return false;
 		} else if (name.contains(" ")) {

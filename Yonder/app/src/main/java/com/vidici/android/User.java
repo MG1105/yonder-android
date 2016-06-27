@@ -57,6 +57,11 @@ public class User {
 		}
 	}
 
+	static boolean isLoggedIn(Context context) {
+		SharedPreferences sharedPreferences = context.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+		return sharedPreferences.getBoolean("logged_in", false);
+	}
+
 	public static void setLocation(Context context) {
 		UserLocation userLocation = new UserLocation();
 		userLocation.update(context);

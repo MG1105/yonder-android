@@ -40,7 +40,6 @@ public class CommentActivity extends Activity {
 	EditText commentText;
 	String comment;
 	CommentsAdapter adapter;
-	String nickname;
 	static SQLiteDatabase yonderDb;
 	static boolean updateTotal;
 	ListView commentList;
@@ -100,12 +99,12 @@ public class CommentActivity extends Activity {
 		void sendComment() {
 			sendButton.setEnabled(false);
 			String userId = User.getId(myActivity);
-			Logger.log(Log.INFO, TAG, String.format("Sending comment: nickname %s userId %s videoId %s " +
+			Logger.log(Log.INFO, TAG, String.format("Sending comment: userId %s videoId %s " +
 							"commentText %s",
-					nickname, userId, videoId, comment));
+					userId, videoId, comment));
 			Logger.trackEvent(myActivity, "Comment", "Add Comment");
 			AddCommentTask addComment = new AddCommentTask();
-			addComment.execute(nickname, userId, videoId, comment);
+			addComment.execute(userId, videoId, comment);
 		}
 	};
 
@@ -134,7 +133,7 @@ public class CommentActivity extends Activity {
 			dislikeButton = (Button) convertView.findViewById(R.id.button_comment_item_dislike);
 
 			// Populate the data into the template view using the data object
-			nickname.setText(comment.getNickname());
+			nickname.setText("@" + comment.getNickname());
 			content.setText(comment.getContent());
 			 // no s if 1
 			int ratingInt = Integer.valueOf(comment.getRating());
@@ -203,8 +202,6 @@ public class CommentActivity extends Activity {
 				}
 			});
 
-
-
 			// Return the completed view to render on screen
 			return convertView;
 
@@ -267,7 +264,7 @@ public class CommentActivity extends Activity {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			JSONObject response = gae.addComment(params[0], params[1], params[2], params[3]);
+			JSONObject response = gae.addComment(params[0], params[1], params[2]);
 			return response;
 		}
 
@@ -281,7 +278,9 @@ public class CommentActivity extends Activity {
 							noComments.setVisibility(View.GONE);
 							noCommentsImage.setVisibility(View.GONE);
 						}
-						comments.add(new Comment(response.getString("comment_id"), comment, nickname));
+						SharedPreferences sharedPreferences = getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
+						String username = sharedPreferences.getString("username", "");
+						comments.add(new Comment(response.getString("comment_id"), comment, username));
 						adapter.notifyDataSetChanged();
 						if (commentText != null) {
 							commentText.setText("");

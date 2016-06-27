@@ -16,6 +16,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -54,6 +55,8 @@ public class StoryActivity extends Activity {
     Boolean buffering = false;
     TextView textGold;
     ImageView backgroundGold;
+    FrameLayout profile;
+//    int position = 0;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,11 +87,12 @@ public class StoryActivity extends Activity {
         spinner = (ProgressBar)findViewById(R.id.progress_videoview);
         textGold = (TextView) myContext.findViewById(R.id.textview_story_gold);
         backgroundGold = (ImageView) myContext.findViewById(R.id.imageView_story_gold_background);
+        profile = (FrameLayout) myContext.findViewById(R.id.frame_story_profile);
 
         likeButton.setOnClickListener(likeListener);
         dislikeButton.setOnClickListener(dislikeListener);
 	    commentButton.setOnClickListener(commentListener);
-	    username.setOnClickListener(profileListener);
+	    profile.setOnClickListener(profileListener);
 
         backgroundGold.setOnClickListener(new View.OnClickListener() {
 
@@ -97,6 +101,11 @@ public class StoryActivity extends Activity {
                 if (!User.loggedIn(myContext)) {
                     return;
                 }
+                if (profileId.equals(User.getId(myContext))) {
+                    Toast.makeText(myContext, "You cannot give yourself a Vidici Award", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                Logger.trackEvent(myContext, gaCategory, "Give Gold");
                 GiveGoldTask giveGoldTask = new GiveGoldTask();
                 giveGoldTask.execute(User.getId(myContext), profileId, currentVideoId);
             }
@@ -148,6 +157,11 @@ public class StoryActivity extends Activity {
             } else {
                 commentButton.setText(CommentActivity.comments.size() + " Comments");
             }
+            try {
+                videoInfo.get(currentVideoId).put("comments_total", CommentActivity.comments.size());
+            } catch (JSONException e) {
+                Logger.log(e);
+            }
             CommentActivity.updateTotal = false;
 		}
         Logger.fbActivate(this, true);
@@ -156,6 +170,7 @@ public class StoryActivity extends Activity {
 	@Override
 	protected void onPause() {
         super.onPause();
+        currentVideo.stopPlayback();
         Logger.log(Log.INFO, TAG, "Pausing Activity");
         Logger.fbActivate(this, false);
 	}
@@ -181,6 +196,9 @@ public class StoryActivity extends Activity {
             } else {
                 commentButton.setText(commentsTotal + " Comments");
             }
+
+//            commentsTotal = "" + (int ) (Math.random() * 100);
+//            commentButton.setText(commentsTotal + " Comments");
         } catch (Exception e) {
             Logger.log(e);;
         }
@@ -196,13 +214,13 @@ public class StoryActivity extends Activity {
             if (rated == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
-                likeButton.setBackgroundResource(R.drawable.ic_up_green);
+                likeButton.setBackgroundResource(R.drawable.ic_up_dark);
                 dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             } else if (rated == -1) {
                 dislikeButton.setEnabled(false);
                 likeButton.setEnabled(true);
                 likeButton.setBackgroundResource(R.drawable.ic_up_white);
-                dislikeButton.setBackgroundResource(R.drawable.ic_down_red);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_dark);
             } else {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(true);
@@ -224,7 +242,7 @@ public class StoryActivity extends Activity {
             ratingText.setText(""+rating);
 
             if (gold > 0) {
-                backgroundGold.setBackgroundResource(R.drawable.oval);
+                backgroundGold.setBackgroundResource(R.drawable.oval_gold);
                 textGold.setText("x " + gold);
             } else {
                 backgroundGold.setBackgroundResource(R.drawable.oval_white);
@@ -248,13 +266,13 @@ public class StoryActivity extends Activity {
             if (myRating == 1) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(false);
-                likeButton.setBackgroundResource(R.drawable.ic_up_green);
+                likeButton.setBackgroundResource(R.drawable.ic_up_dark);
                 dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             } else if (myRating == -1) {
                 dislikeButton.setEnabled(false);
                 likeButton.setEnabled(true);
                 likeButton.setBackgroundResource(R.drawable.ic_up_white);
-                dislikeButton.setBackgroundResource(R.drawable.ic_down_red);
+                dislikeButton.setBackgroundResource(R.drawable.ic_down_dark);
             }
 
             if (User.admin) {
@@ -312,6 +330,11 @@ public class StoryActivity extends Activity {
 	View.OnClickListener profileListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
+//            Toast.makeText(myContext, "Followed", Toast.LENGTH_LONG).show();
+//            ImageView imageFollow = (ImageView) myContext.findViewById(R.id.background_story_profile1);
+//            ImageView imageCircleFollow = (ImageView) myContext.findViewById(R.id.background_story_profile);
+//            imageFollow.setBackgroundResource(R.drawable.ic_followed);
+//            imageCircleFollow.setBackgroundResource(R.drawable.oval_green);
             Intent intent = new Intent(myContext, ProfileActivity.class);
             intent.putExtra("profileId", profileId);
             startActivity(intent);
@@ -441,7 +464,33 @@ public class StoryActivity extends Activity {
             String channelName = videoInfo.get(currentVideoId).getString("channel_name");
             channel.setText("#"+channelName);
             username.setText("@"+videoInfo.get(currentVideoId).getString("username"));
-            username.setText("@princess94");
+
+//            if (position == 0) {
+//                username.setText("@jenny");
+//            } else if (position == 1) {
+//                username.setText("@breadpitt");
+//            } else if (position == 2) {
+//                username.setText("@princess94");
+//            } else if (position == 3) {
+//                username.setText("@crossfitjesus");
+//            } else if (position == 4) {
+//                username.setText("@grammarjew");
+//            } else if (position == 5) {
+//                username.setText("@tacobelle");
+//            } else if (position == 6) {
+//                username.setText("@suddenlykitties");
+//            } else if (position == 7) {
+//                username.setText("@googlewasmyidea");
+//            } else if (position == 8) {
+//                username.setText("@lucidstreaming");
+//            } else if (position == 9) {
+//                username.setText("@wrecktangle");
+//            } else if (position == 10) {
+//                username.setText("@pokemonandpizza");
+//            } else if (position == 11) {
+//                username.setText("@ibiza92");
+//            }
+
             profileId = videoInfo.get(currentVideoId).getString("user_id");
         } catch (JSONException e) {
             Logger.log(e);
@@ -519,13 +568,15 @@ public class StoryActivity extends Activity {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
                         if (response.getString("gold").equals("1")) {
-                            backgroundGold.setBackgroundResource(R.drawable.oval);
+                            backgroundGold.setBackgroundResource(R.drawable.oval_gold);
                             gold++;
                             videoInfo.get(currentVideoId).put("gold", gold);
                             textGold.setText("x " + gold);
                             Toast.makeText(myContext, "@"+videoInfo.get(currentVideoId).getString("username") + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
+//                            Toast.makeText(myContext, username.getText() + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(myContext, "You ran out of tokens", Toast.LENGTH_LONG).show();
+                            Logger.trackEvent(myContext, gaCategory, "Out of Gold");
                         }
                     } else {
                         Logger.log(new Exception("Server Side Failure"));
@@ -557,6 +608,11 @@ public class StoryActivity extends Activity {
 
 		@Override
 		public boolean onSingleTapUp(MotionEvent event) { // looping?
+//            ImageView imageFollow = (ImageView) myContext.findViewById(R.id.background_story_profile1);
+//            ImageView imageCircleFollow = (ImageView) myContext.findViewById(R.id.background_story_profile);
+//            imageCircleFollow.setBackgroundResource(R.drawable.oval_blue);
+//            imageFollow.setBackgroundResource(R.drawable.ic_follow);
+//            position++;
             playNextVideo();
             return true;
 		}

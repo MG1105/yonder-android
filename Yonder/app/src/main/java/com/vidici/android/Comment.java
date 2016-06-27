@@ -21,7 +21,7 @@ public class Comment {
 			this.id = object.getString("id");
 			this.content = object.getString("content");
 			this.rating = object.getString("rating");
-			this.nickname = object.getString("nickname");
+			this.nickname = object.getString("username");
 			this.videoId = videoId;
 			this.rated = object.getInt("rated");
 		} catch (JSONException e) {

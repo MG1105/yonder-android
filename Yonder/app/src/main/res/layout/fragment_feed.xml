@@ -16,28 +16,50 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="invisible"
         android:layout_centerInParent="true"
         android:paddingLeft="@dimen/activity_horizontal_margin"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No Hashtags"
+        android:text="Start following people\nto customize your Home Feed"
+        android:gravity="center"
         android:textStyle="bold"
-        android:textSize="20dp"
+        android:textSize="16dp"
         android:paddingTop="10dp"
         android:textColor="@color/secondary_text"
         android:id="@+id/textView_no_feed"
-        android:layout_below="@+id/image_no_channels"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
+        android:layout_below="@+id/image_no_feed"
+        android:layout_centerHorizontal="true"/>
 
     <ImageView
         android:id="@+id/image_no_feed"
-        android:background="@drawable/ic_hashtag"
+        android:background="@drawable/ic_follow_blue"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:visibility="gone"
         android:layout_centerInParent="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No recent activity"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="14dp"
+        android:paddingTop="10dp"
+        android:visibility="invisible"
+        android:textColor="@color/secondary_text"
+        android:id="@+id/textView_no_recent_videos"
+        android:layout_centerInParent="true"/>
+
+    <ImageView
+        android:id="@+id/image_no_recent_videos"
+        android:background="@drawable/ic_no_video"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_above="@+id/textView_no_recent_videos"
+        android:visibility="invisible"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

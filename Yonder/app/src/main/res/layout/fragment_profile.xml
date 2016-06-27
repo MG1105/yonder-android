@@ -1,50 +1,51 @@
 <LinearLayout
-    android:layout_width="match_parent"
     android:id="@+id/layout_profile"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingTop="40dp"
-        android:paddingLeft="15dp"
-        android:layout_weight="0.5">
+        android:layout_weight="0.5"
+        android:background="#0D1E90FF"
+        android:paddingTop="15dp">
 
         <FrameLayout
-            android:layout_width="150dp"
-            android:layout_height="150dp"
             android:id="@+id/profile_picture"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:layout_centerHorizontal="true">
 
             <ImageView
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:scaleType="centerCrop"
-                android:id="@+id/imageView_profile"/>
+                android:id="@+id/imageView_profile"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:scaleType="centerCrop"/>
 
             <FrameLayout
+                android:id="@+id/frame_follow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:visibility="invisible"
-                android:id="@+id/frame_follow">
+               android:layout_gravity="right"
+                android:visibility="invisible">
 
                 <ImageView
+                    android:id="@+id/image_circle_follow"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:id="@+id/image_circle_follow"
-                    android:background="@drawable/oval"/>
+                    android:background="@drawable/oval_blue"/>
 
                 <ImageView
+                    android:id="@+id/image_follow"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
-                    android:id="@+id/image_follow"
                     android:layout_gravity="center"
                     android:background="@drawable/ic_follow"/>
 
             </FrameLayout>
+
 
             <ProgressBar
                 android:id="@+id/progress_profile"
@@ -56,158 +57,172 @@
         </FrameLayout>
 
         <TextView
+            android:id="@+id/textView_profile_firstname"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:text="Sean"
-            android:textStyle="bold"
-            android:layout_below="@id/profile_picture"
+            android:layout_below="@+id/profile_picture"
             android:layout_centerHorizontal="true"
+            android:paddingTop="8dp"
+            android:text=""
             android:textColor="@color/primary_text"
-            android:id="@+id/textView_profile_firstname"/>
+            android:textSize="16dp"
+            android:textStyle="bold"/>
 
         <TextView
+            android:id="@+id/textView_profile_username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/textView_profile_firstname"
             android:layout_centerHorizontal="true"
-            android:textSize="12dp"
+            android:paddingBottom="15dp"
+            android:text=""
             android:textColor="@color/secondary_text"
-            android:text="\@seanlyons"
-            android:id="@+id/textView_profile_username"/>
+            android:textSize="12dp"/>
 
         <FrameLayout
+            android:id="@+id/frame_profile_gold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:layout_toRightOf="@+id/textView_profile_username"
-            android:layout_alignBottom="@+id/textView_profile_username"
-            android:id="@+id/frame_profile_gold">
+            android:layout_below="@+id/textView_profile_username"
+            android:layout_centerHorizontal="true">
 
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:background="@drawable/oval"/>
+                android:background="@drawable/oval_gold"/>
 
             <ImageView
-                android:layout_width="35dp"
-                android:layout_height="35dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_gravity="center"
                 android:background="@drawable/ic_black_award"/>
 
         </FrameLayout>
 
         <TextView
+            android:id="@+id/textView_gold_received"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/frame_profile_gold"
-            android:layout_alignBottom="@+id/frame_profile_gold"
-            android:textColor="@color/primary_text"
-            android:paddingLeft="5dp"
-            android:textStyle="bold"
-            android:textSize="14dp"
+            android:layout_alignTop="@+id/frame_profile_gold"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
             android:text="x 0"
-            android:id="@+id/textView_gold_received"/>
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:paddingTop="30dp"
-            android:textSize="14dp"
-            android:textColor="@color/secondary_text"
-            android:text="0"
-            android:id="@+id/textView_followers"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14dp"
-            android:layout_below="@+id/textView_followers"
-            android:textColor="@color/secondary_text"
-            android:text="followers"
-            android:id="@+id/textView_followers_title"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:layout_below="@+id/textView_followers_title"
-            android:textColor="@color/secondary_text"
-            android:textSize="14dp"
-            android:text="0"
-            android:id="@+id/textView_following"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/textView_following"
-            android:textColor="@color/secondary_text"
-            android:textSize="14dp"
-            android:text="following"
-            android:id="@+id/textView_following_title"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14dp"
-            android:paddingTop="30dp"
-            android:text="5"
-            android:textStyle="bold"
-            android:layout_toRightOf="@+id/profile_picture"
-            android:textColor="@color/secondary_text"
-            android:id="@+id/textView_tokens"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14dp"
-            android:text="tokens"
-            android:layout_below="@+id/textView_tokens"
-            android:layout_toRightOf="@+id/profile_picture"
-            android:textColor="@color/secondary_text"
-            android:id="@+id/textView_tokens_title"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14dp"
-            android:text="3"
-            android:textStyle="bold"
-            android:layout_toRightOf="@+id/profile_picture"
-            android:textColor="@color/secondary_text"
-            android:layout_below="@+id/textView_tokens_title"
-            android:id="@+id/textView_reputation"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14dp"
-            android:text="reputation"
-            android:layout_toRightOf="@+id/profile_picture"
-            android:textColor="@color/secondary_text"
-            android:layout_below="@+id/textView_reputation"
-            android:id="@+id/textView_reputation_title"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:textColor="@color/primary_text"
-            android:textStyle="bold"
             android:textSize="14dp"
-            android:text="Recent Activity"
-            android:id="@+id/textView_recent_activity"/>
+            android:textStyle="bold"/>
+
+        <RelativeLayout
+            android:id="@+id/layout_followers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@+id/profile_picture">
+
+            <TextView
+                android:id="@+id/textView_followers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="0"
+                android:textColor="@color/primary_color"
+                android:textSize="14dp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/textView_followers_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView_followers"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:text="followers"
+                android:textColor="@color/secondary_text"
+                android:textSize="14dp"/>
+
+            <TextView
+                android:id="@+id/textView_following"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/textView_followers_title"
+                android:layout_centerHorizontal="true"
+                android:text="0"
+                android:textColor="@color/primary_color"
+                android:textSize="14dp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/textView_following_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView_following"
+                android:layout_centerHorizontal="true"
+                android:text="following"
+                android:textColor="@color/secondary_text"
+                android:textSize="14dp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="40dp"
+            android:layout_toLeftOf="@+id/profile_picture">
+
+            <TextView
+                android:id="@+id/textView_reputation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="0"
+                android:textColor="@color/primary_color"
+                android:textSize="14dp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/textView_reputation_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView_reputation"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:text="reputation"
+                android:textColor="@color/secondary_text"
+                android:textSize="14dp"/>
+
+            <TextView
+                android:id="@+id/textView_tokens"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView_reputation_title"
+                android:layout_centerHorizontal="true"
+                android:text="0"
+                android:textColor="@color/primary_color"
+                android:textSize="14dp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/textView_tokens_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView_tokens"
+                android:layout_centerHorizontal="true"
+                android:text="tokens"
+                android:textColor="@color/secondary_text"
+                android:textSize="14dp"/>
+
+        </RelativeLayout>
 
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/profile_feed_fragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.5"
-        android:id="@+id/profile_feed_fragment">
+        android:layout_weight="0.5">
     </RelativeLayout>
 
 </LinearLayout>

@@ -105,11 +105,9 @@ public class NotificationActivity extends AppCompatActivity {
                             listView.setAdapter(adapter);
                             noNotifications.setVisibility(View.GONE);
                             noNotificationsImage.setVisibility(View.GONE);
-                            listView.setVisibility(View.VISIBLE);
                         } else {
                             noNotifications.setVisibility(View.VISIBLE);
                             noNotificationsImage.setVisibility(View.VISIBLE);
-                            listView.setVisibility(View.GONE);
                         }
                     } else {
                         Logger.log(new Exception("Server Side Failure"));
@@ -172,7 +170,7 @@ public class NotificationActivity extends AppCompatActivity {
                 bullet.setBackgroundResource(R.drawable.oval_grey);
             }
 
-            if (item.getThumbnailId().length() > 0 && !item.downloadFailed()) {
+            if (item.getThumbnailId().length() > 0 && !item.isDownloadThumbnailFailed()) {
                 String path = Video.loadedDir.getAbsolutePath(); // NPE
                 File thumbnailFile = new File(path+"/"+item.getThumbnailId()+".jpg");
                 if (thumbnailFile.exists()) {
@@ -242,7 +240,7 @@ public class NotificationActivity extends AppCompatActivity {
         protected void onPostExecute(Integer error) {
             super.onPostExecute(error);
             if (error > 0) {
-                item.setDownloadFailed();
+                item.setDownloadThumbnailFailed();
                 progressThumbnail.setVisibility(View.INVISIBLE);
             }
             adapter.notifyDataSetChanged();

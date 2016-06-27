@@ -132,8 +132,8 @@ public class AppEngine {
         return get(urlString);
     }
 
-    protected JSONObject getFeed(String userId) {
-        String query = "?user=" + userId;
+    protected JSONObject getFeed(String userId, String type) {
+        String query = "?user=" + userId + "&type=" + type;
         String urlString = "https://subtle-analyzer-90706.appspot.com/feed" + query;
         return get(urlString);
     }
@@ -167,10 +167,10 @@ public class AppEngine {
         return get(urlString);
     }
 
-    protected JSONObject addComment(String nickname, String userId, String videoId, String comment) {
+    protected JSONObject addComment(String userId, String videoId, String comment) {
         String query = "";
         String encodedComment = encode(comment);
-        query = "comment=" + encodedComment + "&user=" + userId + "&nickname=" + nickname;
+        query = "comment=" + encodedComment + "&user=" + userId;
         String urlString = "https://subtle-analyzer-90706.appspot.com/videos/" + videoId + "/comments";
         return post(urlString, query);
     }

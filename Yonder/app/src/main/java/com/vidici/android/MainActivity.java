@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
     ActionBar actionBar;
     private ShareActionProvider mShareActionProvider;
     FragmentManager fragmentManager;
-    ViewPager mViewPager;
-    PagerAdapter mainPagerAdapter;
+    static ViewPager mViewPager;
+    static PagerAdapter mainPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,13 +144,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int i) {
             if (i == 0) {
-                Logger.trackEvent(mActivity, "Feed", "View");
                 Logger.log(Log.INFO, TAG, "Viewing Feed");
                 FeedFragment fragment = new FeedFragment();
+                Bundle bundle = new Bundle(1);
+                bundle.putBoolean("home", true);
+                fragment.setArguments(bundle);
                 return fragment;
             } else if (i == 1) {
                 channelSort = "hot";
-                Logger.trackEvent(mActivity, "Channel", "View Hot");
                 Logger.log(Log.INFO, TAG, "Hot channel view");
                 ChannelFragment fragment = new ChannelFragment();
                 Bundle bundle = new Bundle(1);
@@ -159,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                 return fragment;
             } else if (i == 2) {
                 channelSort = "new";
-                Logger.trackEvent(mActivity, "Channel", "View New");
                 Logger.log(Log.INFO, TAG, "New channel view");
                 ChannelFragment fragment = new ChannelFragment();
                 Bundle bundle = new Bundle(1);
@@ -168,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
                 return fragment;
             } else if (i == 3) {
                 channelSort = "top";
-                Logger.trackEvent(mActivity, "Channel", "View Top");
                 Logger.log(Log.INFO, TAG, "Top channel view");
                 ChannelFragment fragment = new ChannelFragment();
                 Bundle bundle = new Bundle(1);
@@ -178,12 +177,10 @@ public class MainActivity extends AppCompatActivity {
             } else if (i == 4) {
                 SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
                 if (!sharedPreferences.getBoolean("logged_in", false)) {
-                    Logger.trackEvent(mActivity, "Profile", "Login View");
                     Logger.log(Log.INFO, TAG, "Viewing Login fragment");
                     LoginFragment fragment = new LoginFragment();
                     return fragment;
                 } else {
-                    Logger.trackEvent(mActivity, "Profile", "View");
                     Logger.log(Log.INFO, TAG, "Viewing Profile");
                     ProfileFragment fragment = new ProfileFragment();
                     Bundle bundle = new Bundle(1);
@@ -220,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
     private void setShareIntent() {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "You should download this app!\n\nhttps://play.google.com/store/apps/details?id=com.vidici.android&referrer=utm_source%3Dshareapp");
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "You should download Vidici!\n\nhttps://play.google.com/store/apps/details?id=com.vidici.android&referrer=utm_source%3Dshareapp");
         sendIntent.setType("text/plain");
         if (mShareActionProvider != null) {
             mShareActionProvider.setShareIntent(sendIntent);
@@ -260,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
                 .create();
         alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         alertDialog.setMessage("You got feedback? We would love to hear from you");
+
         LayoutInflater inflater = getLayoutInflater();
         FrameLayout f1 = (FrameLayout) findViewById(android.R.id.custom); // is this the proper root?
         final View layout = inflater.inflate(R.layout.contact_form, f1);
@@ -282,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                             alertDialog.dismiss();
                             ContactUsTask contactUsTask = new ContactUsTask();
                             contactUsTask.execute(userId, body, reply);
-                            Logger.trackEvent(mActivity, "Settings", "Send");
+                            Logger.trackEvent(mActivity, "Settings", "Contacted Us");
                         }
                     }
                 });
@@ -375,33 +373,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

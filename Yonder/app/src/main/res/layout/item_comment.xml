@@ -1,62 +1,71 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-              android:paddingTop="5dp"
-              android:paddingBottom="5dp"
-    android:orientation="horizontal">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:paddingRight="20dp"
-                  android:paddingLeft="5dp"
-                  android:orientation="vertical"
-                  android:layout_gravity="center"
-                  android:gravity="center">
-
-        <Button
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/ic_up"
-            android:id="@+id/button_comment_item_like" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14dp"
-            android:text="200"
-            android:id="@+id/textView_comment_item_rating" />
-
-        <Button
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/ic_down"
-            android:id="@+id/button_comment_item_dislike" />
-
-    </LinearLayout>
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-                  android:layout_gravity="center"
+        android:layout_gravity="center"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/layout_comment_vote"
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/textView_nickname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="12dp"
-            android:textStyle="bold"
             android:text="Large Text"
-            android:id="@+id/textView_nickname" />
+            android:textSize="12dp"
+            android:textColor="@color/secondary_text"
+            android:textStyle="bold"/>
 
         <TextView
+            android:id="@+id/textView_comment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="14dp"
             android:paddingBottom="5dp"
             android:text="Large Text"
-            android:id="@+id/textView_comment" />
+            android:textColor="@color/primary_text"
+            android:textSize="14dp"/>
 
     </LinearLayout>
 
-</LinearLayout>
+
+    <LinearLayout android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentRight="true"
+                  android:layout_centerVertical="true"
+                  android:gravity="center"
+                  android:id="@+id/layout_comment_vote"
+                  android:orientation="vertical"
+                  android:paddingTop="5dp"
+                  android:paddingBottom="5dp"
+                  android:paddingLeft="5dp"
+                  android:paddingRight="10dp">
+
+        <Button
+            android:id="@+id/button_comment_item_like"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/ic_up"/>
+
+        <TextView
+            android:id="@+id/textView_comment_item_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="200"
+            android:textStyle="bold"
+            android:textColor="@color/gold"
+            android:textSize="14dp"/>
+
+        <Button
+            android:id="@+id/button_comment_item_dislike"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/ic_down"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

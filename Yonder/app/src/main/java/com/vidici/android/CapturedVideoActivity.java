@@ -82,8 +82,6 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         Logger.log(Log.INFO, TAG, "Resuming Activity");
         Alert.showVideoRule(this);
         vidView.start();
-        timer = new Timer();
-        timer.schedule(new StopPlaybackTask(), 11000);
         Logger.fbActivate(this, true);
     }
 
@@ -94,17 +92,17 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
         Logger.fbActivate(this, false);
     }
 
-    class StopPlaybackTask extends TimerTask {
-        public void run() {
-            // When you need to modify a UI element, do so on the UI thread.
-            if (vidView.isPlaying() && originalPath != null) {
-                if (vidView.getCurrentPosition() > 10000) {
-                    vidView.stopPlayback();
-                }
-            }
-            timer.cancel(); //Terminate the timer thread
-        }
-    }
+//    class StopPlaybackTask extends TimerTask { // when files selected from gallery are too long
+//        public void run() {
+//            // When you need to modify a UI element, do so on the UI thread.
+//            if (vidView.isPlaying() && originalPath != null) {
+//                if (vidView.getCurrentPosition() > 10000) {
+//                    vidView.stopPlayback();
+//                }
+//            }
+//            timer.cancel(); //Terminate the timer thread
+//        }
+//    }
 
     View.OnClickListener uploadListener = new View.OnClickListener() {
         @Override
@@ -122,7 +120,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
                 PowerManager mgr = (PowerManager)myContext.getSystemService(Context.POWER_SERVICE);
                 wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "UploadingWakeLock");
                 wakeLock.acquire(300000); // time out in case something goes wrong
-                Toast toast = Toast.makeText(myContext, "Uploading...", Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(myContext, "Uploading your new scene...", Toast.LENGTH_LONG);
                 Logger.trackEvent(myActivity, "Upload", "Upload Video");
                 toast.show();
                 vidView.pause();
@@ -154,7 +152,7 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             try {
                 if (response != null) {
                     if (response.getString("success").equals("1")) {
-                        Toast.makeText(myContext, "Reaction uploaded", Toast.LENGTH_LONG).show();
+                        Toast.makeText(myContext, "Scene uploaded", Toast.LENGTH_LONG).show();
                         spinner.setVisibility(View.GONE);
                     } else {
                         Toast.makeText(myContext, "Failed to upload", Toast.LENGTH_LONG).show();

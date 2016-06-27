@@ -46,6 +46,7 @@ public class CameraPreviewActivity extends Activity {
     CountDownTimer timer;
 	String videoId, channelId, channelName;
 	int cameraId;
+	int videoMaxLength = 15;
 
 	// Camera Preview
 
@@ -82,7 +83,7 @@ public class CameraPreviewActivity extends Activity {
 //						switchCamera.setVisibility(View.INVISIBLE);
 						counter.setVisibility(View.VISIBLE);
 						counter.setText("9");
-						timer = new CountDownTimer(10000, 1000) {
+						timer = new CountDownTimer(videoMaxLength * 1000, 1000) {
 
 							public void onTick(long millisUntilFinished) {
 								counter.setText("" + millisUntilFinished / 1000);
@@ -94,7 +95,7 @@ public class CameraPreviewActivity extends Activity {
 								counter.setVisibility(View.INVISIBLE);
 //								addVideoButton.setVisibility(View.VISIBLE);
 //								switchCamera.setVisibility(View.VISIBLE);
-								counter.setText("10");
+								counter.setText("" + videoMaxLength);
 							}
 						}.start();
 					} catch (Exception e) {
@@ -113,7 +114,7 @@ public class CameraPreviewActivity extends Activity {
 							counter.setVisibility(View.INVISIBLE);
 //							addVideoButton.setVisibility(View.VISIBLE);
 //							switchCamera.setVisibility(View.VISIBLE);
-							counter.setText("10");
+							counter.setText("" + videoMaxLength);
 						}
 					}
 					return true;
@@ -367,7 +368,7 @@ public class CameraPreviewActivity extends Activity {
 		videoId = Long.toString(System.currentTimeMillis()) + ".mp4";
         String uploadPath = Video.uploadDir.getAbsolutePath() + "/" + videoId;
 		mediaRecorder.setOutputFile(uploadPath);
-		mediaRecorder.setMaxDuration(15000); // Set max duration
+		mediaRecorder.setMaxDuration(videoMaxLength * 1000); // Set max duration
 		if (cameraFront) {
 			mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_720P));
 			mediaRecorder.setOrientationHint(270);

@@ -68,13 +68,15 @@ public class LoginFragment extends Fragment {
 			loginLayout.setVisibility(View.INVISIBLE);
 			usernameButton.setVisibility(View.VISIBLE);
 			usernameText.setVisibility(View.VISIBLE);
+			Logger.trackEvent(mActivity, "Login", "Resume Username Screen");
+		} else {
+			Logger.trackEvent(mActivity, "Login", "Initial Screen");
 		}
 
 		// Callback registration
 		loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 			@Override
 			public void onSuccess(LoginResult loginResult) {
-
 				GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
 
 					@Override
@@ -99,7 +101,7 @@ public class LoginFragment extends Fragment {
 				request.setParameters(parameters);
 				request.executeAsync();
 
-				Logger.trackEvent(mActivity, "Login", "Choose Nickname");
+				Logger.trackEvent(mActivity, "Login", "FB logged in");
 				Logger.log(Log.INFO, TAG, "Choosing nickname");
 				loginLayout.setVisibility(View.INVISIBLE);
 				usernameButton.setVisibility(View.VISIBLE);

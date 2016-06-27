@@ -92,7 +92,7 @@ class GetVideosTask extends AsyncTask<Void, Void, JSONObject> {
 						loadable.setEmpty(true);
 						loading = false;
 						adapter.notifyDataSetChanged();
-						Toast.makeText(mActivity, "No new broadcasts", Toast.LENGTH_LONG).show();
+						Toast.makeText(mActivity, "No new scenes", Toast.LENGTH_LONG).show();
 					}
 
 				} else {
