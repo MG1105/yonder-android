@@ -253,6 +253,21 @@ public class AppEngine {
         return get(urlString);
     }
 
+    protected JSONObject unlock(String userId, String code) {
+        String query = "";
+        query = "?code=" + encode(code);
+        String urlString = "https://subtle-analyzer-90706.appspot.com/users/" + userId + "/unlock" + query;
+        return get(urlString);
+    }
+
+    protected JSONObject joinWaitlist(String userId, String email) {
+        String query = "";
+        email = encode(email);
+        query = "email=" + email + "&user=" + userId;
+        String urlString = "https://subtle-analyzer-90706.appspot.com/waitlist";
+        return post(urlString, query);
+    }
+
     protected JSONObject pingHome(String userId) {
         String query = "";
         query = "?version=" + BuildConfig.VERSION_CODE;

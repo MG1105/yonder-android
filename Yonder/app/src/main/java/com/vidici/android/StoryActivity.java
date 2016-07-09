@@ -30,6 +30,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.StringTokenizer;
 
 public class StoryActivity extends Activity {
     // Crash? Cleanup video folders
@@ -56,6 +58,7 @@ public class StoryActivity extends Activity {
     TextView textGold;
     ImageView backgroundGold;
     FrameLayout profile;
+    boolean privateProfile;
 //    int position = 0;
 
     @Override
@@ -170,8 +173,8 @@ public class StoryActivity extends Activity {
 	@Override
 	protected void onPause() {
         super.onPause();
-        currentVideo.stopPlayback();
         Logger.log(Log.INFO, TAG, "Pausing Activity");
+        currentVideo.stopPlayback();
         Logger.fbActivate(this, false);
 	}
 
@@ -196,7 +199,6 @@ public class StoryActivity extends Activity {
             } else {
                 commentButton.setText(commentsTotal + " Comments");
             }
-
 //            commentsTotal = "" + (int ) (Math.random() * 100);
 //            commentButton.setText(commentsTotal + " Comments");
         } catch (Exception e) {
@@ -335,6 +337,10 @@ public class StoryActivity extends Activity {
 //            ImageView imageCircleFollow = (ImageView) myContext.findViewById(R.id.background_story_profile);
 //            imageFollow.setBackgroundResource(R.drawable.ic_followed);
 //            imageCircleFollow.setBackgroundResource(R.drawable.oval_green);
+            if (privateProfile) {
+                Toast.makeText(myContext, "This user's profile is set to private", Toast.LENGTH_LONG).show();
+                return;
+            }
             Intent intent = new Intent(myContext, ProfileActivity.class);
             intent.putExtra("profileId", profileId);
             startActivity(intent);
@@ -463,35 +469,19 @@ public class StoryActivity extends Activity {
             caption.setText(captionContent);
             String channelName = videoInfo.get(currentVideoId).getString("channel_name");
             channel.setText("#"+channelName);
-            username.setText("@"+videoInfo.get(currentVideoId).getString("username"));
-
-//            if (position == 0) {
-//                username.setText("@jenny");
-//            } else if (position == 1) {
-//                username.setText("@breadpitt");
-//            } else if (position == 2) {
-//                username.setText("@princess94");
-//            } else if (position == 3) {
-//                username.setText("@crossfitjesus");
-//            } else if (position == 4) {
-//                username.setText("@grammarjew");
-//            } else if (position == 5) {
-//                username.setText("@tacobelle");
-//            } else if (position == 6) {
-//                username.setText("@suddenlykitties");
-//            } else if (position == 7) {
-//                username.setText("@googlewasmyidea");
-//            } else if (position == 8) {
-//                username.setText("@lucidstreaming");
-//            } else if (position == 9) {
-//                username.setText("@wrecktangle");
-//            } else if (position == 10) {
-//                username.setText("@pokemonandpizza");
-//            } else if (position == 11) {
-//                username.setText("@ibiza92");
-//            }
-
             profileId = videoInfo.get(currentVideoId).getString("user_id");
+            privateProfile = false;
+
+            String name = videoInfo.get(currentVideoId).getString("username");
+            if (name.equals("null")) {
+                String[] fakeUsers = {"stanford", "breadpitt", "crossfitjesus", "grammarjew", "tacobelle", "suddelykitties", "googlewasmyidea", "lucidstreaming", "wrecktangle",
+                        "pokemonandpizza", "ibiza92", "curry"};
+                int idx = tap % fakeUsers.length;
+                name = fakeUsers[idx];
+                privateProfile = true;
+            }
+            username.setText("@"+name);
+
         } catch (JSONException e) {
             Logger.log(e);
         }
@@ -572,8 +562,12 @@ public class StoryActivity extends Activity {
                             gold++;
                             videoInfo.get(currentVideoId).put("gold", gold);
                             textGold.setText("x " + gold);
-                            Toast.makeText(myContext, "@"+videoInfo.get(currentVideoId).getString("username") + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
-//                            Toast.makeText(myContext, username.getText() + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
+                            if (privateProfile) {
+                                Toast.makeText(myContext, username.getText() + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(myContext, "@"+videoInfo.get(currentVideoId).getString("username") + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
+                            }
+//
                         } else {
                             Toast.makeText(myContext, "You ran out of tokens", Toast.LENGTH_LONG).show();
                             Logger.trackEvent(myContext, gaCategory, "Out of Gold");

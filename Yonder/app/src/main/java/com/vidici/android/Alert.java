@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.view.Window;
+import android.widget.Toast;
 
 public class Alert {
 
@@ -90,6 +91,16 @@ public class Alert {
 				}
 			});
 			alertDialog.show();
+		}
+	}
+
+	public static void showChannelIntro (final Activity activity) {
+		SharedPreferences sharedPreferences = activity.getSharedPreferences(
+				"com.vidici.android", Context.MODE_PRIVATE);
+		int count = sharedPreferences.getInt("channel_intro_count", 0);
+		if (count < 3) {
+			Toast.makeText(activity, "Tap # to start watching.\nLong press # to open camera.", Toast.LENGTH_LONG).show();
+			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		}
 	}
 

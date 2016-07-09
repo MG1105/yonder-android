@@ -10,6 +10,7 @@ import android.util.Log;
 
 public class ProfileActivity extends AppCompatActivity {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
+	static boolean signedUp;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,4 +32,13 @@ public class ProfileActivity extends AppCompatActivity {
 		}
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Logger.log(Log.INFO, TAG, "Pausing Activity");
+		if (signedUp) { // handles login screen is cached case
+			MainActivity.mViewPager.setAdapter(MainActivity.mainPagerAdapter);
+			MainActivity.mViewPager.setCurrentItem(2);
+		}
+	}
 }

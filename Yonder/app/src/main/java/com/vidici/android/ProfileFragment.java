@@ -156,6 +156,8 @@ public class ProfileFragment extends Fragment {
 
 						if (profileId.equals(User.getId(mActivity))) {
 							followFrame.setVisibility(View.INVISIBLE);
+						} else {
+							followFrame.setVisibility(View.VISIBLE);
 						}
 
 					} else {

@@ -78,6 +78,12 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name="com.vidici.android.LockActivity"
+            android:configChanges="orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name="com.vidici.android.CameraPreviewActivity"
             android:configChanges="orientation"
             android:label="@string/app_name"

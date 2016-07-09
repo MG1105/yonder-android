@@ -38,6 +38,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Random;
 
 public class ChannelFragment extends Fragment {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
@@ -61,7 +62,8 @@ public class ChannelFragment extends Fragment {
 			@Override
 			public void onClick(View v) {
 				final AlertDialog alertDialog = new AlertDialog.Builder(mActivity)
-						.setPositiveButton(android.R.string.ok, null)
+						.setPositiveButton("ADD", null)
+						.setNegativeButton("CANCEL", null)
 						.create();
 				alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -93,6 +95,13 @@ public class ChannelFragment extends Fragment {
 								}
 							}
 						});
+						Button buttonCancel = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+						buttonCancel.setOnClickListener(new View.OnClickListener() {
+							@Override
+							public void onClick(View view) {
+								alertDialog.dismiss();
+							}
+						});
 					}
 				});
 				alertDialog.show();
@@ -101,6 +110,10 @@ public class ChannelFragment extends Fragment {
 
 		GetChannelsTask getChannelsTask = new GetChannelsTask();
 		getChannelsTask.execute(User.getId(mActivity), channelSort);
+
+		if (channelSort.equals("new")) {
+			Alert.showChannelIntro(mActivity);
+		}
 
 		return view;
 	}
@@ -231,36 +244,19 @@ public class ChannelFragment extends Fragment {
 				likeButton.setEnabled(true);
 			}
 
-//			if (position == 0) {
-//				username.setText("@jenny");
-//			} else if (position == 1) {
-//				username.setText("@breadpitt");
-//			} else if (position == 2) {
-//				username.setText("@princess94");
-//			} else if (position == 3) {
-//				username.setText("@crossfitjesus");
-//			} else if (position == 4) {
-//				username.setText("@grammarjew");
-//			} else if (position == 5) {
-//				username.setText("@tacobelle");
-//			} else if (position == 6) {
-//				username.setText("@suddenlykitties");
-//			} else if (position == 7) {
-//				username.setText("@googlewasmyidea");
-//			} else if (position == 8) {
-//				username.setText("@lucidstreaming");
-//			} else if (position == 9) {
-//				username.setText("@wrecktangle");
-//			} else if (position == 10) {
-//				username.setText("@pokemonandpizza");
-//			} else if (position == 11) {
-//				username.setText("@ibiza92");
-//			}
-
 			unseen.setText(channel.getUnseen());
 			name.setText("#" + channel.getName());
 			ranking.setText(""+ (position+1));
 			rating.setText(channel.getRating());
+
+			String name =  channel.getUsername();
+			if (name.equals("null")) {
+				String[] fakeUsers = {"stanford", "breadpitt", "crossfitjesus", "grammarjew", "tacobelle", "suddelykitties", "googlewasmyidea", "lucidstreaming", "wrecktangle",
+						"pokemonandpizza", "ibiza92", "curry"};
+				int idx = position % fakeUsers.length;;
+				name = fakeUsers[idx];
+			}
+			username.setText("@"+name);
 
 			convertView.setOnClickListener(new View.OnClickListener() {
 				Channel myChannel = channel;

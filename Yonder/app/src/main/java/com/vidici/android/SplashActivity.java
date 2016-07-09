@@ -44,7 +44,12 @@ public class SplashActivity extends Activity {
 					e.printStackTrace();
 				}finally{
 					Bundle extras = getIntent().getExtras();
-					if (extras != null && extras.getBoolean("notification", false)) {
+					SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
+							"com.vidici.android", Context.MODE_PRIVATE);
+					if (!sharedPreferences.getBoolean("unlocked", false)) {
+						Intent intent = new Intent(SplashActivity.this,LockActivity.class);
+						startActivity(intent);
+					} else if (extras != null && extras.getBoolean("notification", false)) {
 						Logger.trackEvent(mActivity, "Notification", "Opened Push Notification");
 						Intent intent = new Intent(SplashActivity.this,NotificationActivity.class);
 						TaskStackBuilder.create(mActivity).addNextIntentWithParentStack(intent).startActivities();

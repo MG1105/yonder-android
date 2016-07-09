@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
@@ -47,24 +49,34 @@ public class LoginFragment extends Fragment {
 	SharedPreferences sharedPreferences;
 	EditText usernameText;
 	Button usernameButton;
-	RelativeLayout loginLayout;
+	LinearLayout loginLayout;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_login, container, false);
 		mActivity = getActivity();
+		FacebookSdk.sdkInitialize(mActivity);
+		View view = inflater.inflate(R.layout.fragment_login, container, false);
 		sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 		usernameText = (EditText) view.findViewById(R.id.fragment_login_textview_username);
 		usernameButton = (Button) view.findViewById(R.id.fragment_login_button_username);
 
 		callbackManager = CallbackManager.Factory.create();
 		loginButton = (LoginButton) view.findViewById(R.id.login_button);
-		loginLayout = (RelativeLayout) view.findViewById(R.id.relativeLayout_login);
+		loginLayout = (LinearLayout) view.findViewById(R.id.container_login);
 		loginButton.setReadPermissions(Arrays.asList("public_profile", "email"));
-		// If using in a fragment
 		loginButton.setFragment(this);
 
-		if (sharedPreferences.getString("facebook_id", "").length() != 0) {
+		if (User.isLoggedIn(mActivity)) {
+			usernameButton.setVisibility(View.INVISIBLE);
+			usernameText.setVisibility(View.INVISIBLE);
+			loginLayout.setVisibility(View.INVISIBLE);
+			ProfileFragment profileFragment = new ProfileFragment();
+			Bundle bundle = new Bundle(1);
+			bundle.putString("user_id", sharedPreferences.getString("facebook_id", ""));
+			profileFragment.setArguments(bundle);
+			FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+			transaction.replace(R.id.login_layout, profileFragment).commit();
+		} else if (sharedPreferences.getString("facebook_id", "").length() != 0) {
 			loginLayout.setVisibility(View.INVISIBLE);
 			usernameButton.setVisibility(View.VISIBLE);
 			usernameText.setVisibility(View.VISIBLE);
@@ -115,7 +127,7 @@ public class LoginFragment extends Fragment {
 
 			@Override
 			public void onError(FacebookException exception) {
-				System.out.println("onError");
+				Logger.log(exception);
 			}
 		});
 
@@ -179,7 +191,7 @@ public class LoginFragment extends Fragment {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
-						sharedPreferences.edit().putBoolean("logged_in", true).apply();
+						sharedPreferences.edit().putBoolean("logged_in", true).commit();
 						usernameButton.setVisibility(View.INVISIBLE);
 						usernameText.setVisibility(View.INVISIBLE);
 						ProfileFragment profileFragment = new ProfileFragment();
@@ -188,6 +200,7 @@ public class LoginFragment extends Fragment {
 						profileFragment.setArguments(bundle);
 						FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
 						transaction.replace(R.id.login_layout, profileFragment).commit();
+						ProfileActivity.signedUp = true;
 					} else {
 						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();

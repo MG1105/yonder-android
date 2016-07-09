@@ -4,68 +4,92 @@
     android:id="@+id/login_layout"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/relativeLayout_login">
-
-        <ImageView
-            android:layout_width="250dp"
-            android:layout_height="250dp"
-            android:layout_marginTop="30dp"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/ic_vidici"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="20dp"
-            android:id="@+id/textView_create_profile"
-            android:textColor="@color/primary_text"
-            android:layout_centerInParent="true"
-            android:text="Create a profile to continue"/>
-
-        <com.facebook.login.widget.LoginButton
-            android:id="@+id/login_button"
-            android:layout_width="200dp"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/textView_create_profile"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="80dp"/>
-
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/login_button"
-            android:layout_centerHorizontal="true">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/container_login"
+            android:orientation="vertical">
 
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginTop="15dp"
-                android:background="@drawable/ic_lock"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12dp"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="15dp"
-                android:id="@+id/textView_privacy"
-                android:textColor="@color/secondary_text"
-                android:text="We will never post to Facebook"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.5">
 
-        </LinearLayout>
+                <ImageView
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/ic_colors"/>
 
-    </RelativeLayout>
+                <ImageView
+                    android:layout_height="300dp"
+                    android:layout_width="300dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_vidici_white"/>
+
+            </FrameLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.5">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="20dp"
+                    android:layout_above="@+id/login_button"
+                    android:layout_centerHorizontal="true"
+                    android:id="@+id/textView_create_profile"
+                    android:textColor="@color/primary_text"
+                    android:text="Sign Up to Continue :)"/>
+
+                <com.facebook.login.widget.LoginButton
+                    android:id="@+id/login_button"
+                    android:layout_width="200dp"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp"
+                    android:layout_centerInParent="true"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="20dp"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/login_button"
+                    android:layout_centerHorizontal="true">
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginTop="15dp"
+                        android:background="@drawable/ic_lock"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginTop="15dp"
+                        android:id="@+id/textView_privacy"
+                        android:textColor="@color/secondary_text"
+                        android:text="We will never post to Facebook"/>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            </LinearLayout>
+
 
     <EditText
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/fragment_login_textview_username"
         android:layout_centerInParent="true"
+        android:gravity="center"
         android:hint="Claim a username"
         android:visibility="invisible"/>
 
@@ -75,7 +99,7 @@
         android:layout_below="@+id/fragment_login_textview_username"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="15dp"
-        android:text="OK"
+        android:text="GET"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:visibility="invisible"

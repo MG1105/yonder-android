@@ -20,7 +20,7 @@ public class Notification extends  Loadable{
 			this.videoId = object.getString("video_id");
 			this.channelId = object.getString("channel_id");
 			this.notificationId = object.getInt("notification_id");
-			this.id = Long.toString((int)(Math.random() * 1000000 + 1));
+			this.id = object.getString("id");
 			if (this.channelId.equals("") && this.videoId.equals("")) {
 				loadable = false;
 			}

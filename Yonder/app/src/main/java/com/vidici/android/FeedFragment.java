@@ -143,7 +143,7 @@ public class FeedFragment extends Fragment {
 		TextView rating;
 		TextView channel;
 		TextView caption;
-		TextView username;
+		TextView username, time;
 		ProgressBar progressThumbnail, progressLoading;
 
 		public FeedAdapter(Context context) {
@@ -167,9 +167,14 @@ public class FeedFragment extends Fragment {
 //			comments = (TextView) convertView.findViewById(R.id.textView_feed_item_comments);
 			channel = (TextView) convertView.findViewById(R.id.textView_feed_item_channel);
 			username = (TextView) convertView.findViewById(R.id.textView_feed_item_username);
+			time = (TextView) convertView.findViewById(R.id.textView_feed_item_time);
 
 			if (item.getThumbnailId().length() > 0 && !item.isDownloadThumbnailFailed()) {
-				String path = Video.loadedDir.getAbsolutePath(); // NPE
+				if (Video.loadedDir == null) { // if crash happens
+					Video.setPaths(mActivity);
+					Logger.init(mActivity);
+				}
+				String path = Video.loadedDir.getAbsolutePath();
 				File thumbnailFile = new File(path+"/"+item.getThumbnailId()+".jpg");
 				if (thumbnailFile.exists()) {
 					Bitmap src = BitmapFactory.decodeFile(thumbnailFile.getPath());
@@ -204,6 +209,7 @@ public class FeedFragment extends Fragment {
 //			comments.setText(item.getComments());
 			channel.setText("#" + item.getChannel());
 			username.setText("@" + item.getUsername());
+			time.setText(item.getTs());
 
 			convertView.setOnClickListener(new View.OnClickListener() {
 				FeedItem myItem = item;

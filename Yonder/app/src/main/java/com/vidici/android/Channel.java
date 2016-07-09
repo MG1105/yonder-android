@@ -13,6 +13,7 @@ public class Channel extends Loadable{
 	private String rating;
 	private int myRating;
 	private String name;
+	private String username;
 	private int rated = 0;
 	private String unseen, videos;
 
@@ -25,6 +26,7 @@ public class Channel extends Loadable{
 			this.rating = object.getString("rating");
 			this.unseen = object.getString("unseen");
 			this.videos = object.getString("videos");
+			this.username = object.getString("username");
 			rated = object.getInt("rated");
 		} catch (JSONException e) {
 			Logger.log(e);
@@ -33,6 +35,10 @@ public class Channel extends Loadable{
 
 	public String getName() {
 		return name;
+	}
+
+	public String getUsername() {
+		return username;
 	}
 
 	public String getUnseen() {

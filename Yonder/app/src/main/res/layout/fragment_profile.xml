@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.5"
-        android:background="#0D1E90FF"
+        android:background="@drawable/ic_colors_opaque"
         android:paddingTop="15dp">
 
         <FrameLayout
@@ -109,7 +109,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
             android:text="x 0"
-            android:textColor="@color/primary_text"
+            android:textColor="@color/primary_color"
             android:textSize="14dp"
             android:textStyle="bold"/>
 

@@ -28,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16dp"
-        android:text="\@medi"
+        android:text=""
         android:textStyle="bold"
         android:paddingLeft="5dp"
         android:textColor="@color/white"
@@ -129,7 +129,7 @@
             android:background="@drawable/oval_blue"/>
 
         <ImageView
-            android:id="@+id/background_story_profile1"
+            android:id="@+id/icon_story_profile"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"

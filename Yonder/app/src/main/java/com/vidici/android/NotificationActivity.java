@@ -207,7 +207,7 @@ public class NotificationActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View v) {
-                    if (item.isPlayable() && !GetVideosTask.loading) {
+                    if (myItem.isPlayable() && !GetVideosTask.loading) {
                         Intent intentFeedStart = new Intent(mActivity, StoryActivity.class);
                         intentFeedStart.putExtra("notificationId", myItem.getId());
                         startActivity(intentFeedStart);

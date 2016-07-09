@@ -15,7 +15,6 @@ import io.fabric.sdk.android.Fabric;
 public class Logger {
 
 	public static void init (Context myContext) {
-		FacebookSdk.sdkInitialize(myContext);
 		if (User.admin) {
 			return;
 		}
