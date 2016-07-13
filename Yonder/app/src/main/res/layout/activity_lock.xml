@@ -2,30 +2,46 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/lock_container_code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/lock_container_code"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary_text"
-            android:textSize="30dp"
             android:layout_marginBottom="15dp"
-            android:text="Enter your invite code"/>
+            android:text="Enter your invite code"
+            android:textColor="@color/primary_text"
+            android:textSize="30dp"/>
 
-        <EditText
-            android:id="@+id/lock_textview_code"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:hint="e.g. M2GNU4"/>
+            android:layout_marginBottom="20dp">
+
+            <EditText
+                android:id="@+id/lock_textview_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="e.g. M2GNU4"/>
+
+            <Button
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginLeft="10dp"
+                android:text="OK"
+                android:id="@+id/lock_button_code"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:background="@drawable/oval_purple"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -34,43 +50,59 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/primary_text"
-                android:text="No invite?"/>
+                android:text="No invite?"
+                android:textColor="@color/primary_text"/>
 
             <TextView
+                android:id="@+id/textview_waitlist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textview_waitlist"
-                android:textColor="@color/primary_color"
-                android:text=" Get one here"/>
+                android:text=" Get one here"
+                android:textColor="@color/primary_color"/>
 
         </LinearLayout>
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/lock_container_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:gravity="center"
         android:visibility="gone"
-        android:id="@+id/lock_container_email"
-        android:gravity="center">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary_text"
-            android:textSize="25dp"
-            android:gravity="center"
             android:layout_marginBottom="15dp"
-            android:text="Request an invite code"/>
+            android:gravity="center"
+            android:text="Request an invite code"
+            android:textColor="@color/primary_text"
+            android:textSize="30dp"/>
 
-        <EditText
-            android:id="@+id/lock_textview_email"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:hint="Email address"/>
+            android:layout_marginBottom="20dp">
+
+            <EditText
+                android:id="@+id/lock_textview_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="Email address"/>
+
+            <Button
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:id="@+id/lock_button_email"
+                android:layout_marginLeft="10dp"
+                android:text="OK"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:background="@drawable/oval_purple"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -79,15 +111,15 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/primary_text"
-                android:text="Have a code?"/>
+                android:text="Have a code?"
+                android:textColor="@color/primary_text"/>
 
             <TextView
+                android:id="@+id/textview_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textview_code"
-                android:textColor="@color/primary_color"
-                android:text=" Enter it here"/>
+                android:text=" Enter it here"
+                android:textColor="@color/primary_color"/>
 
         </LinearLayout>
 

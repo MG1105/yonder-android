@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -24,8 +25,9 @@ import org.json.JSONObject;
 public class LockActivity extends Activity {
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 	Activity mActivity;
-	EditText code, email;
-	TextView waitlist, codeButton;
+	EditText codeText, emailText;
+	TextView showWaitlist, showCode;
+	Button unlock, joinWaitlist;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,63 +36,59 @@ public class LockActivity extends Activity {
 		Logger.log(Log.INFO, TAG, "Creating Activity");
 		setContentView(R.layout.activity_lock);
 		mActivity = this;
-		code = (EditText) findViewById(R.id.lock_textview_code);
-		email = (EditText) findViewById(R.id.lock_textview_email);
-		waitlist = (TextView) findViewById(R.id.textview_waitlist);
-		codeButton = (TextView) findViewById(R.id.textview_code);
+		codeText = (EditText) findViewById(R.id.lock_textview_code);
+		emailText = (EditText) findViewById(R.id.lock_textview_email);
+		showWaitlist = (TextView) findViewById(R.id.textview_waitlist);
+		showCode = (TextView) findViewById(R.id.textview_code);
+		unlock = (Button) findViewById(R.id.lock_button_code);
+		joinWaitlist = (Button) findViewById(R.id.lock_button_email);
 		User.verify(mActivity);
 		Logger.trackEvent(mActivity, "Lock", "View");
 
-		TextView.OnEditorActionListener codeListener = new TextView.OnEditorActionListener(){
-			public boolean onEditorAction(TextView exampleView, int actionId, KeyEvent event) {
-				String codeText = code.getText().toString().trim();
-				if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
-					if (codeText.length()>0) {
-						SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
-								"com.vidici.android", Context.MODE_PRIVATE);
-						int count = sharedPreferences.getInt("unlock_count", 0);
-						if (count < 5) {
-							UnlockTask unlockTask = new UnlockTask();
-							unlockTask.execute(codeText);
-						} else {
-							Toast.makeText(mActivity, "Retry limit exceeded", Toast.LENGTH_LONG).show();
-						}
+		unlock.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				String code = codeText.getText().toString().trim();
+				if (code.length()>0) {
+					SharedPreferences sharedPreferences = mActivity.getSharedPreferences(
+							"com.vidici.android", Context.MODE_PRIVATE);
+					int count = sharedPreferences.getInt("unlock_count", 0);
+					if (count < 5) {
+						UnlockTask unlockTask = new UnlockTask();
+						unlockTask.execute(code);
+					} else {
+						Toast.makeText(mActivity, "Too many attempts", Toast.LENGTH_LONG).show();
 					}
-					if (code != null) {
-						code.setText("");
-					}
-					InputMethodManager inputManager = (InputMethodManager)
-							getSystemService(Context.INPUT_METHOD_SERVICE);
-					inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
-							getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 				}
-				return true;
-			}
-		};
-		code.setOnEditorActionListener(codeListener);
-
-		TextView.OnEditorActionListener emailListener = new TextView.OnEditorActionListener(){
-			public boolean onEditorAction(TextView exampleView, int actionId, KeyEvent event) {
-				if (actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_DOWN) {
-					String emailText = email.getText().toString().trim();
-					if (emailText.length()>0) {
-						JoinWaitlistTask joinWaitlistTask = new JoinWaitlistTask();
-						joinWaitlistTask.execute(emailText);
-					}
-					if (email != null) {
-						email.setText("");
-					}
-					InputMethodManager inputManager = (InputMethodManager)
-							getSystemService(Context.INPUT_METHOD_SERVICE);
-					inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
-							getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+				if (codeText != null) {
+					codeText.setText("");
 				}
-				return true;
+				InputMethodManager inputManager = (InputMethodManager)
+						getSystemService(Context.INPUT_METHOD_SERVICE);
+				inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
+						getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 			}
-		};
-		email.setOnEditorActionListener(emailListener);
+		});
 
-		waitlist.setOnClickListener(new View.OnClickListener() {
+		joinWaitlist.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				String email = emailText.getText().toString().trim();
+				if (email.length()>0) {
+					JoinWaitlistTask joinWaitlistTask = new JoinWaitlistTask();
+					joinWaitlistTask.execute(email);
+				}
+				if (emailText != null) {
+					emailText.setText("");
+				}
+				InputMethodManager inputManager = (InputMethodManager)
+						getSystemService(Context.INPUT_METHOD_SERVICE);
+				inputManager.hideSoftInputFromWindow((null == getCurrentFocus()) ? null :
+						getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+			}
+		});
+
+		showWaitlist.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				LinearLayout codeContainer = (LinearLayout) findViewById(R.id.lock_container_code);
@@ -101,7 +99,7 @@ public class LockActivity extends Activity {
 			}
 		});
 
-		codeButton.setOnClickListener(new View.OnClickListener() {
+		showCode.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				LinearLayout codeContainer = (LinearLayout) findViewById(R.id.lock_container_code);
@@ -152,9 +150,9 @@ public class LockActivity extends Activity {
 						} else {
 							Logger.trackEvent(mActivity, "Lock", "Failed Attempt");
 							if (count == 4) {
-								Toast.makeText(mActivity, 5-count+" retry left", Toast.LENGTH_LONG).show();
+								Toast.makeText(mActivity, 5-count+" attempt left", Toast.LENGTH_LONG).show();
 							} else {
-								Toast.makeText(mActivity, 5-count+" retries left", Toast.LENGTH_LONG).show();
+								Toast.makeText(mActivity, 5-count+" attempts left", Toast.LENGTH_LONG).show();
 							}
 							if (response.getString("unlocked").equals("0")) {
 
@@ -194,8 +192,7 @@ public class LockActivity extends Activity {
 			if (response != null) {
 				try {
 					if (response.getString("success").equals("1")) {
-						finish();
-						Toast.makeText(mActivity, "You successfully joined the the wait list :)", Toast.LENGTH_LONG).show();
+						Toast.makeText(mActivity, "You were successfully added to the waiting list :)", Toast.LENGTH_LONG).show();
 						Logger.trackEvent(mActivity, "Lock", "Joined Waitlist");
 					} else { // server side failure
 						Logger.log(new Exception("Server Side failure"));

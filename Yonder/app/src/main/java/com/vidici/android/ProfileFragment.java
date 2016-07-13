@@ -137,6 +137,9 @@ public class ProfileFragment extends Fragment {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
+						if (!isAdded()) {
+							return;
+						}
 						JSONObject profileObject = response.getJSONObject("profile");
 						userName.setText("@" + profileObject.getString("username"));
 						firstName.setText(profileObject.getString("first_name"));
@@ -181,6 +184,9 @@ public class ProfileFragment extends Fragment {
 		@Override
 		protected void onPostExecute(Integer error) {
 			super.onPostExecute(error);
+			if (!isAdded()) {
+				return;
+			}
 			if (profilePictureFile.exists()) {
 				progressProfilePicture.setVisibility(View.INVISIBLE);
 				Resources res = getResources();
@@ -217,6 +223,9 @@ public class ProfileFragment extends Fragment {
 			try {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
+						if (!isAdded()) {
+							return;
+						}
 						if (follow == 1) {
 							Toast.makeText(mActivity, "Followed", Toast.LENGTH_LONG).show();
 							ImageView imageFollow = (ImageView) mActivity.findViewById(R.id.image_follow);

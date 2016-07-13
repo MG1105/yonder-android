@@ -98,8 +98,25 @@ public class Alert {
 		SharedPreferences sharedPreferences = activity.getSharedPreferences(
 				"com.vidici.android", Context.MODE_PRIVATE);
 		int count = sharedPreferences.getInt("channel_intro_count", 0);
-		if (count < 3) {
-			Toast.makeText(activity, "Tap # to start watching.\nLong press # to open camera.", Toast.LENGTH_LONG).show();
+		if (count == 0) {
+			Toast.makeText(activity, "Tap any hashtag to start watching a Story. Tap to skip videos", Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, "Tap any hashtag to start watching a Story. Tap to skip videos", Toast.LENGTH_LONG).show();
+			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
+		} else if (count == 1) {
+			Toast.makeText(activity, "Long press any hashtag to start recording", Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, "Long press any hashtag to start recording", Toast.LENGTH_LONG).show();
+			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
+		} else if (count == 2) {
+			Toast.makeText(activity, "Tap any hashtag to start watching a Story. Tap to skip videos", Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, "Tap any hashtag to start watching a Story. Tap to skip videos", Toast.LENGTH_LONG).show();
+			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
+		} else if (count == 3) {
+			Toast.makeText(activity, "Long press any hashtag to start recording", Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, "Long press any hashtag to start recording", Toast.LENGTH_LONG).show();
+			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
+		} else if (count == 4) {
+			Toast.makeText(activity, "Click the + button to start your own hashtag", Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, "Click the + button to start your own hashtag", Toast.LENGTH_LONG).show();
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		}
 	}

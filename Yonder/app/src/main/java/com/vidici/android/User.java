@@ -22,13 +22,14 @@ public class User {
 
 	public static String getId(Context context) {
 
+		if (admin) {
+			return "897d1e5hb8u47u56jh6";
+		}
 		SharedPreferences sharedPreferences = context.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 		if (sharedPreferences.getBoolean("logged_in", false)) {
 			return sharedPreferences.getString("facebook_id", "");
 		}
-		if (admin) {
-			return "897d1e5hb8u47u56jh6";
-		}
+
 		return getAndroidId(context);
 	}
 

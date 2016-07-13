@@ -71,12 +71,12 @@ public class CameraPreviewActivity extends Activity {
 				if(event.getAction() == MotionEvent.ACTION_DOWN){
 					Logger.log(Log.INFO, TAG, "Start recording");
 					Logger.trackEvent(mActivity, "Upload", "Record Video");
-					if (!prepareMediaRecorder()) {
-						Toast.makeText(CameraPreviewActivity.this, "Unexpected error while recording", Toast.LENGTH_LONG).show();
-						mActivity.finish();
-						return true;
-					}
 					try {
+						if (!prepareMediaRecorder()) {
+							Toast.makeText(CameraPreviewActivity.this, "Unexpected error while recording", Toast.LENGTH_LONG).show();
+							mActivity.finish();
+							return true;
+						}
 						mediaRecorder.start();
 						counter = (TextView)findViewById(R.id.recording_counter);
 //						addVideoButton.setVisibility(View.INVISIBLE);
@@ -99,7 +99,7 @@ public class CameraPreviewActivity extends Activity {
 							}
 						}.start();
 					} catch (Exception e) {
-						Toast.makeText(CameraPreviewActivity.this, "Failed recording", Toast.LENGTH_LONG).show();
+						Toast.makeText(CameraPreviewActivity.this, "We do not support this device's camera settings yet :/", Toast.LENGTH_LONG).show();
 						Logger.log(new Exception("Failed Recording"));
 						mActivity.finish();
 					}
@@ -370,7 +370,12 @@ public class CameraPreviewActivity extends Activity {
 		mediaRecorder.setOutputFile(uploadPath);
 		mediaRecorder.setMaxDuration(videoMaxLength * 1000); // Set max duration
 		if (cameraFront) {
-			mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_720P));
+			try {
+				mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_720P));
+			} catch (RuntimeException e) {
+				Logger.log(Log.ERROR, TAG, "Caught runtime exception");
+				mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_FRONT, CamcorderProfile.QUALITY_480P));
+			}
 			mediaRecorder.setOrientationHint(270);
 		} else {
 			mediaRecorder.setProfile(CamcorderProfile.get(CameraInfo.CAMERA_FACING_BACK, CamcorderProfile.QUALITY_720P));

@@ -256,6 +256,9 @@ public class FeedFragment extends Fragment {
 		@Override
 		protected void onPostExecute(Integer error) {
 			super.onPostExecute(error);
+			if (!isAdded()) {
+				return;
+			}
 			if (error > 0) {
 				item.setDownloadThumbnailFailed();
 				progressThumbnail.setVisibility(View.INVISIBLE);

@@ -103,7 +103,7 @@ public class LoginFragment extends Fragment {
 							if (object.has("email"))
 								sharedPreferences.edit().putString("email", object.getString("email")).apply();
 						} catch (JSONException e) {
-							e.printStackTrace();
+							Logger.log(e);
 						}
 
 					}
@@ -192,6 +192,10 @@ public class LoginFragment extends Fragment {
 				if (response != null) {
 					if (response.getString("success").equals("1")) {
 						sharedPreferences.edit().putBoolean("logged_in", true).commit();
+						ProfileActivity.signedUp = true;
+						if (!isAdded()) {
+							return;
+						}
 						usernameButton.setVisibility(View.INVISIBLE);
 						usernameText.setVisibility(View.INVISIBLE);
 						ProfileFragment profileFragment = new ProfileFragment();
@@ -200,7 +204,6 @@ public class LoginFragment extends Fragment {
 						profileFragment.setArguments(bundle);
 						FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
 						transaction.replace(R.id.login_layout, profileFragment).commit();
-						ProfileActivity.signedUp = true;
 					} else {
 						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(mActivity, "Please check your connectivity and try again later", Toast.LENGTH_LONG).show();
