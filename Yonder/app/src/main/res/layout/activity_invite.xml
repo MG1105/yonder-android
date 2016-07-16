@@ -1,0 +1,82 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Help your friends unlock the app by sharing this code"
+            android:gravity="center"
+            android:layout_marginBottom="15dp"
+            android:textColor="@color/primary_text"
+            android:textSize="20dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="V44L"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@color/primary_color"
+            android:textSize="30dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:textColor="@color/secondary_text"
+            android:textSize="14dp"/>
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:layout_above="@+id/layout_privacy"
+        android:layout_centerHorizontal="true"
+        android:text="SHARE CODE"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:id="@+id/invite_button"
+        android:background="@color/green"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/layout_privacy"
+        android:layout_marginBottom="40dp">
+
+        <ImageView
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/ic_lock"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="15dp"
+            android:textColor="@color/secondary_text"
+            android:text="We never post without your permission"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

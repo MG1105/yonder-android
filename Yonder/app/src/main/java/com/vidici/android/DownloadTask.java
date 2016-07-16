@@ -20,9 +20,15 @@ class DownloadTask extends AsyncTask<String, Integer, Integer> {
 	private PowerManager.WakeLock mWakeLock;
 	private final String TAG = "Log." + this.getClass().getSimpleName();
 	String outputId = "";
+	boolean outOfSpace = false;
 
 	public DownloadTask(Context context) {
 		this.context = context;
+		if (Video.loadedDir.getFreeSpace() < 20000000) {
+			Logger.log(Log.ERROR, TAG, "Running out of space");
+			Toast.makeText(context, "Your phone is running out of space. Please increase your free memory and try again", Toast.LENGTH_LONG).show();
+			outOfSpace = true;
+		}
 	}
 
 	void setOutputId (String output) {
@@ -31,9 +37,7 @@ class DownloadTask extends AsyncTask<String, Integer, Integer> {
 
 	@Override
 	protected Integer doInBackground(String... urls) {
-		if (Video.loadedDir.getFreeSpace() < 20000000) {
-			Logger.log(Log.ERROR, TAG, "Running out of space");
-			Toast.makeText(context, "Your phone is running out of space. Please increase your free memory and try again", Toast.LENGTH_LONG).show();
+		if (outOfSpace) {
 			return 1;
 		}
 		for (String url : urls) {

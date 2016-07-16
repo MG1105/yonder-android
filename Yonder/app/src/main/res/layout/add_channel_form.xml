@@ -13,7 +13,7 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="@dimen/activity_vertical_margin"
         android:textColor="@color/primary_text"
-        android:text="Start a new hashtag"/>
+        android:text="Add a hashtag anyone can post videos to"/>
 
     <Space
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
         android:id="@+id/add_channel_name"
         android:textColor="@color/primary_text"
         android:text=""
-        android:hint="#HowHighCanYouRankIt" />
+        android:hint="#StartAnAwesomeVideoFeed" />
 
     <Space
         android:layout_width="match_parent"

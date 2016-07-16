@@ -165,7 +165,10 @@ public class LoginFragment extends Fragment {
 
 	protected Boolean isValidNickname(String name) {
 		String pattern= "^[a-zA-Z0-9_]*$";
-		if (name.contains(" ")) {
+		if (name.length() == 0) {
+			Toast.makeText(mActivity, "Please choose a username", Toast.LENGTH_LONG).show();
+			return false;
+		} else if (name.contains(" ")) {
 			Toast.makeText(mActivity, "Cannot contain spaces", Toast.LENGTH_LONG).show();
 			return false;
 		} else if (!name.matches(pattern)) {

@@ -20,9 +20,8 @@ public class WelcomeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		Logger.log(Log.INFO, TAG, "Creating Activity");
 		super.onCreate(savedInstanceState);
-//		setContentView(R.layout.activity_welcome_1);
+		setContentView(R.layout.activity_welcome);
 		mDetector = new GestureDetectorCompat(this, new MyGestureListener());
-
 	}
 
 	public void onResume() {
@@ -54,17 +53,10 @@ public class WelcomeActivity extends Activity {
 		@Override
 		public boolean onSingleTapUp(MotionEvent event) {
 			if (tap == 0) {
-//				setContentView(R.layout.activity_welcome_2);
-				tap = 1;
-			} else if (tap == 1) {
-				SharedPreferences sharedPreferences = WelcomeActivity.this.getSharedPreferences(
-						"com.vidici.android", Context.MODE_PRIVATE);
-				sharedPreferences.edit().putString("welcome_8", "yes").apply();
-				Intent intent = new Intent(WelcomeActivity.this,CameraPreviewActivity.class);
+				Intent intent = new Intent(WelcomeActivity.this,MainActivity.class);
 				startActivity(intent);
 				finish();
 			}
-
 			return true;
 		}
 	}

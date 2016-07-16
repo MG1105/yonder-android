@@ -145,7 +145,7 @@ public class LockActivity extends Activity {
 						if (response.getString("unlocked").equals("1")) {
 							Logger.trackEvent(mActivity, "Lock", "Unlocked");
 							sharedPreferences.edit().putBoolean("unlocked", true).apply();
-							Intent intent = new Intent(LockActivity.this, MainActivity.class);
+							Intent intent = new Intent(LockActivity.this, WelcomeActivity.class);
 							startActivity(intent);
 						} else {
 							Logger.trackEvent(mActivity, "Lock", "Failed Attempt");

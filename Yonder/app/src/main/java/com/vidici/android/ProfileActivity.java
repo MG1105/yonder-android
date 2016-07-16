@@ -37,8 +37,12 @@ public class ProfileActivity extends AppCompatActivity {
 		super.onPause();
 		Logger.log(Log.INFO, TAG, "Pausing Activity");
 		if (signedUp) { // handles login screen is cached case
-			MainActivity.mViewPager.setAdapter(MainActivity.mainPagerAdapter);
-			MainActivity.mViewPager.setCurrentItem(2);
+			try {
+				MainActivity.mViewPager.setAdapter(MainActivity.mainPagerAdapter);
+				MainActivity.mViewPager.setCurrentItem(2);
+			} catch (RuntimeException e) {
+				Logger.log(e);
+			}
 		}
 	}
 }
