@@ -417,8 +417,9 @@ public class ChannelFragment extends Fragment {
 						SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 						long now = System.currentTimeMillis();
 						sharedPreferences.edit().putLong("channel_added", now).apply();
-						Toast.makeText(mActivity, "Long press your new hashtag to start the conversation", Toast.LENGTH_LONG).show();
-						Toast.makeText(mActivity, "Long press your new hashtag to start the conversation", Toast.LENGTH_LONG).show();
+						String record = "Long press your new hashtag to post videos to it";
+						Toast.makeText(mActivity, record, Toast.LENGTH_LONG).show();
+						Toast.makeText(mActivity, record, Toast.LENGTH_LONG).show();
 					} else {
 						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(mActivity, "Failed to add channel", Toast.LENGTH_LONG).show();

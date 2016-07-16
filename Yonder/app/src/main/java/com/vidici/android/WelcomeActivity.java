@@ -53,6 +53,9 @@ public class WelcomeActivity extends Activity {
 		@Override
 		public boolean onSingleTapUp(MotionEvent event) {
 			if (tap == 0) {
+				SharedPreferences sharedPreferences = getSharedPreferences(
+						"com.vidici.android", Context.MODE_PRIVATE);
+				sharedPreferences.edit().putBoolean("seen_welcome_14", true).apply();
 				Intent intent = new Intent(WelcomeActivity.this,MainActivity.class);
 				startActivity(intent);
 				finish();

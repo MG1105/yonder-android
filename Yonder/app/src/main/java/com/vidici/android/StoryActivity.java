@@ -78,6 +78,11 @@ public class StoryActivity extends Activity {
             gaCategory = "Feed Story";
         }
 
+        if (videoInfo == null) {
+            finish();
+            return;
+        }
+
 	    uris = getContent();
 
         likeButton = (Button) findViewById(R.id.like_button);
@@ -146,6 +151,7 @@ public class StoryActivity extends Activity {
             DownloadVideos downloadVideos = new DownloadVideos();
             downloadVideos.execute("http://storage.googleapis.com/yander/" + uris.get(1).getLastPathSegment());
         }
+        Alert.showStoryIntro(myContext);
     }
 
 	@Override

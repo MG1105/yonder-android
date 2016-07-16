@@ -53,6 +53,9 @@ public class SplashActivity extends Activity {
 						Logger.trackEvent(mActivity, "Notification", "Opened Push Notification");
 						Intent intent = new Intent(SplashActivity.this,NotificationActivity.class);
 						TaskStackBuilder.create(mActivity).addNextIntentWithParentStack(intent).startActivities();
+					} else if (!sharedPreferences.getBoolean("seen_welcome_14", false)) {
+						Intent intent = new Intent(SplashActivity.this, WelcomeActivity.class);
+						startActivity(intent);
 					} else {
 						Intent intent = new Intent(SplashActivity.this,MainActivity.class);
 						startActivity(intent);
