@@ -19,73 +19,51 @@
             android:id="@+id/textView_channel_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text=""
+            android:text="#Summer16"
             android:textStyle="bold"
+            android:layout_marginBottom="10dp"
             android:textColor="@color/primary_text"
             android:textSize="14dp"/>
 
         <TextView
-            android:id="@+id/textView_channel_username"
-            android:layout_width="match_parent"
+            android:id="@+id/textView_channel_time_left"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="@color/secondary_text"
-            android:paddingBottom="3dp"
             android:layout_below="@+id/textView_channel_name"
-            android:textSize="12dp"/>
-
-        <!--<TextView-->
-            <!--android:id="@+id/textView_channel_time"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_below="@+id/textView_channel_username"-->
-            <!--android:layout_toRightOf="@+id/item_channel_image_time"-->
-            <!--android:paddingLeft="3dp"-->
-            <!--android:paddingRight="10dp"-->
-            <!--android:textColor="@color/divider_color"-->
-            <!--android:text="4h"-->
-            <!--android:textSize="12dp"/>-->
-
-        <!--<ImageView-->
-            <!--android:layout_width="13dp"-->
-            <!--android:layout_height="13dp"-->
-            <!--android:id="@+id/item_channel_image_time"-->
-            <!--android:layout_below="@+id/textView_channel_username"-->
-            <!--android:background="@drawable/ic_time"/>-->
-
+            android:textColor="@color/blue"
+            android:background="@drawable/rectangle_blue"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:layout_marginRight="10dp"
+            android:text="3h Left"
+            android:textSize="10dp"/>
 
         <TextView
             android:id="@+id/textView_channel_new"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView_channel_username"
-            android:layout_toRightOf="@+id/item_channel_image_new"
-            android:textColor="@color/divider_color"
-            android:paddingLeft="3dp"
-            android:text="0"
-            android:textSize="12dp"/>
+            android:layout_below="@+id/textView_channel_name"
+            android:layout_toRightOf="@+id/textView_channel_time_left"
+            android:textColor="@color/green"
+            android:background="@drawable/rectangle_green"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:layout_marginRight="10dp"
+            android:text="13 New"
+            android:textSize="10dp"/>
 
-
-        <FrameLayout
+        <TextView
+            android:id="@+id/textView_channel_gold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textView_channel_new"
-            android:id="@+id/item_channel_image_new"
-            android:layout_below="@+id/textView_channel_username">
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:layout_gravity="center"
-                android:background="@drawable/ic_play_grey"/>
-
-            <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:background="@drawable/stroke"
-                android:layout_gravity="center"
-                />
-
-        </FrameLayout>
+            android:layout_below="@+id/textView_channel_name"
+            android:layout_toRightOf="@+id/textView_channel_new"
+            android:textColor="@color/gold"
+            android:background="@drawable/rectangle_gold"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="2 Awards"
+            android:textSize="10dp"/>
 
     </RelativeLayout>
 
@@ -100,8 +78,8 @@
 
         <Button
             android:id="@+id/button_channel_like"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:background="@drawable/ic_up"/>
 
         <TextView
@@ -115,8 +93,8 @@
 
         <Button
             android:id="@+id/button_channel_dislike"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
             android:background="@drawable/ic_down"/>
 
     </LinearLayout>

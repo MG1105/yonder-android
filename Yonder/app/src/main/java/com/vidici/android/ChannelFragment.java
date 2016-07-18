@@ -172,9 +172,9 @@ public class ChannelFragment extends Fragment {
 
 	class ChannelAdapter extends ArrayAdapter<Channel> {
 		Channel channel;
-		TextView rating, ranking, username;
+		TextView rating, ranking;
 		TextView unseen;
-		TextView name;
+		TextView name, time, gold;
 		Button likeButton;
 		Button dislikeButton;
 		ProgressBar progressLoading;
@@ -199,8 +199,9 @@ public class ChannelFragment extends Fragment {
 			unseen = (TextView) convertView.findViewById(R.id.textView_channel_new);
 			name = (TextView) convertView.findViewById(R.id.textView_channel_name);
 			ranking = (TextView) convertView.findViewById(R.id.textView_channel_item_ranking);
+			time = (TextView) convertView.findViewById(R.id.textView_channel_time_left);
+			gold = (TextView) convertView.findViewById(R.id.textView_channel_gold);
 			rankingBackground = (ImageView) convertView.findViewById(R.id.imageView_item_channel_thumbnail_background);
-			username = (TextView) convertView.findViewById(R.id.textView_channel_username);
 			progressLoading = (ProgressBar) convertView.findViewById(R.id.progress_channel_loading);
 
 			if (channel.isPlayable()) {
@@ -244,25 +245,38 @@ public class ChannelFragment extends Fragment {
 				likeButton.setEnabled(true);
 			}
 
-			unseen.setText(channel.getUnseen());
+			if (channel.getUsername().equals("null")) {
+				time.setVisibility(View.VISIBLE);
+				time.setText("Featured");
+			} else if (channel.getTs().length() > 0) {
+				time.setVisibility(View.VISIBLE);
+				time.setText(channel.getTs() + " Left");
+			} else {
+				time.setVisibility(View.GONE);
+			}
+			if (channel.getUnseen().equals("0")) {
+				unseen.setVisibility(View.GONE);
+			} else {
+				unseen.setVisibility(View.VISIBLE);
+				unseen.setText(channel.getUnseen() + " New");
+			}
+			if (channel.getGold()  == 1) {
+				gold.setVisibility(View.VISIBLE);
+				gold.setText(channel.getGold() + " Award");
+			} else if (channel.getGold() > 1) {
+				gold.setVisibility(View.VISIBLE);
+				gold.setText(channel.getGold() + " Awards");
+			} else {
+				gold.setVisibility(View.GONE);
+			}
 			name.setText("#" + channel.getName());
 			ranking.setText(""+ (position+1));
 			rating.setText(channel.getRating());
 
-			String name =  channel.getUsername();
-			if (name.equals("null")) {
-				String[] fakeUsers = {"stanford", "breadpitt", "crossfitjesus", "grammarjew", "tacobelle", "suddelykitties", "googlewasmyidea", "lucidstreaming", "wrecktangle",
-						"pokemonandpizza", "ibiza92", "curry"};
-				int idx = position % fakeUsers.length;;
-				name = fakeUsers[idx];
-			}
-			username.setText("@"+name);
 
 			convertView.setOnClickListener(new View.OnClickListener() {
 				Channel myChannel = channel;
 				ProgressBar myProgressLoading = progressLoading;
-//				TextView u = unseen;
-//				TextView r = rating;
 
 				@Override
 				public void onClick(View v) {
@@ -278,17 +292,6 @@ public class ChannelFragment extends Fragment {
 						Logger.log(Log.INFO, TAG, "Loading channel " + myChannel.getName());
 						GetVideosTask getFeed = new GetVideosTask(mActivity, myChannel, myChannel.getId(), channelAdapter, channelInfo, channelSort);
 						getFeed.execute();
-//						new CountDownTimer(4000, 300) {
-//							int counter = 0;
-//							public void onTick(long millisUntilFinished) {
-//								counter++;
-//								r.setText("" + (counter*3 + 6));
-//								u.setText("" + counter);
-//								u.setTextColor(getResources().getColor(R.color.primary_color));
-//							}
-//							public void onFinish() {
-//							}
-//						}.start();
 					}
 				}
 			});
@@ -417,7 +420,7 @@ public class ChannelFragment extends Fragment {
 						SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 						long now = System.currentTimeMillis();
 						sharedPreferences.edit().putLong("channel_added", now).apply();
-						String record = "Long press your new hashtag to post videos to it";
+						String record = "Long press your hashtag to post videos to it. Hashtags with no videos are automatically removed";
 						Toast.makeText(mActivity, record, Toast.LENGTH_LONG).show();
 						Toast.makeText(mActivity, record, Toast.LENGTH_LONG).show();
 					} else {
@@ -439,7 +442,7 @@ public class ChannelFragment extends Fragment {
 		long lastChannelAdded = sharedPreferences.getLong("channel_added", 0);
 		long delta = System.currentTimeMillis() - lastChannelAdded;
 		if (delta < (1000 * 60 * 60 * 24)) {
-			Toast.makeText(mActivity, "You already added a hashtag in the past 24 hours. Try again later", Toast.LENGTH_LONG).show();
+			Toast.makeText(mActivity, "You can add one hashtag every 24 hours", Toast.LENGTH_LONG).show();
 			Logger.trackEvent(mActivity, "Channel", "Limit Reached");
 			return false;
 		} else if (!name.startsWith("#")) {

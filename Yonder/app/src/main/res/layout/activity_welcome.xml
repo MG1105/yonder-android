@@ -14,7 +14,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="35dp"
             android:textColor="@color/primary_text"
-            android:textSize="20dp"/>
+            android:textSize="25dp"/>
 
         <TextView
             android:layout_width="match_parent"

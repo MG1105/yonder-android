@@ -121,17 +121,16 @@ public class Alert {
 	}
 
 	public static void showInvite(final Activity activity) {
-		SharedPreferences sharedPreferences = activity.getSharedPreferences(
-				"com.vidici.android", Context.MODE_PRIVATE);
-		int count = sharedPreferences.getInt("invite_count", 0);
-		if (count == 2 || count == 5) {
-			Intent intent = new Intent(activity, InviteActivity.class);
-			activity.startActivity(intent);
-		}
-		if (count <= 5) {
-			sharedPreferences.edit().putInt("invite_count", ++count).apply();
-		}
-
+//		SharedPreferences sharedPreferences = activity.getSharedPreferences(
+//				"com.vidici.android", Context.MODE_PRIVATE);
+//		int count = sharedPreferences.getInt("invite_count", 0);
+//		if (count == 2 || count == 5) {
+//			Intent intent = new Intent(activity, InviteActivity.class);
+//			activity.startActivity(intent);
+//		}
+//		if (count <= 5) {
+//			sharedPreferences.edit().putInt("invite_count", ++count).apply();
+//		}
 	}
 
 	public static void showStoryIntro (final Activity activity) {

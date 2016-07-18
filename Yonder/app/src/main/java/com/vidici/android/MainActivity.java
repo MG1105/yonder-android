@@ -99,10 +99,10 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // Add 3 tabs, specifying the tab's text and TabListener
-        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_home)).setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_top)).setTabListener(tabListener));
         actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_hot)).setTabListener(tabListener));
         actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_new)).setTabListener(tabListener));
-        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_top)).setTabListener(tabListener));
+        actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_home)).setTabListener(tabListener));
         actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_profile)).setTabListener(tabListener));
         actionBar.setStackedBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primary_color)));
 
@@ -145,10 +145,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Fragment getItem(int i) {
             if (i == 0) {
-                Logger.log(Log.INFO, TAG, "Viewing Feed");
-                FeedFragment fragment = new FeedFragment();
+                channelSort = "top";
+                Logger.log(Log.INFO, TAG, "Top channel view");
+                ChannelFragment fragment = new ChannelFragment();
                 Bundle bundle = new Bundle(1);
-                bundle.putBoolean("home", true);
+                bundle.putString("channelSort", channelSort);
                 fragment.setArguments(bundle);
                 return fragment;
             } else if (i == 1) {
@@ -168,11 +169,10 @@ public class MainActivity extends AppCompatActivity {
                 fragment.setArguments(bundle);
                 return fragment;
             } else if (i == 3) {
-                channelSort = "top";
-                Logger.log(Log.INFO, TAG, "Top channel view");
-                ChannelFragment fragment = new ChannelFragment();
+                Logger.log(Log.INFO, TAG, "Viewing Feed");
+                FeedFragment fragment = new FeedFragment();
                 Bundle bundle = new Bundle(1);
-                bundle.putString("channelSort", channelSort);
+                bundle.putBoolean("home", true);
                 fragment.setArguments(bundle);
                 return fragment;
             } else if (i == 4) {

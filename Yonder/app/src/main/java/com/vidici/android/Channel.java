@@ -8,14 +8,16 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class Channel extends Loadable{
 	private String rating;
-	private int myRating;
+	private int myRating, gold;
 	private String name;
 	private String username;
 	private int rated = 0;
 	private String unseen, videos;
+	private String ts;
 
 	// Constructor to convert JSON object into a Java class instance
 	public Channel(JSONObject object) {
@@ -27,10 +29,20 @@ public class Channel extends Loadable{
 			this.unseen = object.getString("unseen");
 			this.videos = object.getString("videos");
 			this.username = object.getString("username");
+			this.gold = object.getInt("gold");
+			this.ts = getRemainingTime(object.getLong("ts"));
 			rated = object.getInt("rated");
 		} catch (JSONException e) {
 			Logger.log(e);
 		}
+	}
+
+	public String getTs() {
+		return ts;
+	}
+
+	public int getGold() {
+		return gold;
 	}
 
 	public String getName() {
@@ -81,6 +93,30 @@ public class Channel extends Loadable{
 			}
 		}
 		return list;
+	}
+
+	String getRemainingTime(long ts) {
+		long delta = (ts + 24 * 60 * 60) - (System.currentTimeMillis() / 1000);
+		if (delta < 0) {
+			return "";
+		}
+		long sec = TimeUnit.SECONDS.toSeconds(delta);
+		if (sec < 59) {
+			return sec + "s";
+		} else {
+			long min = TimeUnit.SECONDS.toMinutes(delta);
+			if (min < 59) {
+				return min + "m";
+			} else {
+				long hour = TimeUnit.SECONDS.toHours(delta);
+				if (hour <= 24) {
+					return hour + "h";
+				} else {
+					long days = TimeUnit.SECONDS.toDays(delta);
+					return days + "d";
+				}
+			}
+		}
 	}
 
 }

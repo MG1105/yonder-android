@@ -58,7 +58,6 @@ public class StoryActivity extends Activity {
     TextView textGold;
     ImageView backgroundGold;
     FrameLayout profile;
-    boolean privateProfile;
 //    int position = 0;
 
     @Override
@@ -343,10 +342,6 @@ public class StoryActivity extends Activity {
 //            ImageView imageCircleFollow = (ImageView) myContext.findViewById(R.id.background_story_profile);
 //            imageFollow.setBackgroundResource(R.drawable.ic_followed);
 //            imageCircleFollow.setBackgroundResource(R.drawable.oval_green);
-            if (privateProfile) {
-                Toast.makeText(myContext, "This user's profile is set to private", Toast.LENGTH_LONG).show();
-                return;
-            }
             Intent intent = new Intent(myContext, ProfileActivity.class);
             intent.putExtra("profileId", profileId);
             startActivity(intent);
@@ -476,17 +471,15 @@ public class StoryActivity extends Activity {
             String channelName = videoInfo.get(currentVideoId).getString("channel_name");
             channel.setText("#"+channelName);
             profileId = videoInfo.get(currentVideoId).getString("user_id");
-            privateProfile = false;
 
             String name = videoInfo.get(currentVideoId).getString("username");
             if (name.equals("null")) {
-                String[] fakeUsers = {"stanford", "breadpitt", "crossfitjesus", "grammarjew", "tacobelle", "suddelykitties", "googlewasmyidea", "lucidstreaming", "wrecktangle",
-                        "pokemonandpizza", "ibiza92", "curry"};
-                int idx = tap % fakeUsers.length;
-                name = fakeUsers[idx];
-                privateProfile = true;
+                profile.setVisibility(View.GONE);
+                username.setText("");
+            } else {
+                profile.setVisibility(View.VISIBLE);
+                username.setText("@"+name);
             }
-            username.setText("@"+name);
 
         } catch (JSONException e) {
             Logger.log(e);
@@ -568,8 +561,8 @@ public class StoryActivity extends Activity {
                             gold++;
                             videoInfo.get(currentVideoId).put("gold", gold);
                             textGold.setText("x " + gold);
-                            if (privateProfile) {
-                                Toast.makeText(myContext, username.getText() + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
+                            if (username.getText().length() == 0) {
+                                Toast.makeText(myContext, "Vidici Award sent!", Toast.LENGTH_LONG).show();
                             } else {
                                 Toast.makeText(myContext, "@"+videoInfo.get(currentVideoId).getString("username") + " received a Vidici Award from you!", Toast.LENGTH_LONG).show();
                             }
