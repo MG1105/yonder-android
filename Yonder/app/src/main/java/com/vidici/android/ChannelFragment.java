@@ -111,10 +111,6 @@ public class ChannelFragment extends Fragment {
 		GetChannelsTask getChannelsTask = new GetChannelsTask();
 		getChannelsTask.execute(User.getId(mActivity), channelSort);
 
-		if (channelSort.equals("new")) {
-			Alert.showChannelIntro(mActivity);
-		}
-
 		return view;
 	}
 
@@ -441,7 +437,7 @@ public class ChannelFragment extends Fragment {
 		SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 		long lastChannelAdded = sharedPreferences.getLong("channel_added", 0);
 		long delta = System.currentTimeMillis() - lastChannelAdded;
-		if (delta < (1000 * 60 * 60 * 24)) {
+		if (delta < (1000 * 60 * 60 * 24) && !User.admin) {
 			Toast.makeText(mActivity, "You can add one hashtag every 24 hours", Toast.LENGTH_LONG).show();
 			Logger.trackEvent(mActivity, "Channel", "Limit Reached");
 			return false;

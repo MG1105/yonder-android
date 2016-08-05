@@ -101,19 +101,16 @@ public class Alert {
 		int count = sharedPreferences.getInt("channel_intro_count", 0);
 		String watch = "Tap any hashtag to watch its video feed";
 		String record = "Long press any hashtag to post videos to it";
+		String hashtags = "Hashtags are ranked in the first 3 tabs (most likes, trending, and newest)";
 		if (count == 0) {
 			Toast.makeText(activity, watch, Toast.LENGTH_LONG).show();
 			Toast.makeText(activity, watch, Toast.LENGTH_LONG).show();
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		} else if (count == 1) {
-			Toast.makeText(activity, record, Toast.LENGTH_LONG).show();
-			Toast.makeText(activity, record, Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, hashtags, Toast.LENGTH_LONG).show();
+			Toast.makeText(activity, hashtags, Toast.LENGTH_LONG).show();
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		} else if (count == 2) {
-			Toast.makeText(activity, watch, Toast.LENGTH_LONG).show();
-			Toast.makeText(activity, watch, Toast.LENGTH_LONG).show();
-			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
-		} else if (count == 3) {
 			Toast.makeText(activity, record, Toast.LENGTH_LONG).show();
 			Toast.makeText(activity, record, Toast.LENGTH_LONG).show();
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
@@ -121,16 +118,16 @@ public class Alert {
 	}
 
 	public static void showInvite(final Activity activity) {
-//		SharedPreferences sharedPreferences = activity.getSharedPreferences(
-//				"com.vidici.android", Context.MODE_PRIVATE);
-//		int count = sharedPreferences.getInt("invite_count", 0);
-//		if (count == 2 || count == 5) {
-//			Intent intent = new Intent(activity, InviteActivity.class);
-//			activity.startActivity(intent);
-//		}
-//		if (count <= 5) {
-//			sharedPreferences.edit().putInt("invite_count", ++count).apply();
-//		}
+		SharedPreferences sharedPreferences = activity.getSharedPreferences(
+				"com.vidici.android", Context.MODE_PRIVATE);
+		int count = sharedPreferences.getInt("invite_count_16", 0);
+		if (count == 2 || count == 5) {
+			Intent intent = new Intent(activity, InviteActivity.class);
+			activity.startActivity(intent);
+		}
+		if (count <= 5) {
+			sharedPreferences.edit().putInt("invite_count_16", ++count).apply();
+		}
 	}
 
 	public static void showStoryIntro (final Activity activity) {

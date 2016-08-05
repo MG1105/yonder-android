@@ -1,6 +1,8 @@
 package com.vidici.android;
 
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import com.google.android.gms.analytics.Tracker;
 import android.app.Application;
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -11,6 +13,16 @@ import com.google.android.gms.analytics.GoogleAnalytics;
  */
 public class VidiciApplication extends Application {
 	private Tracker mTracker;
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		if (User.admin) {
+			return;
+		}
+		FacebookSdk.sdkInitialize(getApplicationContext());
+		AppEventsLogger.activateApp(this);
+	}
 
 	/**
 	 * Gets the default {@link Tracker} for this {@link android.app.Application}.

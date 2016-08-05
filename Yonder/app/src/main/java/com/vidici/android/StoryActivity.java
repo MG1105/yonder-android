@@ -45,7 +45,7 @@ public class StoryActivity extends Activity {
     Button dislikeButton;
     Button commentButton;
     TextView ratingText;
-    TextView caption, channel, username;
+    TextView caption, channel, username, college;
     int myRating = 0;
     int rating;
     int rated, gold;
@@ -91,6 +91,7 @@ public class StoryActivity extends Activity {
         caption = (TextView) findViewById(R.id.textView_caption);
         username = (TextView) findViewById(R.id.textview_story_username);
         channel = (TextView) findViewById(R.id.textView_channel);
+        college = (TextView) findViewById(R.id.story_textView_college);
         spinner = (ProgressBar)findViewById(R.id.progress_videoview);
         textGold = (TextView) myContext.findViewById(R.id.textview_story_gold);
         backgroundGold = (ImageView) myContext.findViewById(R.id.imageView_story_gold_background);
@@ -235,7 +236,7 @@ public class StoryActivity extends Activity {
                 dislikeButton.setBackgroundResource(R.drawable.ic_down_white);
             }
 
-            if (!User.admin) {
+            if (User.admin) {
                 dislikeButton.setEnabled(true);
                 likeButton.setEnabled(true);
             }
@@ -473,12 +474,23 @@ public class StoryActivity extends Activity {
             profileId = videoInfo.get(currentVideoId).getString("user_id");
 
             String name = videoInfo.get(currentVideoId).getString("username");
+            String collegeName = videoInfo.get(currentVideoId).getString("college");
             if (name.equals("null")) {
                 profile.setVisibility(View.GONE);
                 username.setText("");
+                String[] fakeColleges = {"Arizona State", "Penn State", "University of Iowa", "University of Illinois", "University of Georgia", "Louisiana State", "University of Colorado", "Iowa State", "University of Wisconsin", "Tulane University", "West Virginia University", "Florida State"};
+//                int idx = tap % fakeColleges.length;
+                Random r = new Random();
+                int idx = r.nextInt(fakeColleges.length);
+                college.setText(fakeColleges[idx]);
             } else {
                 profile.setVisibility(View.VISIBLE);
                 username.setText("@"+name);
+                if (collegeName.equals("null")) {
+                    college.setText("");
+                } else {
+                    college.setText(collegeName);
+                }
             }
 
         } catch (JSONException e) {

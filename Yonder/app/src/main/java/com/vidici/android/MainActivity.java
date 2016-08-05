@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         actionBar.addTab(actionBar.newTab().setCustomView(findViewById(R.id.tab_icon_profile)).setTabListener(tabListener));
         actionBar.setStackedBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primary_color)));
 
-        Alert.showInvite(mActivity);
+//        Alert.showInvite(mActivity);
     }
 
     @Override
@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Logger.log(Log.INFO, TAG, "Resuming Activity");
         Logger.fbActivate(this, true);
+        Alert.showChannelIntro(mActivity);
     }
 
     @Override

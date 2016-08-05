@@ -117,17 +117,19 @@ public class Video {
 	}
 
 	static void cleanup (File folder) {
-		File [] listFile = folder.listFiles();
-		if (listFile != null) {
-			for (File file :listFile) {
-				if (file.getAbsolutePath().endsWith("nomedia")) {
-					continue;
-				}
-				long last = file.lastModified();
-				long now = System.currentTimeMillis();
-				if ((now - last)/3600000 > 0.25){ // too aggressive?  depending on free space
-					Logger.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
-					file.delete();
+		if (folder != null) {
+			File [] listFile = folder.listFiles();
+			if (listFile != null) {
+				for (File file :listFile) {
+					if (file.getAbsolutePath().endsWith("nomedia")) {
+						continue;
+					}
+					long last = file.lastModified();
+					long now = System.currentTimeMillis();
+					if ((now - last)/3600000 > 0.25){ // too aggressive?  depending on free space
+						Logger.log(Log.INFO, "Log.Video", "Deleting " + file.getAbsolutePath());
+						file.delete();
+					}
 				}
 			}
 		}

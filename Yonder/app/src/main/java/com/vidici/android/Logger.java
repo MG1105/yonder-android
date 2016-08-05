@@ -39,15 +39,15 @@ public class Logger {
 		Crashlytics.logException(e);
 	}
 
-	public static void fbActivate(Context context, boolean on) {
-		if (User.admin) {
-			return;
-		}
-		if (on) {
-			AppEventsLogger.activateApp(context);
-		} else {
-			AppEventsLogger.deactivateApp(context);
-		}
+	public static void fbActivate(Context context, boolean on) { // remove from all activities
+//		if (User.admin) {
+//			return;
+//		}
+//		if (on) {
+//			AppEventsLogger.activateApp(context);
+//		} else {
+//			AppEventsLogger.deactivateApp(context);
+//		}
 	}
 
 	// Google Analytics

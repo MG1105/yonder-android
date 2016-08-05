@@ -37,14 +37,14 @@
 			<!--android:scaleType="fitXY"-->
 			<!--android:background="@drawable/ic_switch" />-->
 
-		<!--<Button-->
-			<!--android:id="@+id/button_add"-->
-			<!--android:layout_width="50dp"-->
-			<!--android:layout_height="50dp"-->
-			<!--android:layout_below="@id/button_ChangeCamera"-->
-			<!--android:layout_alignParentRight="true"-->
-			<!--android:scaleType="fitXY"-->
-			<!--android:background="@drawable/ic_plus"/>-->
+		<Button
+			android:id="@+id/button_add"
+			android:layout_width="50dp"
+			android:layout_height="50dp"
+			android:visibility="gone"
+			android:layout_alignParentRight="true"
+			android:scaleType="fitXY"
+			android:background="@drawable/ic_plus"/>
 
         <TextView
             android:layout_width="wrap_content"

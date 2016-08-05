@@ -74,6 +74,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
 	    });
         uploadButton = (Button) findViewById(R.id.button_upload);
         uploadButton.setOnClickListener(uploadListener);
+        if (User.admin) {
+            createThumbnailGalleryFile();
+        }
     }
 
     @Override
@@ -139,7 +142,9 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     class UploadVideoTask extends AsyncTask<Void, Void, JSONObject> {
 
         protected JSONObject doInBackground(Void... params) {
-            compressVideo();
+            if (!User.admin) {
+                compressVideo();
+            }
             userId = User.getId(myContext);
             AppEngine gae = new AppEngine();
             Logger.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s",
@@ -214,6 +219,31 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
             }
             tmp.delete();
             new File(uploadPath + "/" + videoId + ".jpg").delete();
+        } catch (Throwable e) {
+            Logger.log(e);
+        }
+    }
+
+    void createThumbnailGalleryFile() {
+        LoadJNI vk = new LoadJNI(); // reduce library size
+        try {
+            String thumbnailCommand = "ffmpeg -y -i " + uploadPath + "/"+ videoId + " -vf scale=178:100 -ss 00:00:00.000 -t 00:00:03 "
+                    + uploadPath + "/" + videoId + ".jpg";
+            Logger.log(Log.INFO, TAG, thumbnailCommand);
+            String[] complexCommand = GeneralUtils.utilConvertToComplex(thumbnailCommand);
+            vk.run(complexCommand, uploadPath, getApplicationContext());
+
+            String thumbnailCropCommand = "ffmpeg -y -i " + uploadPath + "/" + videoId + ".jpg" + " -vf crop=100:100 "
+                    + uploadPath + "/" + videoId + ".jpg";
+            Logger.log(Log.INFO, TAG, thumbnailCropCommand);
+            complexCommand = GeneralUtils.utilConvertToComplex(thumbnailCropCommand);
+            vk.run(complexCommand, uploadPath, getApplicationContext());
+
+            if (cameraFront) {
+                rotateImage(uploadPath + "/" + videoId + ".jpg", 270);
+            } else {
+                rotateImage(uploadPath + "/" + videoId + ".jpg", 90);
+            }
         } catch (Throwable e) {
             Logger.log(e);
         }

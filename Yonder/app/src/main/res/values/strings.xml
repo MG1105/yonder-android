@@ -4,4 +4,19 @@
     <string name="title_activity_load_feed">Vidici</string>
     <string name="title_activity_comment">Comments</string>
 
+    <string-array name="colleges">
+        <item>Arizona State</item>
+        <item>Florida State</item>
+        <item>Iowa State</item>
+        <item>Louisiana State</item>
+        <item>Penn State</item>
+        <item>Tulane University</item>
+        <item>University of Colorado</item>
+        <item>University of Georgia</item>
+        <item>University of Illinois</item>
+        <item>University of Iowa</item>
+        <item>University of Wisconsin</item>
+        <item>West Virginia University</item>
+    </string-array>
+
 </resources>

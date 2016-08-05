@@ -12,6 +12,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.facebook.share.model.AppInviteContent;
+import com.facebook.share.widget.AppInviteDialog;
+
 public class InviteActivity extends Activity {
 
 	private final String TAG = "Log." + this.getClass().getSimpleName();
@@ -35,12 +38,24 @@ public class InviteActivity extends Activity {
 		invite.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Intent sendIntent = new Intent();
-				sendIntent.setAction(Intent.ACTION_SEND);
-				sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out Vidici! It's invite only but this code will get you in \"V44L\"\n\nhttps://play.google.com/store/apps/details?id=com.vidici.android&referrer=utm_source%3Dsharecode");
-				sendIntent.setType("text/plain");
-				startActivity(Intent.createChooser(sendIntent, "SHARE CODE"));
-				Logger.trackEvent(mActivity, "Invite", "Share");
+//				Intent sendIntent = new Intent();
+//				sendIntent.setAction(Intent.ACTION_SEND);
+//				sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out Vidici! It's invite only but this code will get you in \"V44L\"\n\nhttps://play.google.com/store/apps/details?id=com.vidici.android&referrer=utm_source%3Dsharecode");
+//				sendIntent.setType("text/plain");
+//				startActivity(Intent.createChooser(sendIntent, "SHARE CODE"));
+//				Logger.trackEvent(mActivity, "Invite", "Share");
+
+				if (AppInviteDialog.canShow()) {
+					String appLinkUrl = "https://fb.me/1594792200819208";
+					String previewImageUrl = "http://storage.googleapis.com/yander/fb_invite.jpg";
+					AppInviteContent content = new AppInviteContent.Builder()
+							.setApplinkUrl(appLinkUrl)
+							.setPreviewImageUrl(previewImageUrl)
+							.setPromotionDetails("Invite Only Access", User.getId(mActivity).substring(0,10))
+							.build();
+					AppInviteDialog.show(mActivity, content);
+					Logger.trackEvent(mActivity, "Invite", "Fb Invite");
+				}
 			}
 		});
 	}

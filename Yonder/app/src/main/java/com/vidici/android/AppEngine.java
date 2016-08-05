@@ -152,10 +152,10 @@ public class AppEngine {
         return get(urlString);
     }
 
-    protected JSONObject addProfile(String androidId, String accountId, String firstName, String lastName, String email, String username) {
+    protected JSONObject addProfile(String androidId, String accountId, String firstName, String lastName, String email, String username, String college) {
         String query = "";
         query = "android_id=" + androidId + "&account_id=" + accountId + "&first_name=" + firstName + "&last_name=" + lastName + "&email=" + email
-                + "&username=" + username;
+                + "&username=" + username+ "&college=" + college;
         String urlString = "https://subtle-analyzer-90706.appspot.com/profile";
         return post(urlString, query);
     }
@@ -257,6 +257,13 @@ public class AppEngine {
         String query = "";
         query = "?code=" + encode(code);
         String urlString = "https://subtle-analyzer-90706.appspot.com/users/" + userId + "/unlock" + query;
+        return get(urlString);
+    }
+
+    protected JSONObject invited(String userId, String by) {
+        String query = "";
+        query = "?by=" + encode(by);
+        String urlString = "https://subtle-analyzer-90706.appspot.com/users/" + userId + "/invited" + query;
         return get(urlString);
     }
 

@@ -154,8 +154,11 @@ public class CameraPreviewActivity extends Activity {
 //		switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
 //		switchCamera.setOnClickListener(switchCameraListener);
 
-//		addVideoButton = (Button) findViewById(R.id.button_add);
-//		addVideoButton.setOnClickListener(addVideoListener);
+		if (User.admin) {
+			addVideoButton = (Button) findViewById(R.id.button_add);
+			addVideoButton.setVisibility(View.VISIBLE);
+			addVideoButton.setOnClickListener(addVideoListener);
+		}
 
 	}
 
