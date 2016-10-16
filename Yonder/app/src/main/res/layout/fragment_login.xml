@@ -8,6 +8,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/container_login"
+            android:visibility="visible"
             android:orientation="vertical">
 
 
@@ -43,7 +44,7 @@
                     android:layout_centerHorizontal="true"
                     android:id="@+id/textView_create_profile"
                     android:textColor="@color/primary_text"
-                    android:text="Sign Up to Continue :)"/>
+                    android:text="Create an account to continue"/>
 
                 <com.facebook.login.widget.LoginButton
                     android:id="@+id/login_button"
@@ -75,35 +76,54 @@
                         android:layout_marginTop="15dp"
                         android:id="@+id/textView_privacy"
                         android:textColor="@color/secondary_text"
-                        android:text="We will never post to Facebook"/>
+                        android:text="We use Facebook to verify your school"/>
 
                 </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14dp"
+                    android:id="@+id/login_skip"
+                    android:layout_marginBottom="20dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="@color/blue"
+                    android:visibility="gone"
+                    android:text="Skip for now"/>
 
             </RelativeLayout>
 
             </LinearLayout>
 
-
-    <EditText
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/fragment_login_textview_username"
+        android:visibility="gone"
+        android:id="@+id/login_username_container"
         android:layout_centerInParent="true"
-        android:gravity="center"
-        android:hint="Claim a username"
-        android:visibility="invisible"/>
+        android:orientation="vertical">
 
-    <Button
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_below="@+id/fragment_login_textview_username"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:text="GET"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        android:visibility="invisible"
-        android:background="@drawable/oval"
-        android:id="@+id/fragment_login_button_username"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:id="@+id/fragment_login_textview_username"
+            android:hint="Claim a username"/>
+
+        <Button
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="DONE"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:background="@color/green"
+            android:id="@+id/fragment_login_button_username"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

@@ -142,14 +142,17 @@ public class CapturedVideoActivity extends Activity { // Test phone screen off/l
     class UploadVideoTask extends AsyncTask<Void, Void, JSONObject> {
 
         protected JSONObject doInBackground(Void... params) {
+            String college_admin = "";
             if (!User.admin) {
                 compressVideo();
+            } else {
+                college_admin = myActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE).getString("college", "");
             }
             userId = User.getId(myContext);
             AppEngine gae = new AppEngine();
             Logger.log(Log.INFO, TAG, String.format("Uploading uploadPath %s videoId %s caption %s userId %s",
                     uploadPath, videoId, caption, userId));
-            JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, channelId);
+            JSONObject response = gae.uploadVideo(uploadPath, videoId, caption, userId, channelId, college_admin);
             return response;
         }
 

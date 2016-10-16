@@ -31,11 +31,26 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/textView_channel_name"
             android:textColor="@color/blue"
-            android:background="@drawable/rectangle_blue"
+            android:background="@android:color/transparent"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
+            android:paddingTop="2dp"
             android:layout_marginRight="10dp"
-            android:text="3h Left"
+            android:text="3h"
+            android:textSize="10dp"/>
+
+        <TextView
+            android:id="@+id/textView_channel_nsfw"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView_channel_name"
+            android:layout_toRightOf="@+id/textView_channel_time_left"
+            android:textColor="@color/red"
+            android:background="@drawable/rectangle_red"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="nsfw"
+            android:layout_marginRight="10dp"
             android:textSize="10dp"/>
 
         <TextView
@@ -43,13 +58,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/textView_channel_name"
-            android:layout_toRightOf="@+id/textView_channel_time_left"
+            android:layout_toRightOf="@+id/textView_channel_nsfw"
             android:textColor="@color/green"
             android:background="@drawable/rectangle_green"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
             android:layout_marginRight="10dp"
-            android:text="13 New"
+            android:text="13 new"
             android:textSize="10dp"/>
 
         <TextView
@@ -62,7 +77,7 @@
             android:background="@drawable/rectangle_gold"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:text="2 Awards"
+            android:text="2 awards"
             android:textSize="10dp"/>
 
     </RelativeLayout>

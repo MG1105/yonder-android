@@ -21,7 +21,7 @@ public class AppEngine {
     String response;
     HttpURLConnection conn = null;
 
-    protected JSONObject uploadVideo(String uploadPath, String videoId, String caption, String userId, String channelId) {
+    protected JSONObject uploadVideo(String uploadPath, String videoId, String caption, String userId, String channelId, String college_admin) {
         DataOutputStream dos;
         String lineEnd = "\r\n";
         String twoHyphens = "--";
@@ -33,7 +33,8 @@ public class AppEngine {
         try
         {
             String encodedCaption = URLEncoder.encode(caption, "UTF-8");
-            query = "?caption=" + encodedCaption + "&user=" + userId + "&channel=" + channelId;
+            String encodedCollege = URLEncoder.encode(college_admin, "UTF-8");
+            query = "?caption=" + encodedCaption + "&user=" + userId + "&channel=" + channelId+ "&college=" + encodedCollege;
 
             String urlString = "https://subtle-analyzer-90706.appspot.com/videos" + query;
 
@@ -175,10 +176,10 @@ public class AppEngine {
         return post(urlString, query);
     }
 
-    protected JSONObject addChannel(String userId, String channelName) {
+    protected JSONObject addChannel(String userId, String channelName, String nsfw) {
         String query = "";
         channelName = encode(channelName);
-        query = "channel=" + channelName + "&user=" + userId;
+        query = "channel=" + channelName + "&user=" + userId+ "&nsfw=" + nsfw;
         String urlString = "https://subtle-analyzer-90706.appspot.com/channels";
         return post(urlString, query);
     }
@@ -267,10 +268,11 @@ public class AppEngine {
         return get(urlString);
     }
 
-    protected JSONObject joinWaitlist(String userId, String email) {
+    protected JSONObject joinWaitlist(String userId, String email, String college) {
         String query = "";
         email = encode(email);
-        query = "email=" + email + "&user=" + userId;
+        college = encode(college);
+        query = "email=" + email + "&user=" + userId + "&college=" + college;
         String urlString = "https://subtle-analyzer-90706.appspot.com/waitlist";
         return post(urlString, query);
     }

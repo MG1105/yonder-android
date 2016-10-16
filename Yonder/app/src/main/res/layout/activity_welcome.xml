@@ -1,37 +1,160 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:gravity="center"
+android:orientation="vertical">
+
+<LinearLayout
+    android:id="@+id/welcome_container_college"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin">
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Welcome inside the exclusive Vidici preview! :)"
-            android:gravity="center"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="35dp"
-            android:textColor="@color/primary_text"
-            android:textSize="25dp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text='"We created a social app that is less about individuals and more about conversation."\n\n-Abraham Lincoln, 2016'
-            android:gravity="center"
-            android:textColor="@color/primary_text"
-            android:textSize="16dp"/>
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=" Tap to continue"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:textColor="@color/primary_color"/>
+        android:layout_marginBottom="15dp"
+        android:text="Which college do you go to?"
+        android:textColor="@color/primary_text"
+        android:textSize="20dp"/>
 
-</RelativeLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="20dp">
+
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="15dp"
+            android:gravity="center"
+            android:id="@+id/activity_welcome_spinner_college"
+            android:entries="@array/colleges"/>
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:text="OK"
+            android:id="@+id/welcome_button_college"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:background="@color/green"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="College not listed?"
+            android:textColor="@color/primary_text"/>
+
+        <TextView
+            android:id="@+id/welcome_textview_waitlist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" Request it here"
+            android:textColor="@color/primary_color"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+
+<LinearLayout
+    android:id="@+id/welcome_container_request"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:visibility="gone"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:gravity="center"
+        android:text="Request your college"
+        android:textColor="@color/primary_text"
+        android:textSize="20dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="20dp">
+
+
+        <EditText
+            android:id="@+id/welcome_edittext_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:hint="Email address"/>
+
+        <EditText
+            android:id="@+id/welcome_edittext_college"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:gravity="center"
+            android:hint="College Name"/>
+
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:id="@+id/welcome_button_request"
+            android:text="OK"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:background="@color/green"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/welcome_container_requested"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:gravity="center"
+            android:text="Your school was added to the waiting list"
+            android:textColor="@color/primary_text"
+            android:textSize="20dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="While you wait,"
+                android:textColor="@color/primary_text"/>
+
+            <TextView
+                android:id="@+id/welcome_textview_continue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" check out other schools"
+                android:textColor="@color/primary_color"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

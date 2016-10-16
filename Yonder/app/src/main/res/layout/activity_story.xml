@@ -80,11 +80,46 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginRight="2dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:gravity="center"
         android:paddingRight="5dp"
         android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:textColor="@color/white"
+            android:layout_above="@+id/frame_story_gold"
+            android:textStyle="bold"
+            android:layout_alignParentRight="true"
+            android:id="@+id/textview_story_gold"
+            android:text="x 0"/>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="25dp"
+            android:layout_alignParentRight="true"
+            android:id="@+id/frame_story_gold">
+
+            <ImageView
+                android:id="@+id/imageView_story_gold_background"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:background="@drawable/oval_white"/>
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/imageview_gold"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_black_award"/>
+
+        </FrameLayout>
 
         <Button
             style="?android:attr/buttonStyleSmall"
@@ -124,14 +159,25 @@
         android:visibility="gone"
         android:layout_centerInParent="true"/>
 
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ic_more"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:id="@+id/story_more_button"/>
+
+
     <FrameLayout
         android:id="@+id/frame_story_profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="10dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/story_more_button"
         android:visibility="visible">
 
         <ImageView
@@ -148,44 +194,5 @@
             android:background="@drawable/ic_user"/>
 
     </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_below="@+id/frame_story_profile"
-        android:layout_alignParentRight="true"
-        android:id="@+id/frame_story_gold">
-
-        <ImageView
-            android:id="@+id/imageView_story_gold_background"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:background="@drawable/oval_white"/>
-
-        <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:id="@+id/imageview_gold"
-            android:layout_gravity="center"
-            android:background="@drawable/ic_black_award"/>
-
-    </FrameLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20dp"
-        android:textColor="@color/white"
-        android:layout_below="@+id/frame_story_gold"
-        android:textStyle="bold"
-        android:layout_alignParentRight="true"
-        android:paddingRight="10dp"
-        android:id="@+id/textview_story_gold"
-        android:text="x 0"/>
-
-
 
 </RelativeLayout>

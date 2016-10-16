@@ -21,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.CallbackManager;
@@ -49,7 +51,8 @@ public class LoginFragment extends Fragment {
 	SharedPreferences sharedPreferences;
 	EditText usernameText;
 	Button usernameButton;
-	LinearLayout loginLayout;
+	LinearLayout loginLayout, infoLayout;
+	TextView skip;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,16 +62,17 @@ public class LoginFragment extends Fragment {
 		sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 		usernameText = (EditText) view.findViewById(R.id.fragment_login_textview_username);
 		usernameButton = (Button) view.findViewById(R.id.fragment_login_button_username);
+		skip = (TextView) view.findViewById(R.id.login_skip);
 
 		callbackManager = CallbackManager.Factory.create();
 		loginButton = (LoginButton) view.findViewById(R.id.login_button);
 		loginLayout = (LinearLayout) view.findViewById(R.id.container_login);
+		infoLayout = (LinearLayout) view.findViewById(R.id.login_username_container);
 		loginButton.setReadPermissions(Arrays.asList("public_profile", "email"));
 		loginButton.setFragment(this);
 
 		if (User.isLoggedIn(mActivity)) {
-			usernameButton.setVisibility(View.INVISIBLE);
-			usernameText.setVisibility(View.INVISIBLE);
+			infoLayout.setVisibility(View.INVISIBLE);
 			loginLayout.setVisibility(View.INVISIBLE);
 			ProfileFragment profileFragment = new ProfileFragment();
 			Bundle bundle = new Bundle(1);
@@ -78,11 +82,15 @@ public class LoginFragment extends Fragment {
 			transaction.replace(R.id.login_layout, profileFragment).commit();
 		} else if (sharedPreferences.getString("facebook_id", "").length() != 0) {
 			loginLayout.setVisibility(View.INVISIBLE);
-			usernameButton.setVisibility(View.VISIBLE);
-			usernameText.setVisibility(View.VISIBLE);
+			infoLayout.setVisibility(View.VISIBLE);;
 			Logger.trackEvent(mActivity, "Login", "Resume Username Screen");
 		} else {
 			Logger.trackEvent(mActivity, "Login", "Initial Screen");
+		}
+
+		if (getArguments()!= null && getArguments().containsKey("activity")) { // profile activity
+			TextView skip = (TextView) view.findViewById(R.id.login_skip);
+			skip.setVisibility(View.VISIBLE);
 		}
 
 		// Callback registration
@@ -116,8 +124,7 @@ public class LoginFragment extends Fragment {
 				Logger.trackEvent(mActivity, "Login", "FB logged in");
 				Logger.log(Log.INFO, TAG, "Choosing nickname");
 				loginLayout.setVisibility(View.INVISIBLE);
-				usernameButton.setVisibility(View.VISIBLE);
-				usernameText.setVisibility(View.VISIBLE);
+				infoLayout.setVisibility(View.VISIBLE);
 			}
 
 			@Override
@@ -143,8 +150,16 @@ public class LoginFragment extends Fragment {
 					Logger.trackEvent(mActivity, "Login", " Completed");
 					AddProfileTask addProfileTask = new AddProfileTask();
 					addProfileTask.execute(User.getAndroidId(mActivity), sharedPreferences.getString("facebook_id", ""), sharedPreferences.getString("first_name", ""),
-							sharedPreferences.getString("last_name", ""), sharedPreferences.getString("email", ""), sharedPreferences.getString("username", ""));
+							sharedPreferences.getString("last_name", ""), sharedPreferences.getString("email", ""), sharedPreferences.getString("username", ""), sharedPreferences.getString("college", ""));
 				}
+			}
+		});
+
+		skip.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mActivity.finish();
+				Logger.trackEvent(mActivity, "Login", "Skip");
 			}
 		});
 
@@ -186,7 +201,7 @@ public class LoginFragment extends Fragment {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			JSONObject response = gae.addProfile(params[0], params[1], params[2], params[3], params[4], params[5]);
+			JSONObject response = gae.addProfile(params[0], params[1], params[2], params[3], params[4], params[5], params[6]);
 			return response;
 		}
 
@@ -199,8 +214,7 @@ public class LoginFragment extends Fragment {
 						if (!isAdded()) {
 							return;
 						}
-						usernameButton.setVisibility(View.INVISIBLE);
-						usernameText.setVisibility(View.INVISIBLE);
+						infoLayout.setVisibility(View.INVISIBLE);
 						ProfileFragment profileFragment = new ProfileFragment();
 						Bundle bundle = new Bundle(1);
 						bundle.putString("user_id", sharedPreferences.getString("facebook_id", ""));

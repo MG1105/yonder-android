@@ -17,13 +17,14 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class User {
-	static boolean admin = false;
+	static boolean admin = true;
+	static String adminId = "897d1e5hb8u47u56jh6";
 	static String androidId;
 
 	public static String getId(Context context) {
 
 		if (admin) {
-			return "897d1e5hb8u47u56jh6";
+			return adminId;
 		}
 		SharedPreferences sharedPreferences = context.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 		if (sharedPreferences.getBoolean("logged_in", false)) {

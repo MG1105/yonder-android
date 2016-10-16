@@ -40,7 +40,8 @@
         android:textSize="12dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="@dimen/activity_vertical_margin"
-        android:text="I want my Hashtag to be possibly Featured" />
+        android:id="@+id/add_channel_nswf"
+        android:text="NSFW (Not Safe For Work)" />
 
     <Space
         android:layout_width="match_parent"
@@ -53,6 +54,6 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="@dimen/activity_vertical_margin"
         android:layout_marginBottom="15dp"
-        android:text="All hashtags and videos are removed after 24 hours unless marked as Featured"/>
+        android:text="All hashtags and videos disappear after 24 hours"/>
 
 </LinearLayout>

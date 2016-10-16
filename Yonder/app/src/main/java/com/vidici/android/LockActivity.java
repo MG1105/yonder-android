@@ -180,7 +180,7 @@ public class LockActivity extends Activity {
 				AppEngine gae = new AppEngine();
 				String userId = User.getId(mActivity);
 				Logger.log(Log.INFO, TAG, "Joining waiting list user id " + userId);
-				JSONObject response = gae.joinWaitlist(userId, params[0]);
+				JSONObject response = gae.joinWaitlist(userId, params[0], "college");
 				return response;
 			} catch (Exception e) {
 				Logger.log(e);

@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -87,11 +89,19 @@ public class ChannelFragment extends Fragment {
 								}
 								EditText input = (EditText) layout.findViewById(R.id.add_channel_name);
 								String name = input.getText().toString().trim();
+								CheckBox check = (CheckBox) layout.findViewById(R.id.add_channel_nswf);
+								String nsfw = "0";
+								if (check.isChecked()) {
+									nsfw = "1";
+									Logger.trackEvent(mActivity, "Channel", "NSFW");
+								} else {
+									Logger.trackEvent(mActivity, "Channel", "Not NSFW");
+								}
 								if (isValidChannelName(name)) {
 									alertDialog.dismiss();
 									Toast.makeText(mActivity, "Creating " + name + "...", Toast.LENGTH_LONG).show();
 									AddChannelTask addChannelTask = new AddChannelTask();
-									addChannelTask.execute(User.getId(mActivity), name.substring(1));
+									addChannelTask.execute(User.getId(mActivity), name.substring(1), nsfw);
 								}
 							}
 						});
@@ -169,7 +179,7 @@ public class ChannelFragment extends Fragment {
 	class ChannelAdapter extends ArrayAdapter<Channel> {
 		Channel channel;
 		TextView rating, ranking;
-		TextView unseen;
+		TextView unseen, nsfw;
 		TextView name, time, gold;
 		Button likeButton;
 		Button dislikeButton;
@@ -193,6 +203,7 @@ public class ChannelFragment extends Fragment {
 			dislikeButton = (Button) convertView.findViewById(R.id.button_channel_dislike);
 			rating = (TextView) convertView.findViewById(R.id.textView_channel_item_rating);
 			unseen = (TextView) convertView.findViewById(R.id.textView_channel_new);
+			nsfw = (TextView) convertView.findViewById(R.id.textView_channel_nsfw);
 			name = (TextView) convertView.findViewById(R.id.textView_channel_name);
 			ranking = (TextView) convertView.findViewById(R.id.textView_channel_item_ranking);
 			time = (TextView) convertView.findViewById(R.id.textView_channel_time_left);
@@ -241,12 +252,9 @@ public class ChannelFragment extends Fragment {
 				likeButton.setEnabled(true);
 			}
 
-			if (channel.getUsername().equals("null")) {
+			if (channel.getTs().length() > 0) {
 				time.setVisibility(View.VISIBLE);
-				time.setText("Featured");
-			} else if (channel.getTs().length() > 0) {
-				time.setVisibility(View.VISIBLE);
-				time.setText(channel.getTs() + " Left");
+				time.setText(channel.getTs());
 			} else {
 				time.setVisibility(View.GONE);
 			}
@@ -254,14 +262,19 @@ public class ChannelFragment extends Fragment {
 				unseen.setVisibility(View.GONE);
 			} else {
 				unseen.setVisibility(View.VISIBLE);
-				unseen.setText(channel.getUnseen() + " New");
+				unseen.setText(channel.getUnseen() + " new");
+			}
+			if (channel.isNsfw().equals("0")) {
+				nsfw.setVisibility(View.GONE);
+			} else {
+				nsfw.setVisibility(View.VISIBLE);
 			}
 			if (channel.getGold()  == 1) {
 				gold.setVisibility(View.VISIBLE);
-				gold.setText(channel.getGold() + " Award");
+				gold.setText(channel.getGold() + " award");
 			} else if (channel.getGold() > 1) {
 				gold.setVisibility(View.VISIBLE);
-				gold.setText(channel.getGold() + " Awards");
+				gold.setText(channel.getGold() + " awards");
 			} else {
 				gold.setVisibility(View.GONE);
 			}
@@ -314,9 +327,6 @@ public class ChannelFragment extends Fragment {
 				Button myDislike = dislikeButton;
 				@Override
 				public void onClick(View v) {
-					if (!User.loggedIn(mActivity)) {
-						return;
-					}
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
 					RateChannelTask rateChannelTask = new RateChannelTask(myChannel, myLike, myDislike);
@@ -324,6 +334,7 @@ public class ChannelFragment extends Fragment {
 					myChannel.setRating(1);
 					Logger.log(Log.INFO, TAG, "Liking channel");
 					Logger.trackEvent(mActivity, "Channel", "Like Channel");
+					Toast.makeText(mActivity, "Upvoted!", Toast.LENGTH_LONG).show();
 				}
 			});
 
@@ -333,9 +344,6 @@ public class ChannelFragment extends Fragment {
 				Button myDislike = dislikeButton;
 				@Override
 				public void onClick(View v) {
-					if (!User.loggedIn(mActivity)) {
-						return;
-					}
 					myDislike.setEnabled(false);
 					myLike.setEnabled(false);
 					RateChannelTask rateChannelTask = new RateChannelTask(myChannel, myLike, myDislike);
@@ -343,6 +351,7 @@ public class ChannelFragment extends Fragment {
 					myChannel.setRating(-1);
 					Logger.log(Log.INFO, TAG, "Disliking channel");
 					Logger.trackEvent(mActivity, "Channel", "Dislike Channel");
+					Toast.makeText(mActivity, "Downvoted!", Toast.LENGTH_LONG).show();
 				}
 			});
 
@@ -402,7 +411,7 @@ public class ChannelFragment extends Fragment {
 
 		protected JSONObject doInBackground(String... params) {
 			AppEngine gae = new AppEngine();
-			JSONObject response = gae.addChannel(params[0], params[1]);
+			JSONObject response = gae.addChannel(params[0], params[1], params[2]);
 			return response;
 		}
 
@@ -416,9 +425,8 @@ public class ChannelFragment extends Fragment {
 						SharedPreferences sharedPreferences = mActivity.getSharedPreferences("com.vidici.android", Context.MODE_PRIVATE);
 						long now = System.currentTimeMillis();
 						sharedPreferences.edit().putLong("channel_added", now).apply();
-						String record = "Long press your hashtag to post videos to it. Hashtags with no videos are automatically removed";
-						Toast.makeText(mActivity, record, Toast.LENGTH_LONG).show();
-						Toast.makeText(mActivity, record, Toast.LENGTH_LONG).show();
+						String record = "Long press your new hashtag to post videos to it. Empty hashtags are automatically removed";
+						Alert.showSnack(mActivity, record);
 					} else {
 						Logger.log(new Exception("Server Side Failure"));
 						Toast.makeText(mActivity, "Failed to add channel", Toast.LENGTH_LONG).show();

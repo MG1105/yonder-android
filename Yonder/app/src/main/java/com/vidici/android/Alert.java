@@ -7,7 +7,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.support.design.widget.Snackbar;
+import android.view.View;
 import android.view.Window;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Alert {
@@ -101,18 +105,19 @@ public class Alert {
 		int count = sharedPreferences.getInt("channel_intro_count", 0);
 		String watch = "Tap any hashtag to watch its video feed";
 		String record = "Long press any hashtag to post videos to it";
-		String hashtags = "Hashtags are ranked in the first 3 tabs (most likes, trending, and newest)";
+		String hashtags = "Hashtags are ranked in the first 3 tabs (likes, trending, and new)";
+		String add = "Dismiss this and click the + sign to add a hashtag to the charts";
 		if (count == 0) {
-			Toast.makeText(activity, watch, Toast.LENGTH_LONG).show();
-			Toast.makeText(activity, watch, Toast.LENGTH_LONG).show();
+			showSnack(activity, watch);
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		} else if (count == 1) {
-			Toast.makeText(activity, hashtags, Toast.LENGTH_LONG).show();
-			Toast.makeText(activity, hashtags, Toast.LENGTH_LONG).show();
+			showSnack(activity, add);
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		} else if (count == 2) {
-			Toast.makeText(activity, record, Toast.LENGTH_LONG).show();
-			Toast.makeText(activity, record, Toast.LENGTH_LONG).show();
+			showSnack(activity, record);
+			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
+		} else if (count == 3) {
+			showSnack(activity, hashtags);
 			sharedPreferences.edit().putInt("channel_intro_count", ++count).apply();
 		}
 	}
@@ -121,7 +126,7 @@ public class Alert {
 		SharedPreferences sharedPreferences = activity.getSharedPreferences(
 				"com.vidici.android", Context.MODE_PRIVATE);
 		int count = sharedPreferences.getInt("invite_count_16", 0);
-		if (count == 2 || count == 5) {
+		if (count == 3 || count == 5) {
 			Intent intent = new Intent(activity, InviteActivity.class);
 			activity.startActivity(intent);
 		}
@@ -136,7 +141,14 @@ public class Alert {
 		int count = sharedPreferences.getInt("story_intro_count", 0);
 		String tap = "Tap to skip to the next video";
 		if (count == 0) {
-			Toast.makeText(activity, tap, Toast.LENGTH_LONG).show();
+			final Snackbar snackBar = Snackbar.make(activity.findViewById(R.id.feedLayout), tap, Snackbar.LENGTH_INDEFINITE);
+			snackBar.setAction("Dismiss", new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					snackBar.dismiss();
+				}
+			});
+			snackBar.show();
 			sharedPreferences.edit().putInt("story_intro_count", ++count).apply();
 		}
 	}
@@ -158,6 +170,33 @@ public class Alert {
 			}
 		});
 		alertDialog.show();
+	}
+
+	public static void showAlert(final Activity activity, final String message) {
+		AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+		alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		alertDialog.setMessage(message);
+		alertDialog.setCancelable(false);
+		alertDialog.setButton("GOT IT", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+		alertDialog.show();
+	}
+
+	public static void showSnack(final Activity activity, final String message) {
+		final Snackbar snackBar = Snackbar.make(activity.findViewById(R.id.root), message, Snackbar.LENGTH_INDEFINITE);
+		snackBar.setAction("Dismiss", new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				snackBar.dismiss();
+			}
+		});
+		View snackbarView = snackBar.getView();
+		TextView textView = (TextView) snackbarView.findViewById(android.support.design.R.id.snackbar_text);
+		textView.setMaxLines(3);
+		snackBar.show();
 	}
 
 }

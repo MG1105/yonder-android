@@ -16,7 +16,7 @@ public class Channel extends Loadable{
 	private String name;
 	private String username;
 	private int rated = 0;
-	private String unseen, videos;
+	private String unseen, videos, nsfw;
 	private String ts;
 
 	// Constructor to convert JSON object into a Java class instance
@@ -27,6 +27,7 @@ public class Channel extends Loadable{
 			this.name = object.getString("name");
 			this.rating = object.getString("rating");
 			this.unseen = object.getString("unseen");
+			this.nsfw = object.getString("nsfw");
 			this.videos = object.getString("videos");
 			this.username = object.getString("username");
 			this.gold = object.getInt("gold");
@@ -55,6 +56,10 @@ public class Channel extends Loadable{
 
 	public String getUnseen() {
 		return unseen;
+	}
+
+	public String isNsfw() {
+		return nsfw;
 	}
 
 	public void updateRating() {
@@ -96,24 +101,25 @@ public class Channel extends Loadable{
 	}
 
 	String getRemainingTime(long ts) {
-		long delta = (ts + 24 * 60 * 60) - (System.currentTimeMillis() / 1000);
+		long delta = (System.currentTimeMillis() / 1000) - ts;
 		if (delta < 0) {
 			return "";
 		}
-		long sec = TimeUnit.SECONDS.toSeconds(delta);
-		if (sec < 59) {
-			return sec + "s";
+
+		long days = TimeUnit.SECONDS.toDays(delta);
+		if (days >= 1) {
+			return days + "d";
 		} else {
-			long min = TimeUnit.SECONDS.toMinutes(delta);
-			if (min < 59) {
-				return min + "m";
+			long hour = TimeUnit.SECONDS.toHours(delta);
+			if (hour >= 1) {
+				return hour + "h";
 			} else {
-				long hour = TimeUnit.SECONDS.toHours(delta);
-				if (hour <= 24) {
-					return hour + "h";
+				long min = TimeUnit.SECONDS.toMinutes(delta);
+				if (min >= 1) {
+					return min + "m";
 				} else {
-					long days = TimeUnit.SECONDS.toDays(delta);
-					return days + "d";
+					long sec = TimeUnit.SECONDS.toSeconds(delta);
+					return sec + "s";
 				}
 			}
 		}

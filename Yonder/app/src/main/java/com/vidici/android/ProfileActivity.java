@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 
 public class ProfileActivity extends AppCompatActivity {
@@ -28,6 +30,9 @@ public class ProfileActivity extends AppCompatActivity {
 		} else if (!sharedPreferences.getBoolean("logged_in", false)) {
 			Logger.log(Log.INFO, TAG, "Viewing Login");
 			LoginFragment fragment = new LoginFragment();
+			Bundle bundle = new Bundle(1);
+			bundle.putString("activity", "");
+			fragment.setArguments(bundle);
 			getSupportFragmentManager().beginTransaction().add(R.id.activity_profile, fragment).commit();
 		}
 	}
