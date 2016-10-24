@@ -313,9 +313,16 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         if (sharedPreferences.getString("push_notification", "on").equals("on")) {
+                            if (!User.production) {
+                                User.admin = false;
+                                Logger.init(mActivity);
+                            }
                             sharedPreferences.edit().putString("push_notification", "off").apply();
                             Logger.trackEvent(mActivity, "Settings", "Turn Off Push Notifications");
                         } else {
+                            if (!User.production) {
+                                User.admin = true;
+                            }
                             sharedPreferences.edit().putString("push_notification", "on").apply();
                             Logger.trackEvent(mActivity, "Settings", "Turn On Push Notifications");
                         }

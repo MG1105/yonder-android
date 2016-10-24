@@ -18,6 +18,7 @@ import java.util.Random;
 
 public class User {
 	static boolean admin = true;
+	static boolean production = false;
 	static String adminId = "897d1e5hb8u47u56jh6";
 	static String androidId;
 

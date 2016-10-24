@@ -521,14 +521,14 @@ public class StoryActivity extends Activity {
             userName = videoInfo.get(currentVideoId).getString("username");
             String collegeName = videoInfo.get(currentVideoId).getString("college");
 
-            if (collegeName.equals("null")) {
+            if (collegeName.equals("null") || collegeName.length() == 0) {
                 college.setVisibility(View.GONE);
             } else {
                 college.setText(collegeName);
                 college.setVisibility(View.VISIBLE);
             }
 
-            if (userName.equals("null") || profileId.equals(User.adminId)) {
+            if (userName.equals("null") || profileId.equals(User.adminId) || username.length() == 0) {
                 username.setVisibility(View.GONE);
                 profileBackground.setBackgroundResource(R.drawable.oval_white);
                 profileIcon.setBackgroundResource(R.drawable.ic_user_black);
